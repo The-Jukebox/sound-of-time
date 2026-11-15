@@ -73,29 +73,53 @@ class SoundEngine {
         // FFT analysis array for audio-reactive visuals
         this.freqData = new Uint8Array(64);
         this.timeData = new Uint8Array(64);
+        this.currentSceneAmbience = null;
     }
 
     init() {
-        if (this.isInitialized) return;
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        this.ctx = new AudioContext();
+        if (this.isInitialized && this.ctx) {
+            if (this.ctx.state === 'suspended') {
+                this.ctx.resume().catch(() => {});
+            }
+            return;
+        }
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            this.ctx = new AudioContext();
 
-        this.masterGain = this.ctx.createGain();
-        this.masterGain.gain.setValueAtTime(0.85, this.ctx.currentTime);
+            this.masterGain = this.ctx.createGain();
+            this.masterGain.gain.setValueAtTime(0.85, this.ctx.currentTime);
 
-        this.analyser = this.ctx.createAnalyser();
-        this.analyser.fftSize = 128;
-        this.analyser.smoothingTimeConstant = 0.8;
+            this.analyser = this.ctx.createAnalyser();
+            this.analyser.fftSize = 128;
+            this.analyser.smoothingTimeConstant = 0.8;
 
-        this.masterGain.connect(this.analyser);
-        this.analyser.connect(this.ctx.destination);
+            this.masterGain.connect(this.analyser);
+            this.analyser.connect(this.ctx.destination);
 
-        this.isInitialized = true;
+            this.isInitialized = true;
+
+            if (this.ctx.state === 'suspended') {
+                this.ctx.resume().catch(() => {});
+            }
+
+            if (this.currentSceneAmbience && this.ambientNodes.length === 0 && !this.isPlaying) {
+                this.startSceneAmbience(this.currentSceneAmbience);
+            }
+        } catch (e) {
+            console.warn('AudioContext initialization error:', e);
+        }
     }
 
     resume() {
+        if (!this.isInitialized) {
+            this.init();
+        }
         if (this.ctx && this.ctx.state === 'suspended') {
-            this.ctx.resume();
+            this.ctx.resume().catch(() => {});
+        }
+        if (this.isInitialized && this.currentSceneAmbience && this.ambientNodes.length === 0 && !this.isPlaying) {
+            this.startSceneAmbience(this.currentSceneAmbience);
         }
     }
 
@@ -268,6 +292,7 @@ class SoundEngine {
     // ----------------------------------------------------
 
     startSceneAmbience(sceneName) {
+        this.currentSceneAmbience = sceneName;
         this.stopSceneAmbience();
         if (!this.isInitialized) return;
 
