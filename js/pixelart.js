@@ -2467,27 +2467,7 @@ class PixelRenderer {
         // 5. Retro Jukebox safely mounted in left cockpit bay
         this.drawJukebox(105, floorY, { isPowered: true, isPlaying: true, activeRecord: 'earth' });
 
-        // 6. Rocky's Xenonite Bridge Environment Dome / Enclosure on the right
-        const rockX = 400;
-        const rockY = floorY;
-        const habitatR = 48;
-        const rockEnvGrad = ctx.createRadialGradient(rockX, rockY - 30, 8, rockX, rockY - 30, habitatR);
-        rockEnvGrad.addColorStop(0, 'rgba(255, 185, 90, 0.42)');
-        rockEnvGrad.addColorStop(0.7, 'rgba(240, 130, 40, 0.20)');
-        rockEnvGrad.addColorStop(1, 'rgba(120, 40, 10, 0)');
-        ctx.fillStyle = rockEnvGrad;
-        ctx.beginPath();
-        ctx.arc(rockX, rockY - 30, habitatR, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Xenonite chamber outline (transparent warm bubble on bridge)
-        ctx.strokeStyle = 'rgba(255, 220, 150, 0.65)';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(rockX, rockY - 30, habitatR, 0, Math.PI * 2);
-        ctx.stroke();
-
-        // 7. CHARACTERS: RYAN (LEFT) & ROCKY (RIGHT)
+        // 6. RYAN (LEFT)
         const ryanX = 220;
         const ryanY = floorY;
         const ryanState = isFistBumping ? 'hands' : (isRyanSpeaking ? 'talk' : 'idle');
@@ -2496,12 +2476,15 @@ class PixelRenderer {
         // Draw Ryan facing right towards Rocky and Earth
         this.drawEli(ryanX, ryanY, ryanState, 1, false, isRyanSpeaking, false /* custom clothes */);
 
-        // Draw Rocky facing left towards Ryan
-        this.drawKoru(rockX, rockY, rockyState, -1, isRockySpeaking);
+        // 7. ROCKY IN HIS FULL GEODESIC XENONITE SPHERE DOME (Matches reference photo!)
+        const domeX = 395;
+        const domeR = 58;
+        const domeY = floorY - 38;
+        this.drawGeodesicDome(domeX, domeY, domeR, rockyState, isRockySpeaking, -1 /* facing left towards Ryan */, false /* showSnow = false */);
 
         // 8. THE FIST BUMP MOMENT! (When isFistBumping is active)
         if (isFistBumping) {
-            const bumpX = (ryanX + rockX) * 0.5 - 15;
+            const bumpX = (ryanX + domeX) * 0.5 - 10;
             const bumpY = floorY - 42;
 
             // Golden starburst shockwave
@@ -2661,18 +2644,34 @@ class PixelRenderer {
         this.drawFallingSnow();
     }
 
-    drawGeodesicDome(cx, cy, R, rockyState = 'idle', isSpeaking = false) {
+    drawGeodesicDome(cx, cy, R, rockyState = 'idle', isSpeaking = false, facing = 1, showSnow = true) {
         const ctx = this.ctx;
         const t = this.animTime;
 
-        // Base foundation in snow
-        ctx.fillStyle = '#2c3540';
-        ctx.beginPath();
-        ctx.ellipse(cx, cy + R * 0.88, R * 0.8, 12, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = '#64748b';
-        ctx.lineWidth = 2;
-        ctx.stroke();
+        if (showSnow) {
+            // Base foundation in snow
+            ctx.fillStyle = '#2c3540';
+            ctx.beginPath();
+            ctx.ellipse(cx, cy + R * 0.88, R * 0.8, 12, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#64748b';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        } else {
+            // Metallic deck mounting ring on spacecraft bridge deck
+            ctx.fillStyle = '#241a33';
+            ctx.beginPath();
+            ctx.ellipse(cx, cy + R * 0.86, R * 0.72, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#5a427a';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Gold/brass mounting lock brackets
+            ctx.fillStyle = this.palette.warmGold;
+            ctx.fillRect(cx - R * 0.5, cy + R * 0.82, 10, 5);
+            ctx.fillRect(cx + R * 0.5 - 10, cy + R * 0.82, 10, 5);
+        }
 
         // 1. Warm Glowing Xenonite Atmosphere inside the sphere (Erid environment: 200°C)
         const eridAtmosphere = ctx.createRadialGradient(cx, cy - 4, R * 0.15, cx, cy, R);
@@ -2692,12 +2691,12 @@ class PixelRenderer {
         ctx.arc(cx, cy, R - 2, 0, Math.PI * 2);
         ctx.clip();
 
-        // Rocky sits happily inside his warm geodesic habitat ball, facing right towards Ryan
+        // Rocky sits happily inside his warm geodesic habitat ball
         const rockyY = cy + R * 0.65;
-        this.drawKoru(cx, rockyY, rockyState, 1, isSpeaking);
+        this.drawKoru(cx, rockyY, rockyState, facing, isSpeaking);
         ctx.restore();
 
-        // 3. Geodesic Multi-Faceted Strut Grid (Classic icosahedron / geodesic sphere)
+        // 3. Geodesic Multi-Faceted Strut Grid (Classic icosahedron / geodesic sphere - matches reference photo!)
         ctx.save();
         ctx.beginPath();
         ctx.arc(cx, cy, R, 0, Math.PI * 2);
@@ -2739,8 +2738,8 @@ class PixelRenderer {
         });
 
         // Geodesic strut lines (silver / xenonite framing)
-        ctx.strokeStyle = 'rgba(225, 245, 255, 0.85)';
-        ctx.lineWidth = 1.4;
+        ctx.strokeStyle = 'rgba(235, 248, 255, 0.92)';
+        ctx.lineWidth = 1.6;
 
         // Center to inner
         for (let i = 0; i < numInner; i++) {
@@ -2778,7 +2777,7 @@ class PixelRenderer {
         ctx.fillStyle = '#ffffff';
         [centerPt, ...innerPts].forEach(pt => {
             ctx.beginPath();
-            ctx.arc(pt.x, pt.y, 1.8, 0, Math.PI * 2);
+            ctx.arc(pt.x, pt.y, 2.0, 0, Math.PI * 2);
             ctx.fill();
         });
 
@@ -2803,12 +2802,14 @@ class PixelRenderer {
         ctx.arc(cx, cy, R, 0, Math.PI * 2);
         ctx.stroke();
 
-        // Snow piled on base of dome
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.ellipse(cx - 24, cy + R * 0.85, 20, 6, 0.1, 0, Math.PI * 2);
-        ctx.ellipse(cx + 20, cy + R * 0.86, 22, 7, -0.1, 0, Math.PI * 2);
-        ctx.fill();
+        if (showSnow) {
+            // Snow piled on base of dome
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.ellipse(cx - 24, cy + R * 0.85, 20, 6, 0.1, 0, Math.PI * 2);
+            ctx.ellipse(cx + 20, cy + R * 0.86, 22, 7, -0.1, 0, Math.PI * 2);
+            ctx.fill();
+        }
     }
 
     drawSnowyPineTree(x, y, scale = 1.0) {
