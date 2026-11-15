@@ -252,6 +252,7 @@ class OceanSonificationEngine {
 
         this.isPlaying = true;
         this.isPaused = false;
+        if (this.masterVolume) this.masterVolume.mute = false;
 
         if (!this.isInitialized) {
             await this.initAudio();
@@ -271,12 +272,23 @@ class OceanSonificationEngine {
         if (this.onStateChangeCallback) this.onStateChangeCallback('playing');
     }
 
+    silenceSynths() {
+        if (this.tempSynth) {
+            try { this.tempSynth.releaseAll(); } catch(e) {}
+        }
+        if (this.salinitySynth) {
+            try { this.salinitySynth.triggerRelease(); } catch(e) {}
+        }
+    }
+
     pause() {
         if (!this.isPlaying) return;
         this.isPlaying = false;
         this.isPaused = true;
         this.stopStepTimer();
-        if (this.ambientGain) this.ambientGain.gain.rampTo(0, 0.1);
+        this.silenceSynths();
+        if (this.ambientGain) this.ambientGain.gain.rampTo(0, 0.05);
+        if (this.masterVolume) this.masterVolume.mute = true;
         if (this.onStateChangeCallback) this.onStateChangeCallback('paused');
     }
 
@@ -286,7 +298,9 @@ class OceanSonificationEngine {
         this.currentIndex = 0;
         this.stopStepTimer();
         this.currentNote = '—';
-        if (this.ambientGain) this.ambientGain.gain.rampTo(0, 0.1);
+        this.silenceSynths();
+        if (this.ambientGain) this.ambientGain.gain.rampTo(0, 0.05);
+        if (this.masterVolume) this.masterVolume.mute = true;
         if (this.onStateChangeCallback) this.onStateChangeCallback('stopped');
     }
 

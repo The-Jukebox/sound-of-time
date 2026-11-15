@@ -1,4 +1,4 @@
-/**
+﻿/**
  * SOUND OF TIMES — Earth Archive Record 003: The Forest
  * ForestSonificationEngine & ForestSoundscapeManager
  * 
@@ -176,7 +176,11 @@
             this.biomassSynth.volume.value = -2;
 
             // Initialize Environmental Soundscape Audio Graph
-            await this.soundscape.initAudio(this.masterVolume);
+            try {
+                await this.soundscape.initAudio(this.masterVolume);
+            } catch (err) {
+                console.error('[ForestSoundscape initAudio ERROR]:', err);
+            }
 
             this.isInitialized = true;
         }
@@ -233,6 +237,7 @@
             this.stopStepTimer();
             this.soundscape.pause();
             this.silenceSynths();
+            if (this.masterVolume) this.masterVolume.mute = true;
             if (this.onStateChangeCallback) this.onStateChangeCallback('paused');
         }
 
@@ -244,6 +249,7 @@
             this.currentNote = '—';
             this.soundscape.stop();
             this.silenceSynths();
+            if (this.masterVolume) this.masterVolume.mute = true;
             if (this.onStateChangeCallback) this.onStateChangeCallback('stopped');
         }
 
@@ -514,42 +520,76 @@
             this.windGain.connect(this.windPan);
             this.windPan.connect(this.canopyBus);
 
-            // 4. Forest Stream Flow & Bubbling Brook (Trickling water drops over rocks)
-            this.streamNoise = new Tone.Noise("white");
+            // 4. Black Forest Wutach Stream Flow & Bubbling Brook (Pink noise body + dual eddy filters + liquid gurgles)
+            this.streamNoise = new Tone.Noise("pink");
             this.streamFilter = new Tone.Filter({
-                frequency: 2800,
+                frequency: 520,
+                type: "lowpass",
+                rolloff: -12
+            });
+            this.streamEddyFilter = new Tone.Filter({
+                frequency: 1380,
+                type: "bandpass",
+                Q: 1.4
+            });
+            this.streamFoamFilter = new Tone.Filter({
+                frequency: 2200,
                 type: "bandpass",
                 Q: 2.0
             });
-            this.streamGain = new Tone.Gain(0.07);
-            this.streamPan = new Tone.Panner(-0.4);
+            this.streamGain = new Tone.Gain(0.14);
+            this.streamPan = new Tone.Panner(-0.35);
 
+            // Connect pink noise body, eddy wash, and foam shimmer
             this.streamNoise.connect(this.streamFilter);
+            this.streamNoise.connect(this.streamEddyFilter);
+            this.streamNoise.connect(this.streamFoamFilter);
+
             this.streamFilter.connect(this.streamGain);
+            this.streamEddyFilter.connect(this.streamGain);
+            this.streamFoamFilter.connect(this.streamGain);
+
             this.streamGain.connect(this.streamPan);
             this.streamPan.connect(this.waterBus);
 
-            // Stream Bubble Droplet Trickler
+            // Subtle eddy swirl LFO modulating water wash
+            this.streamEddyLFO = new Tone.LFO(0.12, 1150, 1650);
+            this.streamEddyLFO.connect(this.streamEddyFilter.frequency);
+            this.streamEddyLFO.start();
+
+            // Stream Bubble Droplet Synth (Resonant liquid bubble pops)
             this.streamBubbleSynth = new Tone.MembraneSynth({
-                pitchDecay: 0.008,
-                octaves: 1.2,
+                pitchDecay: 0.012,
+                octaves: 1.6,
                 oscillator: { type: "sine" },
-                envelope: { attack: 0.001, decay: 0.035, sustain: 0, release: 0.02 }
+                envelope: { attack: 0.001, decay: 0.042, sustain: 0, release: 0.025 }
             });
-            this.streamBubbleSynth.volume.value = -14;
+            this.streamBubbleSynth.volume.value = -10;
             this.streamBubbleSynth.connect(this.streamPan);
+
+            // Liquid Stream Gurgle Synth (Water tumbling into moss rock crevices)
+            this.streamGurgleSynth = new Tone.Synth({
+                oscillator: { type: "sine" },
+                envelope: { attack: 0.002, decay: 0.045, sustain: 0, release: 0.02 }
+            });
+            this.streamGurgleFilter = new Tone.Filter(850, "lowpass");
+            this.streamGurgleSynth.connect(this.streamGurgleFilter);
+            this.streamGurgleFilter.connect(this.streamPan);
+            this.streamGurgleSynth.volume.value = -8;
 
             // 5. Avian Songbird Melody Generator (Multi-Voice Polyphonic Flute & Warbler)
             this.birdSynth = new Tone.PolySynth(Tone.Synth, {
                 oscillator: { type: "sine" },
                 envelope: { attack: 0.005, decay: 0.08, sustain: 0.0, release: 0.05 }
             });
+            this.birdFilter = new Tone.Filter(5200, "lowpass");
             this.birdPanner = new Tone.Panner(0.25);
             this.birdReverb = new Tone.FeedbackDelay("16n", 0.24);
-            this.birdSynth.connect(this.birdPanner);
+            this.birdSynth.connect(this.birdFilter);
+            this.birdFilter.connect(this.birdPanner);
             this.birdPanner.connect(this.birdReverb);
             this.birdReverb.connect(this.wildlifeBus);
-            this.birdSynth.volume.value = 1.5; // High-definition prominent birdsong
+            this.birdSynth.volume.value = 1.0; // Sweet, warm acoustic birdsong
 
             // 6. Woodpecker Hollow Bark Taps
             this.woodpeckerSynth = new Tone.MembraneSynth({
@@ -584,16 +624,55 @@
             this.cricketPan.connect(this.wildlifeBus);
             this.cricketOsc.start();
 
-            // 9. Rain on Canopy Generator
-            this.rainNoise = new Tone.Noise("white");
+            // 9. Authentic Canopy Rain Generator (Pink Noise Body + Pitter-Patter Droplets + Leaf Drips)
+            this.rainNoise = new Tone.Noise("pink");
             this.rainFilter = new Tone.Filter({
-                frequency: 2200,
-                type: "highpass"
+                frequency: 1400,
+                type: "bandpass",
+                Q: 1.2
             });
             this.rainGain = new Tone.Gain(0.0);
+            this.rainPan = new Tone.Panner(-0.15);
             this.rainNoise.connect(this.rainFilter);
             this.rainFilter.connect(this.rainGain);
-            this.rainGain.connect(this.waterBus);
+            this.rainGain.connect(this.rainPan);
+            this.rainPan.connect(this.waterBus);
+
+            // Realistic Pitter-Patter Water Droplet Impact Synth (Foliage & Window Collisions)
+            this.rainDropletSynth = new Tone.Synth({
+                oscillator: { type: "sine" },
+                envelope: { attack: 0.001, decay: 0.022, sustain: 0, release: 0.015 }
+            });
+            this.rainDropletFilter = new Tone.Filter(2600, "bandpass");
+            this.rainDropletPan = new Tone.Panner(0);
+            this.rainDropletSynth.connect(this.rainDropletFilter);
+            this.rainDropletFilter.connect(this.rainDropletPan);
+            this.rainDropletPan.connect(this.waterBus);
+            this.rainDropletSynth.volume.value = -12;
+
+            // Canopy Leaf Drip / Water Puddle Splash Synth (Liquid Resonant Plop)
+            this.leafDripSynth = new Tone.MembraneSynth({
+                pitchDecay: 0.014,
+                octaves: 1.4,
+                oscillator: { type: "sine" },
+                envelope: { attack: 0.001, decay: 0.048, sustain: 0, release: 0.03 }
+            });
+            this.leafDripPan = new Tone.Panner(0.2);
+            this.leafDripSynth.connect(this.leafDripPan);
+            this.leafDripPan.connect(this.waterBus);
+            this.leafDripSynth.volume.value = -10;
+
+            // Distant Rolling Thunder Rumbler
+            this.thunderSynth = new Tone.MembraneSynth({
+                pitchDecay: 0.08,
+                octaves: 2.8,
+                oscillator: { type: "sine" },
+                envelope: { attack: 0.01, decay: 1.8, sustain: 0.05, release: 1.4 }
+            });
+            this.thunderFilter = new Tone.Filter(180, "lowpass");
+            this.thunderSynth.connect(this.thunderFilter);
+            this.thunderFilter.connect(this.canopyBus);
+            this.thunderSynth.volume.value = -6;
 
             // Start ambient base noise generators
             this.leafNoise.start();
@@ -611,16 +690,20 @@
             this.scheduleWildlifeEvents();
             this.scheduleDawnChorus();
             this.scheduleStreamBubbles();
+            this.scheduleRainDroplets();
         }
 
         pause() {
             this.isActive = false;
             this.clearTimers();
-            if (this.leafGain) this.leafGain.gain.rampTo(0, 0.2);
-            if (this.windGain) this.windGain.gain.rampTo(0, 0.2);
-            if (this.streamGain) this.streamGain.gain.rampTo(0, 0.2);
-            if (this.cricketGain) this.cricketGain.gain.rampTo(0, 0.2);
-            if (this.rainGain) this.rainGain.gain.rampTo(0, 0.2);
+            if (this.leafGain) this.leafGain.gain.rampTo(0, 0.05);
+            if (this.windGain) this.windGain.gain.rampTo(0, 0.05);
+            if (this.streamGain) this.streamGain.gain.rampTo(0, 0.05);
+            if (this.cricketGain) this.cricketGain.gain.rampTo(0, 0.05);
+            if (this.rainGain) this.rainGain.gain.rampTo(0, 0.05);
+            if (this.rainDropletSynth && typeof Tone !== 'undefined') {
+                try { this.rainDropletSynth.triggerRelease(); } catch(e) {}
+            }
         }
 
         resume() {
@@ -630,17 +713,22 @@
             this.scheduleWildlifeEvents();
             this.scheduleDawnChorus();
             this.scheduleStreamBubbles();
+            this.scheduleRainDroplets();
         }
 
         stop() {
             this.isActive = false;
             this.clearTimers();
-            if (this.leafGain) this.leafGain.gain.rampTo(0, 0.1);
-            if (this.windGain) this.windGain.gain.rampTo(0, 0.1);
-            if (this.streamGain) this.streamGain.gain.rampTo(0, 0.1);
-            if (this.cricketGain) this.cricketGain.gain.rampTo(0, 0.1);
-            if (this.rainGain) this.rainGain.gain.rampTo(0, 0.1);
+            if (this.leafGain) this.leafGain.gain.rampTo(0, 0.05);
+            if (this.windGain) this.windGain.gain.rampTo(0, 0.05);
+            if (this.streamGain) this.streamGain.gain.rampTo(0, 0.05);
+            if (this.cricketGain) this.cricketGain.gain.rampTo(0, 0.05);
+            if (this.rainGain) this.rainGain.gain.rampTo(0, 0.05);
+            if (this.rainDropletSynth && typeof Tone !== 'undefined') {
+                try { this.rainDropletSynth.triggerRelease(); } catch(e) {}
+            }
         }
+
 
         clearTimers() {
             if (this.wildlifeTimer) clearTimeout(this.wildlifeTimer);
@@ -648,11 +736,86 @@
             if (this.gustTimer) clearTimeout(this.gustTimer);
             if (this.bubbleTimer) clearTimeout(this.bubbleTimer);
             if (this.thunderTimer) clearTimeout(this.thunderTimer);
+            if (this.dropletTimer) clearTimeout(this.dropletTimer);
+            this.dropletTimer = null;
             this.wildlifeTimer = null;
             this.dawnChorusTimer = null;
             this.gustTimer = null;
             this.bubbleTimer = null;
             this.thunderTimer = null;
+        }
+
+        setRainGain(vol) {
+            this.rainIntensity = Math.max(0, Math.min(1, vol));
+            if (!this.isActive || !this.isInitialized || this.waterMuted) {
+                if (this.rainGain) this.rainGain.gain.rampTo(0, 0.05);
+                if (this.dropletTimer) {
+                    clearTimeout(this.dropletTimer);
+                    this.dropletTimer = null;
+                }
+                return;
+            }
+            if (this.rainGain) {
+                const targetGain = this.rainIntensity * 0.22;
+                this.rainGain.gain.rampTo(targetGain, 0.2);
+            }
+            if (this.rainIntensity > 0.02 && !this.dropletTimer) {
+                this.scheduleRainDroplets();
+            }
+        }
+
+        scheduleRainDroplets() {
+            if (!this.isActive || this.waterMuted || this.rainIntensity <= 0.02) {
+                if (this.dropletTimer) {
+                    clearTimeout(this.dropletTimer);
+                    this.dropletTimer = null;
+                }
+                return;
+            }
+
+            const interval = 35 + Math.random() * 60; // 35ms - 95ms rapid pitter-patter
+            this.dropletTimer = setTimeout(() => {
+                if (!this.isActive || this.waterMuted || this.rainIntensity <= 0.02) return;
+
+                if (this.rainDropletSynth && typeof Tone !== 'undefined') {
+                    const pitches = ["A6", "B6", "C7", "D7", "E7", "F#7", "G7", "A7"];
+                    const note = pitches[Math.floor(Math.random() * pitches.length)];
+                    const pan = (Math.random() * 1.6) - 0.8;
+                    const vel = 0.2 + (Math.random() * 0.45) * this.rainIntensity;
+
+                    try {
+                        if (this.rainDropletPan) this.rainDropletPan.pan.setValueAtTime(pan, Tone.now());
+                        this.rainDropletSynth.triggerAttackRelease(note, 0.018, Tone.now(), vel);
+                    } catch (e) {}
+                }
+
+                // Resonant leaf drip
+                if (Math.random() < 0.20 * this.rainIntensity) {
+                    this.playCanopyLeafDrip();
+                }
+
+                this.scheduleRainDroplets();
+            }, interval);
+        }
+
+        playCanopyLeafDrip() {
+            if (!this.leafDripSynth || this.waterMuted || typeof Tone === 'undefined') return;
+            const dripNotes = ["F4", "G4", "A4", "C5", "D5", "E5"];
+            const note = dripNotes[Math.floor(Math.random() * dripNotes.length)];
+            const pan = (Math.random() * 1.4) - 0.7;
+            try {
+                if (this.leafDripPan) this.leafDripPan.pan.setValueAtTime(pan, Tone.now());
+                this.leafDripSynth.triggerAttackRelease(note, 0.045, Tone.now(), 0.55);
+            } catch (e) {}
+        }
+
+        playThunderRumble() {
+            if (!this.thunderSynth || typeof Tone === 'undefined') return;
+            const now = Tone.now();
+            try {
+                this.thunderSynth.triggerAttackRelease("C1", 1.8, now, 0.85);
+                this.thunderSynth.triggerAttackRelease("G0", 2.2, now + 0.35, 0.7);
+            } catch (e) {}
         }
 
         setMode(mode) {
@@ -664,51 +827,51 @@
 
         applyMode(mode) {
             if (mode === 'morning') {
-                // Morning: Fresh breeze, lively birdsong chorus, quiet insects, bubbling stream
-                this.windIntensity = 0.35;
+                // Morning: Fresh breeze, lively birdsong chorus, quiet insects, prominent soothing stream
+                this.windIntensity = 0.32;
                 this.birdActivity = 0.95;
-                this.streamIntensity = 0.6;
+                this.streamIntensity = 0.70;
                 this.rainIntensity = 0.05; // Light morning dew / mist
 
                 if (this.isActive && this.isInitialized) {
-                    this.setWindGain(0.16);
-                    this.setStreamGain(0.14);
+                    this.setWindGain(0.12);
+                    this.setStreamGain(0.16); // Prominent, continuous, soothing mountain stream
                     this.setCricketGain(0.0);
                 }
             } else if (mode === 'afternoon') {
                 // Afternoon: Warmer gusty wind, cicadas buzzing, moderate birds, vibrant stream
                 this.windIntensity = 0.55;
                 this.birdActivity = 0.45;
-                this.streamIntensity = 0.5;
+                this.streamIntensity = 0.65;
                 this.rainIntensity = 0.0;
 
                 if (this.isActive && this.isInitialized) {
-                    this.setWindGain(0.22);
-                    this.setStreamGain(0.12);
+                    this.setWindGain(0.16);
+                    this.setStreamGain(0.15);
                     this.setCricketGain(0.08); // Afternoon cicada shimmer
                 }
             } else if (mode === 'evening') {
                 // Evening: Gentle calming breeze, twilight thrushes and owls, crickets waking
-                this.windIntensity = 0.38;
-                this.birdActivity = 0.55;
-                this.streamIntensity = 0.55;
+                this.windIntensity = 0.30;
+                this.birdActivity = 0.60;
+                this.streamIntensity = 0.65;
                 this.rainIntensity = 0.15; // Soft evening shower
 
                 if (this.isActive && this.isInitialized) {
-                    this.setWindGain(0.15);
-                    this.setStreamGain(0.13);
+                    this.setWindGain(0.12);
+                    this.setStreamGain(0.15);
                     this.setCricketGain(0.12);
                 }
             } else if (mode === 'night') {
                 // Night: Soft mysterious wind, quiet owls, vibrant cricket and frog chorus
-                this.windIntensity = 0.30;
-                this.birdActivity = 0.20;
-                this.streamIntensity = 0.45;
+                this.windIntensity = 0.25;
+                this.birdActivity = 0.25;
+                this.streamIntensity = 0.55;
                 this.rainIntensity = 0.0;
 
                 if (this.isActive && this.isInitialized) {
-                    this.setWindGain(0.12);
-                    this.setStreamGain(0.11);
+                    this.setWindGain(0.10);
+                    this.setStreamGain(0.13);
                     this.setCricketGain(0.20); // Night cricket choir
                 }
             }
@@ -730,22 +893,44 @@
             if (this.cricketGain) this.cricketGain.gain.rampTo(val, 0.5);
         }
 
-        // Scheduled Natural Bubbling Stream Droplets
+        playStreamGurgle() {
+            if (!this.streamGurgleSynth || this.waterMuted || typeof Tone === 'undefined') return;
+            const pitches = ["D4", "E4", "G4", "A4", "C5", "D5"];
+            const note = pitches[Math.floor(Math.random() * pitches.length)];
+            const now = Tone.now();
+            const pan = -0.35 + (Math.random() * 0.4 - 0.2);
+            try {
+                if (this.streamPan) this.streamPan.pan.setValueAtTime(pan, now);
+                this.streamGurgleSynth.triggerAttackRelease(note, 0.045, now, 0.7);
+            } catch (e) {}
+        }
+
+        // Scheduled Natural Bubbling Stream Droplets & Liquid Gurgling
         scheduleStreamBubbles() {
             if (!this.isActive) return;
 
-            const delay = 350 + Math.random() * 550; // Every 350-900ms
+            // Rapid organic liquid cascade (140ms - 320ms) mimicking continuous running brook
+            const delay = 140 + Math.random() * 180;
             this.bubbleTimer = setTimeout(() => {
                 if (!this.isActive) return;
 
-                if (!this.waterMuted && this.streamBubbleSynth) {
-                    const dropletPitches = ["C5", "D5", "E5", "G5", "A5", "C6", "D6", "E6"];
+                if (!this.waterMuted && this.streamBubbleSynth && typeof Tone !== 'undefined') {
+                    const dropletPitches = ["G3", "A3", "C4", "D4", "E4", "G4", "A4", "C5", "D5", "E5"];
                     const pitch = dropletPitches[Math.floor(Math.random() * dropletPitches.length)];
-                    const pan = -0.4 + (Math.random() * 0.3 - 0.15);
-                    if (this.streamPan) this.streamPan.pan.setValueAtTime(pan, Tone.now());
+                    const pan = -0.35 + (Math.random() * 0.4 - 0.2);
+                    if (this.streamPan) {
+                        try { this.streamPan.pan.setValueAtTime(pan, Tone.now()); } catch(e) {}
+                    }
 
-                    const vel = 0.25 + Math.random() * 0.45;
-                    this.streamBubbleSynth.triggerAttackRelease(pitch, 0.035, Tone.now(), vel);
+                    const vel = 0.28 + Math.random() * 0.42;
+                    try {
+                        this.streamBubbleSynth.triggerAttackRelease(pitch, 0.038, Tone.now(), vel);
+                    } catch(e) {}
+                }
+
+                // Stochastic water gurgle into stone crevices
+                if (Math.random() < 0.26) {
+                    this.playStreamGurgle();
                 }
 
                 this.scheduleStreamBubbles();
@@ -797,8 +982,8 @@
         callBird(species = 'random') {
             if (this.wildlifeMuted) return null;
 
-            const speciesList = ['thrush', 'robin', 'warbler', 'hummingbird'];
-            const targetSpecies = species === 'random' ? speciesList[Math.floor(Math.random() * speciesList.length)] : species;
+            const legacySpecies = ['thrush', 'robin', 'warbler', 'hummingbird'];
+            const targetSpecies = species === 'random' ? legacySpecies[Math.floor(Math.random() * legacySpecies.length)] : species;
 
             let motif = [];
             let duration = 0.08;
@@ -806,15 +991,35 @@
             let pan = (Math.random() * 1.4) - 0.7;
 
             if (targetSpecies === 'thrush') {
-                // Wood Thrush: Ascending harmonic flute tones with ringing overtones
+                // European Song Thrush: Ascending harmonic flute tones with ringing overtones
                 motif = ["E6", "G6", "B6", "E7", "G7"];
                 duration = 0.12;
                 interval = 0.11;
             } else if (targetSpecies === 'robin') {
-                // American Robin: Bright two-tone cheerful couplet whistle
+                // American Robin: Bright two-tone cheerful couplet whistle (4 notes)
                 motif = ["A6", "F#6", "B6", "G6"];
                 duration = 0.09;
                 interval = 0.12;
+            } else if (targetSpecies === 'european_robin') {
+                // European Robin: Silvery liquid cascading warble
+                motif = ["G6", "B6", "D7", "E7", "D7", "B6", "A6"];
+                duration = 0.075;
+                interval = 0.08;
+            } else if (targetSpecies === 'blackbird') {
+                // European Blackbird: Warm, fluty, contemplative woodland melody echoing through pines
+                motif = ["D5", "F#5", "A5", "C6", "A5", "D6"];
+                duration = 0.14;
+                interval = 0.13;
+            } else if (targetSpecies === 'chiffchaff') {
+                // Common Chiffchaff: Sweet alternating couplet across Wutach Creek
+                motif = ["E6", "B5", "E6", "B5", "E6"];
+                duration = 0.08;
+                interval = 0.10;
+            } else if (targetSpecies === 'blackcap') {
+                // Blackcap: Pure crystal woodland warble
+                motif = ["F#6", "A6", "C#7", "B6", "A6", "F#6"];
+                duration = 0.07;
+                interval = 0.075;
             } else if (targetSpecies === 'warbler') {
                 // Yellow Warbler: Cascading high-speed ornamental trill
                 motif = ["D7", "C7", "B6", "A6", "G6", "E6"];
@@ -828,6 +1033,21 @@
                 if (this.woodpeckerSynth && typeof Tone !== 'undefined') {
                     try { this.woodpeckerSynth.triggerAttackRelease("A1", 0.08, Tone.now(), 0.3); } catch (e) {}
                 }
+            } else if (targetSpecies === 'dove') {
+                // Mourning Dove: Deep soothing gentle coo
+                motif = ["D5", "G4", "F#4", "D4"];
+                duration = 0.28;
+                interval = 0.32;
+            } else if (targetSpecies === 'chickadee') {
+                // Black-capped Chickadee: Cheerful two-tone whistle + "chick-a-dee-dee"
+                motif = ["E7", "B6", "G7", "G7", "G7"];
+                duration = 0.07;
+                interval = 0.085;
+            } else if (targetSpecies === 'nightingale') {
+                // Common Nightingale: Virtuoso liquid warbling trill
+                motif = ["C7", "E7", "G7", "D8", "B7", "A7"];
+                duration = 0.06;
+                interval = 0.07;
             } else if (targetSpecies === 'woodpecker') {
                 this.playWoodpeckerTaps();
                 return { species: 'woodpecker', pan: 0 };
@@ -904,24 +1124,31 @@
         }
 
         playWoodpeckerTaps() {
-            if (!this.woodpeckerSynth || this.canopyMuted) return;
+            if (!this.woodpeckerSynth || this.canopyMuted || typeof Tone === 'undefined') return;
 
-            const taps = Math.floor(4 + Math.random() * 5); // 4-8 taps
+            const baseTime = Tone.now() + 0.05;
             const pan = Math.random() * 0.8 - 0.4;
-            if (this.woodpeckerPanner) this.woodpeckerPanner.pan.setValueAtTime(pan, Tone.now());
+            try {
+                if (this.woodpeckerPanner) this.woodpeckerPanner.pan.setValueAtTime(pan, baseTime);
+            } catch (e) {}
 
-            for (let i = 0; i < taps; i++) {
-                this.woodpeckerSynth.triggerAttackRelease("C3", 0.04, Tone.now() + (i * 0.075));
+            for (let i = 0; i < 5; i++) {
+                const noteTime = baseTime + (i * 0.085);
+                try {
+                    this.woodpeckerSynth.triggerAttackRelease("C3", 0.035, noteTime);
+                } catch (e) {}
             }
         }
 
         playOwlHoot() {
-            if (!this.birdSynth || this.wildlifeMuted) return;
+            if (!this.birdSynth || this.wildlifeMuted || typeof Tone === 'undefined') return;
 
-            const now = Tone.now();
-            if (this.birdPanner) this.birdPanner.pan.setValueAtTime(Math.random() * 0.6 - 0.3, now);
-            this.birdSynth.triggerAttackRelease("G4", 0.35, now);
-            this.birdSynth.triggerAttackRelease("D4", 0.45, now + 0.45);
+            const baseTime = Tone.now() + 0.05;
+            try {
+                if (this.birdPanner) this.birdPanner.pan.setValueAtTime(Math.random() * 0.6 - 0.3, baseTime);
+                this.birdSynth.triggerAttackRelease("G4", 0.35, baseTime);
+                this.birdSynth.triggerAttackRelease("D4", 0.45, baseTime + 0.45);
+            } catch (e) {}
         }
 
         // Scheduled Wind Gusts

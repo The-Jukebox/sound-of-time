@@ -17,16 +17,19 @@
     class MemoryCinemaManager {
         constructor() {
             this.isOpen = false;
-            this.currentVision = 'leaves'; // 'leaves', 'ocean', 'birds', 'stream', 'rain'
+            this.currentVision = 'blackforest'; // 'blackforest', 'leaves', 'ocean', 'birds', 'stream', 'rain'
             this.slowMoFactor = 0.35; // 0.2, 0.35, 1.0
             this.animTime = 0;
             this.lastFrameTime = performance.now();
             this.rafId = null;
+            this.forceCanvasMode = false;
 
             // DOM Elements
             this.overlay = null;
             this.canvas = null;
             this.ctx = null;
+            this.videoContainer = null;
+            this.iframe = null;
             this.titleEl = null;
             this.quoteEl = null;
             this.speedTag = null;
@@ -34,6 +37,15 @@
 
             // Vision metadata and nostalgic Eli quotes
             this.visionMeta = {
+                blackforest: {
+                    title: "BLACK FOREST: WUTACH STREAM & EUROPEAN BIRDSONG",
+                    quote: "“I remember hiking deep into Germany's Black Forest... Wutach Creek murmuring gently over mossy stones, tall firs whispering in the cool mountain breeze, and soft robins calling from the canopy. This is how the living forest sounded.”",
+                    nasaTag: "NASA Earth Archive — Black Forest Riparian & Coniferous Canopy",
+                    defaultFor: 'forest',
+                    isYoutube: true,
+                    youtubeId: "_FtPdpids-Y",
+                    youtubeUrl: "https://youtu.be/_FtPdpids-Y"
+                },
                 leaves: {
                     title: "LUSH CANOPY LEAVES SWAYING IN THE SUNLIGHT",
                     quote: "“I remember lying under the trees on warm summer afternoons... watching thousands of leaves move so gently in the wind.”",
@@ -71,11 +83,12 @@
 
             // Full HD Photographic Images
             this.hdImages = {
-                leaves: this.loadHDImage('assets/memories/leaves_hd.jpg'),
-                ocean: this.loadHDImage('assets/memories/ocean_hd.jpg'),
-                birds: this.loadHDImage('assets/memories/birds_hd.jpg'),
-                stream: this.loadHDImage('assets/memories/stream_hd.jpg'),
-                rain: this.loadHDImage('assets/memories/rain_hd.jpg')
+                blackforest: this.loadHDImage('blackforest_hd.jpg'),
+                leaves: this.loadHDImage('leaves_hd.jpg'),
+                ocean: this.loadHDImage('ocean_hd.jpg'),
+                birds: this.loadHDImage('birds_hd.jpg'),
+                stream: this.loadHDImage('stream_hd.jpg'),
+                rain: this.loadHDImage('rain_hd.jpg')
             };
 
             // Slow-motion particle systems
@@ -84,14 +97,35 @@
             this.initParticles();
         }
 
-        loadHDImage(src) {
+        loadHDImage(filename) {
             const img = new Image();
-            img.src = src;
+            const candidates = [
+                'assets/memories/' + filename,
+                'Public/assets/memories/' + filename,
+                'memories/' + filename,
+                './assets/memories/' + filename
+            ];
+            let idx = 0;
+            const tryNext = () => {
+                if (idx < candidates.length) {
+                    img.src = candidates[idx++];
+                }
+            };
+            img.onerror = () => tryNext();
+            tryNext();
             return img;
         }
 
         cycleVision(dir) {
+            if (this.currentVision === 'blackforest') {
+                this.setVision(dir > 0 ? 'leaves' : 'rain');
+                return;
+            }
             const idx = this.visionOrder.indexOf(this.currentVision);
+            if (idx === -1) {
+                this.setVision('leaves');
+                return;
+            }
             const nextIdx = (idx + dir + this.visionOrder.length) % this.visionOrder.length;
             this.setVision(this.visionOrder[nextIdx]);
         }
@@ -120,10 +154,18 @@
             if (this.canvas) {
                 this.ctx = this.canvas.getContext('2d');
             }
+            this.videoContainer = document.getElementById('memoryVideoContainer');
+            this.iframe = document.getElementById('memoryYoutubeIframe');
             this.titleEl = document.getElementById('memoryTitle');
             this.quoteEl = document.getElementById('memoryQuote');
             this.speedTag = document.getElementById('memorySpeedTag');
             this.nasaTag = document.getElementById('memoryNasaTag');
+
+            // Wire Toggle Video Mode Button
+            const toggleVideoBtn = document.getElementById('btnToggleVideoMode');
+            if (toggleVideoBtn) {
+                toggleVideoBtn.onclick = () => this.toggleVideoMode();
+            }
 
             // Wire Vision Selectors
             const visionBtns = document.querySelectorAll('.mem-select-btn');
@@ -183,11 +225,22 @@
             });
         }
 
+        toggleVideoMode() {
+            this.forceCanvasMode = !this.forceCanvasMode;
+            const btn = document.getElementById('btnToggleVideoMode');
+            if (btn) {
+                btn.textContent = this.forceCanvasMode ? '▶️ SWITCH TO 4K VIDEO' : '🎨 SWITCH TO HD CANVAS';
+            }
+            this.setVision(this.currentVision);
+        }
+
         resizeCanvas() {
             if (!this.canvas) return;
             const dpr = Math.min(window.devicePixelRatio || 1, 2);
-            const w = this.canvas.parentElement ? this.canvas.parentElement.clientWidth : window.innerWidth;
-            const h = this.canvas.parentElement ? this.canvas.parentElement.clientHeight : window.innerHeight;
+            let w = this.canvas.parentElement ? this.canvas.parentElement.clientWidth : window.innerWidth;
+            let h = this.canvas.parentElement ? this.canvas.parentElement.clientHeight : window.innerHeight;
+            if (!w || w === 0) w = Math.floor(window.innerWidth * 0.94);
+            if (!h || h === 0) h = Math.floor(window.innerHeight * 0.82);
 
             this.canvas.width = Math.floor(w * dpr);
             this.canvas.height = Math.floor(h * dpr);
@@ -216,7 +269,7 @@
                 } else if (rec === 'atmosphere') {
                     this.currentVision = 'rain';
                 } else {
-                    this.currentVision = 'leaves';
+                    this.currentVision = 'blackforest';
                 }
             }
 
@@ -228,7 +281,7 @@
             this.overlay.classList.add('active');
 
             this.resizeCanvas();
-            this.updateMetadataUI();
+            this.setVision(this.currentVision);
 
             this.lastFrameTime = performance.now();
             this.startRenderLoop();
@@ -241,6 +294,13 @@
         close() {
             if (!this.isOpen) return;
             this.isOpen = false;
+            // Stop and silence video immediately
+            if (this.iframe) {
+                try { this.iframe.src = ''; } catch (e) {}
+            }
+            if (this.videoContainer) this.videoContainer.style.display = 'none';
+            if (this.canvas) this.canvas.style.display = 'block';
+
             if (this.overlay) {
                 this.overlay.classList.add('zooming-out');
                 this.overlay.classList.remove('active');
@@ -277,6 +337,25 @@
             document.querySelectorAll('.mem-select-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.getAttribute('data-vision') === visionKey);
             });
+
+            // Handle 4K Video Mode vs HD Canvas Mode
+            if (visionKey === 'blackforest' && !this.forceCanvasMode) {
+                if (this.videoContainer) this.videoContainer.style.display = 'flex';
+                if (this.canvas) this.canvas.style.display = 'none';
+                if (this.iframe) {
+                    const embedUrl = 'https://www.youtube-nocookie.com/embed/_FtPdpids-Y?autoplay=1&mute=0&rel=0&modestbranding=1&loop=1&playlist=_FtPdpids-Y';
+                    if (!this.iframe.src || this.iframe.src.indexOf('_FtPdpids-Y') === -1) {
+                        this.iframe.src = embedUrl;
+                    }
+                }
+            } else {
+                if (this.videoContainer) this.videoContainer.style.display = 'none';
+                if (this.canvas) this.canvas.style.display = 'block';
+                if (this.iframe) {
+                    try { this.iframe.src = ''; } catch (e) {}
+                }
+                this.resizeCanvas();
+            }
 
             if (visionKey === 'birds' && window.forestSonification && window.forestSonification.soundscape) {
                 window.forestSonification.soundscape.callBird('hummingbird');
@@ -380,6 +459,9 @@
             ctx.clearRect(0, 0, w, h);
 
             switch (this.currentVision) {
+                case 'blackforest':
+                    this.drawSlowMoBlackForest(ctx, w, h, t);
+                    break;
                 case 'leaves':
                     this.drawSlowMoLeaves(ctx, w, h, t);
                     break;
@@ -399,6 +481,93 @@
 
             // Cinematic Slow-Motion Vignette & Dream Bloom
             this.drawCinematicVignette(ctx, w, h);
+        }
+
+        // VISION 0: BLACK FOREST WUTACH STREAM (SLOW-MO NATURE AMBIENCE)
+        drawSlowMoBlackForest(ctx, w, h, t) {
+            const hasHD = this.drawHDImage(ctx, this.hdImages.blackforest || this.hdImages.stream, w, h, t);
+            if (!hasHD) {
+                // Procedural deep Black Forest evergreen ravine
+                const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
+                bgGrad.addColorStop(0, '#06170e');
+                bgGrad.addColorStop(0.45, '#0e291a');
+                bgGrad.addColorStop(1, '#071610');
+                ctx.fillStyle = bgGrad;
+                ctx.fillRect(0, 0, w, h);
+
+                // Coniferous tree silhouettes
+                this.drawConiferLayer(ctx, w, h, 0.45, '#0a1d13', 38);
+                this.drawConiferLayer(ctx, w, h, 0.65, '#123321', 26);
+
+                // Riverbed Stones
+                this.drawRiverStones(ctx, w, h);
+
+                // Flowing stream liquid ribbon
+                this.drawStreamRibbon(ctx, w, h, t);
+            }
+
+            // Suspended slow-motion water crown droplet & ripples over Wutach Creek
+            this.drawWaterCrownSplash(ctx, w * 0.5, h * 0.70, t);
+
+            // Dappled sunbeams streaming through evergreen fir crowns (Komorebi / Waldlicht)
+            ctx.save();
+            ctx.globalCompositeOperation = 'screen';
+            const sunX = w * 0.72;
+            const sunY = h * 0.12;
+            for (let i = 0; i < 5; i++) {
+                const angle = 0.60 + (i * 0.14) + Math.sin(t * 0.35 + i) * 0.03;
+                const rayWidth = 55 + Math.sin(t * 0.5 + i * 2) * 18;
+                const grad = ctx.createRadialGradient(sunX, sunY, 10, sunX + Math.cos(angle) * w, sunY + Math.sin(angle) * h, h * 1.2);
+                grad.addColorStop(0, 'rgba(255, 245, 180, 0.22)');
+                grad.addColorStop(0.5, 'rgba(180, 255, 210, 0.08)');
+                grad.addColorStop(1, 'rgba(120, 240, 180, 0)');
+
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.moveTo(sunX, sunY);
+                ctx.arc(sunX, sunY, Math.max(w, h) * 1.2, angle - rayWidth / w, angle + rayWidth / w);
+                ctx.closePath();
+                ctx.fill();
+            }
+            ctx.restore();
+
+            // Slow-motion floating spruce needles & light motes
+            this.drawSlowMoPineNeedles(ctx, w, h, t);
+        }
+
+        drawConiferLayer(ctx, w, h, scale, color, count) {
+            ctx.fillStyle = color;
+            for (let i = 0; i < count; i++) {
+                const cx = (i / count) * w + (i % 2 === 0 ? 12 : -12);
+                const treeH = (110 + (i % 5) * 35) * scale;
+                const treeW = (32 + (i % 3) * 16) * scale;
+                const cy = h * (0.35 + scale * 0.25);
+
+                ctx.beginPath();
+                ctx.moveTo(cx, cy - treeH);
+                ctx.lineTo(cx + treeW / 2, cy);
+                ctx.lineTo(cx - treeW / 2, cy);
+                ctx.closePath();
+                ctx.fill();
+            }
+        }
+
+        drawSlowMoPineNeedles(ctx, w, h, t) {
+            ctx.save();
+            this.particles.forEach((p, idx) => {
+                const py = ((p.y + t * p.speedY * 0.4) % 1.0) * h;
+                const wobble = Math.sin(t * 1.2 + p.wobblePhase) * 24;
+                const px = ((p.x * w + wobble + w) % w);
+                const rot = p.rot + t * p.rotSpeed * 0.6;
+
+                ctx.save();
+                ctx.translate(px, py);
+                ctx.rotate(rot);
+                ctx.fillStyle = idx % 2 === 0 ? 'rgba(140, 220, 150, 0.55)' : 'rgba(220, 200, 120, 0.65)';
+                ctx.fillRect(-p.size, -p.size * 0.25, p.size * 2, p.size * 0.5);
+                ctx.restore();
+            });
+            ctx.restore();
         }
 
         // VISION 1: CANOPY LEAVES SWAYING IN BREEZE (SLOW-MO)

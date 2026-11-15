@@ -293,6 +293,12 @@ class SoundEngine {
             // Thrusters and cosmic velocity
             const thrusters = this.createSpaceshipLaunch(0.3);
             this.ambientNodes.push(thrusters);
+        } else if (sceneName === 'earth_beach' || sceneName === 'coastal_ocean') {
+            // Gentle rolling ocean waves surf + coastal sea breeze on Earth
+            const oceanWaves = this.createGentleWaves(0.18);
+            const seaBreeze = this.createWindGenerator(0.08, 550);
+            this.ambientNodes.push(oceanWaves, seaBreeze);
+            this.startPianoTheme();
         }
     }
 
@@ -644,6 +650,99 @@ class SoundEngine {
         this.stopRecord();
         this.playRelayClickSfx();
         this.currentRecord = null;
+    }
+
+    // ----------------------------------------------------
+    // JUKEBOX MECHANICAL SOUND EFFECTS
+    // ----------------------------------------------------
+
+    playTurntableSpinupSfx() {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(45, now);
+        osc.frequency.exponentialRampToValueAtTime(320, now + 0.55);
+        gain.gain.setValueAtTime(0.01, now);
+        gain.gain.linearRampToValueAtTime(0.06, now + 0.35);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(380, now);
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.masterGain);
+        osc.start(now);
+        osc.stop(now + 0.66);
+    }
+
+    playNeedleDropSfx() {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        // 1. Bass contact thud
+        const thudOsc = this.ctx.createOscillator();
+        const thudGain = this.ctx.createGain();
+        thudOsc.type = 'sine';
+        thudOsc.frequency.setValueAtTime(80, now);
+        thudOsc.frequency.exponentialRampToValueAtTime(35, now + 0.08);
+        thudGain.gain.setValueAtTime(0.12, now);
+        thudGain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+        thudOsc.connect(thudGain);
+        thudGain.connect(this.masterGain);
+        thudOsc.start(now);
+        thudOsc.stop(now + 0.1);
+
+        // 2. Vinyl stylus friction pop
+        const noise = this.createNoiseBuffer(0.12);
+        const nSrc = this.ctx.createBufferSource();
+        nSrc.buffer = noise;
+        const nGain = this.ctx.createGain();
+        nGain.gain.setValueAtTime(0.05, now + 0.04);
+        nGain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+        const nFilter = this.ctx.createBiquadFilter();
+        nFilter.type = 'bandpass';
+        nFilter.frequency.setValueAtTime(1600, now + 0.04);
+        nSrc.connect(nFilter);
+        nFilter.connect(nGain);
+        nGain.connect(this.masterGain);
+        nSrc.start(now + 0.04);
+        nSrc.stop(now + 0.13);
+    }
+
+    playRecordCarouselSfx() {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        // Mechanical gear sliding and metallic ratchet clunk
+        [0, 0.075].forEach((offset, idx) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(idx === 0 ? 1150 : 780, now + offset);
+            osc.frequency.exponentialRampToValueAtTime(320, now + offset + 0.045);
+            gain.gain.setValueAtTime(0.08, now + offset);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.05);
+            osc.connect(gain);
+            gain.connect(this.masterGain);
+            osc.start(now + offset);
+            osc.stop(now + offset + 0.06);
+        });
+    }
+
+    playNeedleLiftSfx() {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1750, now);
+        osc.frequency.exponentialRampToValueAtTime(600, now + 0.04);
+        gain.gain.setValueAtTime(0.06, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.045);
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.start(now);
+        osc.stop(now + 0.05);
     }
 
     stopRecordNodes() {

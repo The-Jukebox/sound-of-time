@@ -1,4 +1,4 @@
-/**
+﻿/**
  * SOUND OF TIMES — Earth Archive Record 001: The Atmosphere
  * AtmosphereSonificationEngine
  * 
@@ -168,12 +168,12 @@
             this.thunderSynth.volume.value = -3;
             this.thunderSynth.connect(this.reverb);
 
-            // 7. Continuous Rain Sound Generator (Highpass Shaped Noise)
-            this.rainNoise = new Tone.Noise("white");
+            // 7. Authentic Continuous Rain Sound Generator (Pink Noise Body + Pitter-Patter Droplets)
+            this.rainNoise = new Tone.Noise("pink");
             this.rainFilter = new Tone.Filter({
-                frequency: 1600,
+                frequency: 1450,
                 type: "bandpass",
-                Q: 1.8
+                Q: 1.2
             });
             this.rainGain = new Tone.Gain(0);
             this.rainPan = new Tone.Panner(-0.2);
@@ -183,6 +183,16 @@
             this.rainGain.connect(this.rainPan);
             this.rainPan.connect(this.masterVolume);
             this.rainNoise.start();
+
+            // Pitter-Patter Water Droplet Impact Synthesizer
+            this.rainDropletSynth = new Tone.Synth({
+                oscillator: { type: "sine" },
+                envelope: { attack: 0.001, decay: 0.024, sustain: 0, release: 0.015 }
+            });
+            this.rainDropletPan = new Tone.Panner(0);
+            this.rainDropletSynth.connect(this.rainDropletPan);
+            this.rainDropletPan.connect(this.masterVolume);
+            this.rainDropletSynth.volume.value = -11;
 
             // 8. Dynamic Atmospheric Wind Generator (Pink Noise Bandpass Sweeps)
             this.windNoise = new Tone.Noise("pink");
@@ -217,6 +227,32 @@
             });
         }
 
+        scheduleRainDroplets() {
+            if (!this.isPlaying || this.isPaused || this.rainMuted) {
+                if (this.dropletTimer) {
+                    clearTimeout(this.dropletTimer);
+                    this.dropletTimer = null;
+                }
+                return;
+            }
+
+            const interval = 40 + Math.random() * 65;
+            this.dropletTimer = setTimeout(() => {
+                if (!this.isPlaying || this.isPaused || this.rainMuted) return;
+
+                if (this.rainDropletSynth && typeof Tone !== 'undefined') {
+                    const pitches = ["A6", "B6", "C7", "D7", "E7", "G7", "A7"];
+                    const note = pitches[Math.floor(Math.random() * pitches.length)];
+                    const pan = (Math.random() * 1.6) - 0.8;
+                    try {
+                        if (this.rainDropletPan) this.rainDropletPan.pan.setValueAtTime(pan, Tone.now());
+                        this.rainDropletSynth.triggerAttackRelease(note, 0.018, Tone.now(), 0.35 + Math.random() * 0.4);
+                    } catch (e) {}
+                }
+                this.scheduleRainDroplets();
+            }, interval);
+        }
+
         async play() {
             if (!this.isInitialized) {
                 await this.initAudio();
@@ -226,6 +262,8 @@
                 this.isPaused = false;
                 this.isPlaying = true;
                 this.startStepTimer();
+            this.scheduleRainDroplets();
+            if (this.masterVolume) this.masterVolume.mute = false;
                 if (this.onStateChangeCallback) this.onStateChangeCallback('playing');
                 return;
             }
@@ -241,6 +279,8 @@
 
             this.playStep(this.currentIndex);
             this.startStepTimer();
+            this.scheduleRainDroplets();
+            if (this.masterVolume) this.masterVolume.mute = false;
 
             if (this.onStateChangeCallback) this.onStateChangeCallback('playing');
         }
@@ -250,10 +290,15 @@
             this.isPaused = true;
             this.isPlaying = false;
             this.stopStepTimer();
+            if (this.dropletTimer) {
+                clearTimeout(this.dropletTimer);
+                this.dropletTimer = null;
+            }
             this.silenceSynths();
 
-            if (this.rainGain) this.rainGain.gain.rampTo(0, 0.2);
-            if (this.windGain) this.windGain.gain.rampTo(0, 0.2);
+            if (this.rainGain) this.rainGain.gain.rampTo(0, 0.05);
+            if (this.windGain) this.windGain.gain.rampTo(0, 0.05);
+            if (this.masterVolume) this.masterVolume.mute = true;
 
             if (this.onStateChangeCallback) this.onStateChangeCallback('paused');
         }
@@ -263,10 +308,15 @@
             this.isPaused = false;
             this.currentIndex = 0;
             this.stopStepTimer();
+            if (this.dropletTimer) {
+                clearTimeout(this.dropletTimer);
+                this.dropletTimer = null;
+            }
             this.silenceSynths();
 
-            if (this.rainGain) this.rainGain.gain.rampTo(0, 0.15);
-            if (this.windGain) this.windGain.gain.rampTo(0, 0.15);
+            if (this.rainGain) this.rainGain.gain.rampTo(0, 0.05);
+            if (this.windGain) this.windGain.gain.rampTo(0, 0.05);
+            if (this.masterVolume) this.masterVolume.mute = true;
 
             if (this.onStateChangeCallback) this.onStateChangeCallback('stopped');
         }

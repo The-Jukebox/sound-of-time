@@ -161,6 +161,40 @@ body {
     transform: translateY(1px);
 }
 
+/* Audio Mute/Unmute Toggle Button */
+.audio-toggle-btn {
+    position: absolute;
+    top: clamp(8px, 2%, 14px);
+    right: clamp(140px, 16vw, 175px);
+    background: rgba(20, 13, 43, 0.85);
+    color: #ffd166;
+    border: 1.5px solid #63431d;
+    border-radius: 4px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(7px, 0.75vw, 10px);
+    padding: clamp(5px, 0.7vw, 8px) clamp(8px, 1vw, 12px);
+    cursor: pointer;
+    z-index: 25;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.audio-toggle-btn:hover {
+    background: #ffd166;
+    color: #140d2b;
+    border-color: #fff;
+    box-shadow: 0 0 14px rgba(255, 209, 102, 0.8);
+    transform: translateY(-1px);
+}
+
+.audio-toggle-btn:active {
+    transform: translateY(1px);
+}
+
 /* Pixel Canvas */
 #gameCanvas {
     width: 100%;
@@ -508,14 +542,14 @@ body {
    FULL HD SLOW-MO MEMORY CINEMA OVERLAY
    ==================================================== */
 .memory-cinema {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 999;
-    background: rgba(4, 2, 10, 0.92);
-    backdrop-filter: blur(10px);
+    width: 100vw;
+    height: 100vh;
+    z-index: 999999;
+    background: rgba(4, 2, 10, 0.94);
+    backdrop-filter: blur(12px);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -746,6 +780,94 @@ body {
 @keyframes pulseCloseBtn {
     0%, 100% { box-shadow: 0 0 8px rgba(255, 123, 159, 0.4); }
     50% { box-shadow: 0 0 16px rgba(255, 123, 159, 0.85); }
+}
+
+/* 4K YouTube Nature Video Memory Container */
+.memory-video-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: #000;
+    z-index: 5;
+    overflow: hidden;
+}
+
+#memoryYoutubeIframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    flex: 1;
+    background: #000;
+}
+
+.memory-video-bar {
+    position: absolute;
+    top: 86px;
+    left: 18px;
+    right: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(10, 6, 20, 0.88);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(130, 210, 255, 0.45);
+    padding: 6px 14px;
+    border-radius: 4px;
+    z-index: 12;
+    pointer-events: auto;
+}
+
+.video-status-indicator {
+    font-size: 8px;
+    color: #8ae4ff;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: bold;
+}
+
+.video-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.video-toggle-btn {
+    font-size: 8px;
+    color: #ffd27d;
+    background: rgba(60, 40, 10, 0.7);
+    border: 1px solid #d4983b;
+    padding: 3px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s ease;
+}
+
+.video-toggle-btn:hover {
+    background: #d4983b;
+    color: #000;
+}
+
+.video-external-link {
+    font-size: 8px;
+    color: #ff9ee2;
+    text-decoration: none;
+    background: rgba(80, 20, 60, 0.6);
+    padding: 3px 8px;
+    border-radius: 3px;
+    border: 1px solid #ff7bbf;
+    transition: all 0.15s ease;
+}
+
+.video-external-link:hover {
+    background: #ff7bbf;
+    color: #000;
 }
 
 #btnProceed {
@@ -1096,4 +1218,153 @@ body.is-fullscreen .controls-guide {
 :fullscreen .controls-guide:hover,
 body.is-fullscreen .controls-guide:hover {
     opacity: 1;
+}
+
+/* ====================================================
+   AUDIO PERMISSION OVERLAY
+   ==================================================== */
+.permission-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(7, 4, 18, 0.94);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.permission-card {
+    background: linear-gradient(145deg, #18112c, #0d081a);
+    border: 2px solid #47d8f2;
+    border-radius: 12px;
+    box-shadow: 0 0 35px rgba(71, 216, 242, 0.35), inset 0 0 20px rgba(71, 216, 242, 0.1);
+    max-width: 520px;
+    width: 90%;
+    padding: 28px 24px;
+    text-align: center;
+    color: #f0edf8;
+    animation: permissionCardFadeIn 0.35s ease-out;
+}
+
+@keyframes permissionCardFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.92) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.permission-badge {
+    display: inline-block;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    color: #ffd166;
+    background: rgba(255, 209, 102, 0.12);
+    border: 1px solid rgba(255, 209, 102, 0.4);
+    padding: 4px 10px;
+    border-radius: 12px;
+    margin-bottom: 14px;
+    letter-spacing: 1px;
+}
+
+.permission-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(14px, 2.2vw, 18px);
+    color: #47d8f2;
+    text-shadow: 0 0 12px rgba(71, 216, 242, 0.7);
+    margin: 0 0 8px 0;
+    letter-spacing: 1px;
+}
+
+.permission-tagline {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: #bfa8e6;
+    margin: 0 0 16px 0;
+}
+
+.permission-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(71, 216, 242, 0.6), transparent);
+    margin: 14px 0 18px 0;
+}
+
+.permission-desc {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #e0d8f0;
+    margin-bottom: 12px;
+}
+
+.permission-prompt-text {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    color: #ffd166;
+    margin-bottom: 22px;
+    line-height: 1.6;
+}
+
+.permission-btn-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.permission-btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    padding: 12px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    letter-spacing: 0.5px;
+}
+
+.permission-btn.primary-btn {
+    background: #47d8f2;
+    color: #0b0718;
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 16px rgba(71, 216, 242, 0.6);
+    font-weight: bold;
+}
+
+.permission-btn.primary-btn:hover {
+    background: #6fe5fc;
+    box-shadow: 0 0 24px rgba(71, 216, 242, 0.9);
+    transform: translateY(-2px);
+}
+
+.permission-btn.secondary-btn {
+    background: rgba(30, 20, 52, 0.8);
+    color: #a497be;
+    border: 1.5px solid #483466;
+}
+
+.permission-btn.secondary-btn:hover {
+    background: rgba(50, 34, 85, 0.9);
+    color: #ffffff;
+    border-color: #a497be;
+    transform: translateY(-1px);
+}
+
+.permission-footer {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: #8c7ba8;
+    margin-top: 6px;
 }

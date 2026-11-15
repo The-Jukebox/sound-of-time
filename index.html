@@ -27,7 +27,10 @@
     <div class="game-container" id="gameContainer">
         <!-- Main Game Viewport -->
         <main class="game-viewport">
-            <!-- Fullscreen Toggle Button -->
+            <!-- Audio Toggle & Fullscreen Buttons -->
+            <button id="btnAudioToggle" class="audio-toggle-btn" title="Toggle Sound (M)" aria-label="Toggle Sound">
+                <span id="audioIcon">🔊</span> <span id="audioText">SOUND: ON</span>
+            </button>
             <button id="btnFullscreen" class="fullscreen-btn" title="Toggle Fullscreen (F)" aria-label="Toggle Fullscreen">
                 <span class="fs-icon">⛶</span> <span class="fs-text">FULLSCREEN</span>
             </button>
@@ -35,8 +38,37 @@
             <!-- Pixel Canvas -->
             <canvas id="gameCanvas" width="640" height="360"></canvas>
 
-        <!-- Subtle CRT Scanlines -->
-        <div class="crt-overlay"></div>
+            <!-- Subtle CRT Scanlines -->
+            <div class="crt-overlay"></div>
+
+            <!-- Audio Permission Gate Overlay -->
+            <div id="audioPermissionOverlay" class="permission-overlay">
+                <div class="permission-card">
+                    <div class="permission-badge">✦ SOUND & SENSORY ARCHIVE ✦</div>
+                    <h1 class="permission-title">SOUND OF TIMES</h1>
+                    <p class="permission-tagline">An Interactive NASA Data Sonification & Pixel-Art Journey</p>
+                    <div class="permission-divider"></div>
+                    <p class="permission-desc">
+                        This experience features original dynamic soundscapes, NASA Earth satellite sonifications, and alien acoustic harmonies.
+                    </p>
+                    <p class="permission-prompt-text">
+                        Allow audio playback for this session?
+                    </p>
+                    <div class="permission-btn-group">
+                        <button id="btnAllowAudio" class="permission-btn primary-btn">
+                            <span class="btn-icon">🔊</span>
+                            <span>ENABLE AUDIO & START [ENTER]</span>
+                        </button>
+                        <button id="btnMuteAudio" class="permission-btn secondary-btn">
+                            <span class="btn-icon">🔇</span>
+                            <span>START IN SILENT MODE [M]</span>
+                        </button>
+                    </div>
+                    <div class="permission-footer">
+                        <span>💡 Headphones recommended for best stereo spatial experience</span>
+                    </div>
+                </div>
+            </div>
 
         <!-- On-Screen Action Prompt -->
         <div id="screenPrompt">[A/D] WALK TOWARDS THE CLASSROOM | OR CLICK 'LAUNCH EARTH JUKEBOX' ABOVE</div>
@@ -121,13 +153,14 @@
                 <button class="sub-btn" id="btnModeNight" title="Night: Frogs, crickets, owls & fireflies">🌙 NIGHT</button>
             </div>
 
-            <span class="sub-toolbar-title" style="margin-left: 10px;">LAYERS:</span>
+            <span class="sub-toolbar-title" style="margin-left: 10px;">SOUND EFFECTS:</span>
             <div class="layer-btn-group">
-                <button class="sub-btn" id="btnMuteMusic" title="Toggle Music Synthesis">🎵 MUSIC</button>
-                <button class="sub-btn" id="btnMuteCanopy" title="Toggle Wind & Leaves Rustling">🍃 CANOPY</button>
-                <button class="sub-btn" id="btnMuteWildlife" title="Toggle Birds & Wildlife">🐦 BIRDS</button>
-                <button class="sub-btn" id="btnMuteWater" title="Toggle Forest Stream">💧 STREAM</button>
-                <button class="sub-btn" id="btnCallBird" title="Call Forest Bird: Sing authentic songbird melody" style="border-color: #62c98a; color: #62c98a; font-weight: bold;">🐦 CALL BIRD</button>
+                <button class="sub-btn" id="btnCallBird" title="Call Forest Bird: Sing authentic songbird melody" style="border-color: #62c98a; color: #62c98a; font-weight: bold;">🐦 BIRD</button>
+                <button class="sub-btn" id="btnStreamGurgle" title="Mountain Stream: Cascading water gurgling over river stones" style="border-color: #38ef7d; color: #38ef7d; font-weight: bold;">💧 STREAM</button>
+                <button class="sub-btn" id="btnWoodpecker" title="Woodpecker: Hollow trunk drumming" style="border-color: #ffca72; color: #ffca72;">🪵 WOODPECKER</button>
+                <button class="sub-btn" id="btnFrog" title="Treefrog & Bullfrog Croak" style="border-color: #47d8f2; color: #47d8f2;">🐸 FROG</button>
+                <button class="sub-btn" id="btnRainDrop" title="Rain Droplets & Canopy Drip" style="border-color: #78f0ff; color: #78f0ff;">🌧️ RAIN</button>
+                <button class="sub-btn" id="btnThunder" title="Distant Rolling Thunder" style="border-color: #f28bbd; color: #f28bbd;">⚡ THUNDER</button>
             </div>
 
             <div class="volume-container" title="Natural Ambience Volume" style="margin-left: 10px;">
@@ -347,6 +380,25 @@
         <div class="memory-viewport">
             <!-- High Definition Slow-Mo Canvas -->
             <canvas id="memoryCanvas"></canvas>
+
+            <!-- 4K YouTube Nature Video Memory Container -->
+            <div id="memoryVideoContainer" class="memory-video-container" style="display: none;">
+                <iframe id="memoryYoutubeIframe" 
+                        src="" 
+                        title="Black Forest Nature Ambience Video Memory" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                        referrerpolicy="strict-origin-when-cross-origin"
+                        allowfullscreen>
+                </iframe>
+                <div class="memory-video-bar">
+                    <span class="video-status-indicator">🔴 4K HDR LIVE ARCHIVE: WUTACH CREEK, BLACK FOREST</span>
+                    <div class="video-actions">
+                        <button class="video-toggle-btn" id="btnToggleVideoMode" title="Switch between 4K Video and HD Canvas">🎨 SWITCH TO HD CANVAS</button>
+                        <a href="https://youtu.be/_FtPdpids-Y" target="_blank" rel="noopener noreferrer" class="video-external-link">OPEN ON YOUTUBE ↗</a>
+                    </div>
+                </div>
+            </div>
             
             <!-- Vignette / Dream Bloom Overlay -->
             <div class="memory-dream-vignette"></div>
@@ -365,6 +417,7 @@
             <!-- Memory Vision Selector Dock -->
             <div class="memory-dock">
                 <div class="memory-btn-group">
+                    <button class="mem-select-btn" data-vision="blackforest">🌲 BLACK FOREST (4K VIDEO)</button>
                     <button class="mem-select-btn active" data-vision="leaves">🍃 LEAVES IN BREEZE</button>
                     <button class="mem-select-btn" data-vision="ocean">🌊 OCEAN SURF & WAVES</button>
                     <button class="mem-select-btn" data-vision="birds">🐦 HUMMINGBIRDS & CHIRP</button>
