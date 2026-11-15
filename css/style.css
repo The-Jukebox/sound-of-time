@@ -29,41 +29,87 @@ body {
     justify-content: center;
     min-height: 100vh;
     overflow-x: hidden;
-    padding: 12px;
+    padding: 10px;
+    transition: background 0.3s ease;
 }
 
 /* Header & Title bar */
 .game-header {
     text-align: center;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 
 .game-title {
-    font-size: 20px;
+    font-size: clamp(16px, 2vw, 24px);
     letter-spacing: 3px;
     color: #ffca72;
     text-shadow: 0 0 10px rgba(255, 202, 114, 0.6), 2px 2px #26134d;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
 
 .game-subtitle {
     font-family: 'VT323', monospace;
-    font-size: 18px;
+    font-size: clamp(16px, 1.6vw, 20px);
     letter-spacing: 2px;
     color: #47d8f2;
     text-shadow: 0 0 8px rgba(71, 216, 242, 0.4);
 }
 
+/* Responsive Game Container */
+.game-container {
+    width: min(96vw, calc((88vh - 70px) * 16 / 9), 1400px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    transition: width 0.25s ease;
+}
+
 /* Game Screen Container */
 .game-viewport {
     position: relative;
-    width: 640px;
-    height: 360px;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    height: auto;
     background: #000;
     border: 4px solid #4a2c7a;
     border-radius: 8px;
-    box-shadow: 0 0 25px rgba(140, 82, 255, 0.35), 0 12px 36px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 0 35px rgba(140, 82, 255, 0.4), 0 16px 48px rgba(0, 0, 0, 0.85);
     overflow: hidden;
+}
+
+/* Fullscreen Toggle Button */
+.fullscreen-btn {
+    position: absolute;
+    top: clamp(8px, 2%, 14px);
+    right: clamp(8px, 2%, 16px);
+    background: rgba(20, 13, 43, 0.85);
+    color: #47d8f2;
+    border: 1.5px solid #4a2c7a;
+    border-radius: 4px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(7px, 0.75vw, 10px);
+    padding: clamp(5px, 0.7vw, 8px) clamp(8px, 1vw, 12px);
+    cursor: pointer;
+    z-index: 25;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.fullscreen-btn:hover {
+    background: #47d8f2;
+    color: #140d2b;
+    border-color: #fff;
+    box-shadow: 0 0 14px rgba(71, 216, 242, 0.8);
+    transform: translateY(-1px);
+}
+
+.fullscreen-btn:active {
+    transform: translateY(1px);
 }
 
 /* Pixel Canvas */
@@ -112,57 +158,57 @@ body {
 }
 
 #overlayTitle {
-    font-size: 22px;
+    font-size: clamp(20px, 3.2vw, 40px);
     color: #ffca72;
     margin-bottom: 16px;
     letter-spacing: 2px;
-    text-shadow: 0 0 14px rgba(255, 202, 114, 0.7);
+    text-shadow: 0 0 16px rgba(255, 202, 114, 0.7);
 }
 
 #overlaySubtitle {
     font-family: 'VT323', monospace;
-    font-size: 20px;
+    font-size: clamp(18px, 2.2vw, 28px);
     line-height: 1.5;
     color: #47d8f2;
-    max-width: 480px;
+    max-width: 80%;
     white-space: pre-line;
 }
 
 /* Dialogue Box */
 #dialogueBox {
     position: absolute;
-    bottom: 12px;
-    left: 16px;
-    right: 16px;
-    background: rgba(20, 13, 43, 0.92);
+    bottom: clamp(10px, 2.5%, 24px);
+    left: clamp(12px, 3%, 32px);
+    right: clamp(12px, 3%, 32px);
+    background: rgba(20, 13, 43, 0.94);
     border: 2px solid #8c52ff;
-    border-radius: 6px;
-    padding: 12px 14px;
+    border-radius: 8px;
+    padding: clamp(10px, 1.6vw, 18px) clamp(14px, 2vw, 24px);
     z-index: 10;
-    box-shadow: 0 0 15px rgba(38, 19, 77, 0.8), inset 0 0 10px rgba(71, 216, 242, 0.15);
+    box-shadow: 0 0 20px rgba(38, 19, 77, 0.9), inset 0 0 12px rgba(71, 216, 242, 0.2);
     display: none;
 }
 
 #speakerName {
-    font-size: 10px;
+    font-size: clamp(9px, 1.1vw, 14px);
     letter-spacing: 1.5px;
-    margin-bottom: 8px;
+    margin-bottom: clamp(6px, 0.8vw, 10px);
     font-weight: bold;
 }
 
 #dialogueText {
     font-family: 'VT323', monospace;
-    font-size: 20px;
-    line-height: 1.25;
+    font-size: clamp(20px, 2.2vw, 32px);
+    line-height: 1.3;
     color: #ffffff;
     min-height: 28px;
 }
 
 #continuePrompt {
     position: absolute;
-    bottom: 6px;
-    right: 12px;
-    font-size: 8px;
+    bottom: clamp(6px, 1%, 10px);
+    right: clamp(12px, 2%, 20px);
+    font-size: clamp(7px, 0.8vw, 11px);
     color: #ffca72;
     animation: blink 0.8s infinite alternate;
 }
@@ -178,19 +224,19 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: rgba(20, 13, 43, 0.95);
+    background: rgba(20, 13, 43, 0.96);
     border: 3px solid #ffca72;
     border-radius: 8px;
-    padding: 16px;
-    width: 440px;
+    padding: clamp(14px, 2vw, 24px);
+    width: min(560px, 86%);
     z-index: 15;
-    box-shadow: 0 0 25px rgba(255, 202, 114, 0.4);
+    box-shadow: 0 0 30px rgba(255, 202, 114, 0.45);
     display: none;
     text-align: center;
 }
 
 #choiceTitle {
-    font-size: 10px;
+    font-size: clamp(9px, 1vw, 13px);
     color: #ffca72;
     margin-bottom: 14px;
     letter-spacing: 1px;
@@ -206,8 +252,8 @@ body {
     background: #2b1552;
     color: #fff;
     font-family: 'Press Start 2P', monospace;
-    font-size: 9px;
-    padding: 10px 12px;
+    font-size: clamp(8px, 1vw, 12px);
+    padding: clamp(9px, 1.1vw, 13px) clamp(12px, 1.4vw, 18px);
     border: 2px solid #5a3194;
     border-radius: 4px;
     cursor: pointer;
@@ -226,33 +272,35 @@ body {
 /* On-Screen Prompt */
 #screenPrompt {
     position: absolute;
-    top: 14px;
+    top: clamp(10px, 2.5%, 20px);
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(14, 8, 30, 0.85);
+    background: rgba(14, 8, 30, 0.88);
     border: 1px solid #47d8f2;
-    padding: 6px 14px;
+    padding: clamp(6px, 0.9vw, 10px) clamp(12px, 1.8vw, 22px);
     border-radius: 4px;
-    font-size: 8px;
+    font-size: clamp(8px, 0.9vw, 12px);
     letter-spacing: 1px;
     color: #47d8f2;
     z-index: 8;
     display: none;
     text-align: center;
+    white-space: nowrap;
+    box-shadow: 0 0 12px rgba(71, 216, 242, 0.35);
 }
 
 /* Interactive Jukebox Dashboard Panel (Under Canvas) */
 #jukeboxPanel {
-    width: 640px;
-    margin-top: 12px;
-    background: rgba(20, 13, 43, 0.9);
+    width: 100%;
+    margin-top: 14px;
+    background: rgba(20, 13, 43, 0.92);
     border: 2px solid #4a2c7a;
     border-radius: 8px;
-    padding: 12px 14px;
+    padding: 14px 18px;
     display: none;
     flex-direction: column;
-    gap: 10px;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6);
+    gap: 12px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.7);
 }
 
 .jukebox-header {
@@ -360,6 +408,273 @@ body {
     box-shadow: 0 0 12px rgba(98, 201, 138, 0.6);
 }
 
+/* Jukebox Deck Button Dynamic States */
+.deck-btn.btn-playing {
+    background: #2cb869 !important;
+    color: #0b1a10 !important;
+    border-color: #8af0b5 !important;
+    box-shadow: 0 0 12px rgba(44, 184, 105, 0.7) !important;
+}
+
+.deck-btn.btn-paused {
+    background: #e6a72e !important;
+    color: #1a1005 !important;
+    border-color: #ffdf85 !important;
+    box-shadow: 0 0 12px rgba(230, 167, 46, 0.7) !important;
+    animation: pulsePauseBtn 1.8s infinite ease-in-out;
+}
+
+@keyframes pulsePauseBtn {
+    0%, 100% { box-shadow: 0 0 6px rgba(230, 167, 46, 0.5); }
+    50% { box-shadow: 0 0 16px rgba(230, 167, 46, 0.95); }
+}
+
+.deck-btn.btn-stopped {
+    background: #bd3a3a !important;
+    color: #ffffff !important;
+    border-color: #f77e7e !important;
+    box-shadow: 0 0 10px rgba(189, 58, 58, 0.6) !important;
+}
+
+.deck-btn.memory-btn {
+    background: linear-gradient(135deg, #37185e, #621f8a) !important;
+    color: #ffe6ff !important;
+    border-color: #d880ff !important;
+    box-shadow: 0 0 10px rgba(216, 128, 255, 0.45);
+    animation: pulseMemoryBtn 2.5s infinite ease-in-out;
+}
+
+.deck-btn.memory-btn:hover {
+    background: linear-gradient(135deg, #51248a, #842ab8) !important;
+    box-shadow: 0 0 16px rgba(216, 128, 255, 0.85);
+    transform: translateY(-1px);
+}
+
+@keyframes pulseMemoryBtn {
+    0%, 100% { box-shadow: 0 0 8px rgba(216, 128, 255, 0.4); }
+    50% { box-shadow: 0 0 16px rgba(216, 128, 255, 0.85); }
+}
+
+/* ====================================================
+   FULL HD SLOW-MO MEMORY CINEMA OVERLAY
+   ==================================================== */
+.memory-cinema {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 999;
+    background: rgba(4, 2, 10, 0.92);
+    backdrop-filter: blur(8px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease-in-out;
+}
+
+.memory-cinema.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.memory-viewport {
+    position: relative;
+    width: 95%;
+    max-width: 980px;
+    height: 90%;
+    max-height: 560px;
+    background: #000;
+    border: 3px solid #7a42b8;
+    border-radius: 8px;
+    box-shadow: 0 0 35px rgba(122, 66, 184, 0.6), inset 0 0 20px rgba(170, 110, 255, 0.2);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+#memoryCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.memory-dream-vignette {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background: radial-gradient(circle at center, transparent 55%, rgba(6, 2, 16, 0.6) 85%, rgba(6, 2, 16, 0.95) 100%);
+    box-shadow: inset 0 0 40px rgba(180, 110, 255, 0.25);
+}
+
+.memory-header {
+    position: absolute;
+    top: 14px;
+    left: 18px;
+    right: 18px;
+    background: rgba(14, 8, 28, 0.78);
+    backdrop-filter: blur(6px);
+    padding: 10px 16px;
+    border-radius: 6px;
+    border: 1px solid rgba(160, 100, 240, 0.4);
+    pointer-events: none;
+    z-index: 10;
+}
+
+.memory-badge-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+}
+
+.memory-tag {
+    font-size: 8px;
+    color: #ffc9fd;
+    background: #471a6e;
+    padding: 2px 7px;
+    border-radius: 3px;
+    border: 1px solid #9c4bd9;
+    letter-spacing: 0.5px;
+}
+
+.memory-speed-tag {
+    font-size: 8px;
+    color: #92e6b5;
+    background: #143d26;
+    padding: 2px 7px;
+    border-radius: 3px;
+    border: 1px solid #3eb875;
+}
+
+.memory-nasa-tag {
+    font-size: 8px;
+    color: #8ae4ff;
+    background: #10304a;
+    padding: 2px 7px;
+    border-radius: 3px;
+    border: 1px solid #2eaadc;
+}
+
+.memory-title {
+    font-size: 11px;
+    color: #ffffff;
+    margin: 0 0 4px 0;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+    letter-spacing: 0.5px;
+}
+
+.memory-quote {
+    font-size: 9px;
+    color: #e2d2f7;
+    margin: 0;
+    font-style: italic;
+    line-height: 1.4;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.memory-dock {
+    position: absolute;
+    bottom: 12px;
+    left: 16px;
+    right: 16px;
+    background: rgba(14, 8, 28, 0.85);
+    backdrop-filter: blur(8px);
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(160, 100, 240, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    z-index: 10;
+    flex-wrap: wrap;
+}
+
+.memory-btn-group, .memory-speed-group {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.mem-select-btn {
+    background: #231238;
+    color: #d6beeb;
+    border: 1px solid #5d3587;
+    font-size: 8px;
+    padding: 6px 9px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+}
+
+.mem-select-btn:hover {
+    background: #4a2175;
+    color: #fff;
+    border-color: #b36be8;
+}
+
+.mem-select-btn.active {
+    background: #732aab;
+    color: #fff;
+    border-color: #e59bff;
+    box-shadow: 0 0 10px rgba(180, 80, 255, 0.6);
+}
+
+.dock-label {
+    font-size: 7px;
+    color: #bba0d6;
+    margin-right: 2px;
+}
+
+.speed-btn {
+    background: #19142b;
+    color: #8cb8a0;
+    border: 1px solid #3a5c48;
+    font-size: 7px;
+    padding: 4px 7px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.speed-btn.active {
+    background: #2b6e49;
+    color: #fff;
+    border-color: #63d995;
+    box-shadow: 0 0 8px rgba(99, 217, 149, 0.5);
+}
+
+.memory-close-btn {
+    background: #471a2a;
+    color: #ffd6df;
+    border: 1px solid #9e3352;
+    font-size: 8px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+}
+
+.memory-close-btn:hover {
+    background: #7a2641;
+    color: #fff;
+    border-color: #ff6e94;
+    box-shadow: 0 0 10px rgba(255, 110, 148, 0.6);
+}
+
 #btnProceed {
     display: none;
     background: #ffca72;
@@ -373,16 +688,205 @@ body {
     box-shadow: 0 0 14px rgba(255, 202, 114, 0.8);
 }
 
+/* Volume Control Container */
+.volume-container {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #1c1038;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid #3c246b;
+}
+
+.vol-slider {
+    width: 65px;
+    height: 6px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: #2b1552;
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+}
+
+.vol-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #47d8f2;
+    cursor: pointer;
+    box-shadow: 0 0 6px #47d8f2;
+}
+
+#volLabel {
+    font-size: 7px;
+    color: #47d8f2;
+    min-width: 28px;
+}
+
+#volIcon {
+    font-size: 10px;
+}
+
+/* Scientific Transparency & NASA ECCO Panel */
+.science-panel {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #3d2366;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Forest Soundscape Toolbar & Sub-Deck */
+.forest-controls-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #3d2366;
+}
+
+.sub-toolbar-title {
+    font-size: 7px;
+    color: #62c98a;
+    letter-spacing: 1px;
+}
+
+.mode-btn-group, .layer-btn-group {
+    display: flex;
+    gap: 4px;
+}
+
+.sub-btn {
+    background: #1e1338;
+    color: #e2daf0;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    padding: 6px 8px;
+    border: 1px solid #4a2c7a;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sub-btn:hover {
+    background: #351c63;
+    border-color: #62c98a;
+    color: #fff;
+}
+
+.sub-btn.active {
+    background: #143a24;
+    border-color: #62c98a;
+    color: #62c98a;
+    box-shadow: 0 0 8px rgba(98, 201, 138, 0.4);
+}
+
+.sub-btn.muted {
+    opacity: 0.5;
+    text-decoration: line-through;
+    border-color: #f28bbd;
+    color: #f28bbd;
+}
+
+.science-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.science-header h3 {
+    font-size: 9px;
+    color: #ffca72;
+    letter-spacing: 1px;
+}
+
+.nasa-badge {
+    font-size: 7px;
+    background: #140d2b;
+    border: 1px solid #47d8f2;
+    color: #47d8f2;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+.science-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    margin-bottom: 10px;
+    background: rgba(20, 13, 43, 0.6);
+    padding: 8px;
+    border-radius: 4px;
+}
+
+.science-item {
+    font-size: 7px;
+    line-height: 1.4;
+}
+
+.sci-label {
+    color: #f28bbd;
+    font-weight: bold;
+    display: inline-block;
+    margin-right: 4px;
+}
+
+.sci-val {
+    color: #e2daf0;
+}
+
+.transparency-section {
+    background: #0d071a;
+    border-left: 3px solid #ffca72;
+    padding: 8px 12px;
+    border-radius: 0 4px 4px 0;
+}
+
+.transparency-section h4 {
+    font-size: 8px;
+    color: #ffca72;
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+}
+
+.transparency-section ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.transparency-section li {
+    font-family: 'VT323', monospace;
+    font-size: 15px;
+    line-height: 1.35;
+    color: #cfc5e6;
+    margin-bottom: 4px;
+}
+
+.transparency-section strong {
+    color: #47d8f2;
+}
+
 /* NASA Science Sonification HUD */
 #nasaHud {
-    width: 640px;
-    margin-top: 10px;
-    background: rgba(14, 8, 30, 0.9);
+    width: 100%;
+    margin-top: 12px;
+    background: rgba(14, 8, 30, 0.92);
     border: 1px solid #47d8f2;
     border-radius: 6px;
-    padding: 10px 14px;
+    padding: 12px 16px;
     display: none;
-    box-shadow: 0 0 15px rgba(71, 216, 242, 0.15);
+    box-shadow: 0 0 18px rgba(71, 216, 242, 0.2);
 }
 
 .hud-title-bar {
@@ -421,20 +925,102 @@ body {
 
 /* Controls Guide & Footer */
 .controls-guide {
-    width: 640px;
+    width: 100%;
     margin-top: 12px;
     display: flex;
     justify-content: space-between;
-    font-size: 7px;
-    color: #7b6d96;
+    font-size: clamp(8px, 0.85vw, 11px);
+    color: #8c7ea8;
     letter-spacing: 0.5px;
     line-height: 1.5;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 .key-badge {
     color: #ffca72;
     border: 1px solid #5a437d;
-    padding: 1px 4px;
+    padding: 2px 6px;
     border-radius: 3px;
     background: #1e1336;
+}
+
+/* ============================================================
+   TRUE FULLSCREEN & MAXIMIZED THEATER STYLES
+   ============================================================ */
+
+:fullscreen,
+::backdrop {
+    background-color: #06020c;
+}
+
+:fullscreen body,
+body.is-fullscreen {
+    padding: 0;
+    margin: 0;
+    min-height: 100vh;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    justify-content: center;
+    background: #000;
+}
+
+:fullscreen .game-header,
+body.is-fullscreen .game-header {
+    display: none;
+}
+
+:fullscreen .game-container,
+body.is-fullscreen .game-container {
+    width: 100vw;
+    height: 100vh;
+    max-width: 100vw;
+    max-height: 100vh;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    margin: 0;
+}
+
+:fullscreen .game-viewport,
+body.is-fullscreen .game-viewport {
+    width: min(100vw, calc(100vh * 16 / 9));
+    height: min(100vh, calc(100vw * 9 / 16));
+    max-width: none;
+    max-height: none;
+    aspect-ratio: 16 / 9;
+    border: none;
+    border-radius: 0;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.95);
+}
+
+:fullscreen #gameCanvas,
+body.is-fullscreen #gameCanvas {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+:fullscreen .controls-guide,
+body.is-fullscreen .controls-guide {
+    position: fixed;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(14, 8, 30, 0.85);
+    border: 1px solid #4a2c7a;
+    padding: 6px 14px;
+    border-radius: 6px;
+    z-index: 30;
+    width: auto;
+    max-width: 92vw;
+    backdrop-filter: blur(6px);
+    opacity: 0.85;
+    pointer-events: none;
+}
+
+:fullscreen .controls-guide:hover,
+body.is-fullscreen .controls-guide:hover {
+    opacity: 1;
 }

@@ -597,6 +597,7 @@ class SoundEngine {
 
     playRecord() {
         if (!this.currentRecord) return;
+        this.init();
         this.resume();
 
         if (this.isPaused) {
@@ -610,7 +611,7 @@ class SoundEngine {
         this.stopRecordNodes();
         this.isPlaying = true;
         this.isPaused = false;
-        this.playStartTime = this.ctx.currentTime;
+        this.playStartTime = this.ctx ? this.ctx.currentTime : 0;
         this.playRelayClickSfx();
         this.playVinylCrackle(true);
 

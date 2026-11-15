@@ -62,6 +62,83 @@ class PixelRenderer {
         };
 
         this.initRain();
+        this.initRockySprites();
+        this.initRyanSprites();
+        this.initSnow();
+    }
+
+    initRockySprites() {
+        const loadImg = (path) => {
+            const img = new Image();
+            img.src = path;
+            return img;
+        };
+
+        this.rockySprites = {
+            walk: [
+                loadImg('assets/rocky/walk_0.png'),
+                loadImg('assets/rocky/walk_1.png'),
+                loadImg('assets/rocky/walk_2.png'),
+                loadImg('assets/rocky/walk_3.png')
+            ],
+            talk: [
+                loadImg('assets/rocky/talk_0.png'),
+                loadImg('assets/rocky/talk_1.png'),
+                loadImg('assets/rocky/talk_2.png')
+            ],
+            hands: [
+                loadImg('assets/rocky/hands_0.png'),
+                loadImg('assets/rocky/hands_1.png'),
+                loadImg('assets/rocky/hands_2.png')
+            ]
+        };
+    }
+
+    initRyanSprites() {
+        const loadImg = (path) => {
+            const img = new Image();
+            img.src = path;
+            return img;
+        };
+
+        this.ryanSprites = {
+            walk: [
+                loadImg('assets/ryan/walk_0.png'),
+                loadImg('assets/ryan/walk_1.png'),
+                loadImg('assets/ryan/walk_2.png'),
+                loadImg('assets/ryan/walk_3.png'),
+                loadImg('assets/ryan/walk_4.png'),
+                loadImg('assets/ryan/walk_5.png')
+            ],
+            talk: [
+                loadImg('assets/ryan/talk_0.png'),
+                loadImg('assets/ryan/talk_1.png'),
+                loadImg('assets/ryan/talk_2.png'),
+                loadImg('assets/ryan/talk_3.png'),
+                loadImg('assets/ryan/talk_4.png'),
+                loadImg('assets/ryan/talk_5.png')
+            ],
+            hands: [
+                loadImg('assets/ryan/hands_0.png'),
+                loadImg('assets/ryan/hands_1.png'),
+                loadImg('assets/ryan/hands_2.png'),
+                loadImg('assets/ryan/hands_3.png')
+            ]
+        };
+    }
+
+    initSnow() {
+        this.snowFlakes = [];
+        for (let i = 0; i < 90; i++) {
+            this.snowFlakes.push({
+                x: Math.random() * this.width,
+                y: Math.random() * this.height,
+                speedY: 0.6 + Math.random() * 1.4,
+                speedX: -0.4 + Math.random() * 0.8,
+                size: 1.2 + Math.random() * 2.2,
+                alpha: 0.4 + Math.random() * 0.55
+            });
+        }
     }
 
     initRain() {
@@ -625,62 +702,71 @@ class PixelRenderer {
         ctx.rect(winX, winY, winW, winH);
         ctx.clip();
 
-        // Alien sky through window
-        const outSky = ctx.createLinearGradient(winX, winY, winX, winY + winH);
-        outSky.addColorStop(0, '#0a0517');
-        outSky.addColorStop(0.6, '#281347');
-        outSky.addColorStop(1, '#441d66');
-        ctx.fillStyle = outSky;
-        ctx.fillRect(winX, winY, winW, winH);
+        if (activeRecord === 'forest') {
+            this.drawForestWindowView(winX, winY, winW, winH);
+        } else {
+            // Alien sky through window
+            const outSky = ctx.createLinearGradient(winX, winY, winX, winY + winH);
+            outSky.addColorStop(0, '#0a0517');
+            outSky.addColorStop(0.6, '#281347');
+            outSky.addColorStop(1, '#441d66');
+            ctx.fillStyle = outSky;
+            ctx.fillRect(winX, winY, winW, winH);
 
-        // Distant stars & moon
-        ctx.fillStyle = '#ffffff';
-        for (let i = 0; i < 25; i++) {
-            ctx.fillRect(winX + (i * 47) % winW, winY + (i * 29) % (winH * 0.5), 1.5, 1.5);
-        }
-        ctx.fillStyle = '#ffca72';
-        ctx.beginPath();
-        ctx.arc(winX + 230, winY + 40, 16, 0, Math.PI * 2);
-        ctx.fill();
+            // Distant stars & moon
+            ctx.fillStyle = '#ffffff';
+            for (let i = 0; i < 25; i++) {
+                ctx.fillRect(winX + (i * 47) % winW, winY + (i * 29) % (winH * 0.5), 1.5, 1.5);
+            }
+            ctx.fillStyle = '#ffca72';
+            ctx.beginPath();
+            ctx.arc(winX + 230, winY + 40, 16, 0, Math.PI * 2);
+            ctx.fill();
 
-        // Purple mountains outside window
-        ctx.fillStyle = '#1e0c33';
-        ctx.beginPath();
-        ctx.moveTo(winX, winY + winH);
-        ctx.lineTo(winX, winY + 90);
-        ctx.lineTo(winX + 70, winY + 65);
-        ctx.lineTo(winX + 160, winY + 95);
-        ctx.lineTo(winX + 240, winY + 60);
-        ctx.lineTo(winX + winW, winY + 85);
-        ctx.lineTo(winX + winW, winY + winH);
-        ctx.closePath();
-        ctx.fill();
+            // Purple mountains outside window
+            ctx.fillStyle = '#1e0c33';
+            ctx.beginPath();
+            ctx.moveTo(winX, winY + winH);
+            ctx.lineTo(winX, winY + 90);
+            ctx.lineTo(winX + 70, winY + 65);
+            ctx.lineTo(winX + 160, winY + 95);
+            ctx.lineTo(winX + 240, winY + 60);
+            ctx.lineTo(winX + winW, winY + 85);
+            ctx.lineTo(winX + winW, winY + winH);
+            ctx.closePath();
+            ctx.fill();
 
-        // Artificial Beach & Gentle Waves (visible outside habitat)
-        ctx.fillStyle = '#ffcc80'; // sandy shore
-        ctx.fillRect(winX, winY + winH - 22, winW, 22);
+            // Artificial Beach & Gentle Waves (visible outside habitat)
+            ctx.fillStyle = '#ffcc80'; // sandy shore
+            ctx.fillRect(winX, winY + winH - 22, winW, 22);
 
-        // Water with gentle waves
-        const waterWave = Math.sin(this.animTime * 2.2) * 4;
-        ctx.fillStyle = '#399ec7';
-        ctx.beginPath();
-        ctx.moveTo(winX, winY + winH);
-        ctx.lineTo(winX, winY + winH - 14 + waterWave);
-        ctx.quadraticCurveTo(winX + winW * 0.5, winY + winH - 18 - waterWave, winX + winW, winY + winH - 14 + waterWave);
-        ctx.lineTo(winX + winW, winY + winH);
-        ctx.closePath();
-        ctx.fill();
+            // Water with gentle waves (surges in sync with ocean sonification)
+            let waveAmp = 4;
+            if (activeRecord === 'ocean' && window.oceanSonification && window.oceanSonification.isPlaying) {
+                const m = window.oceanSonification.getMetrics();
+                waveAmp = 3 + m.energy * 9;
+            }
+            const waterWave = Math.sin(this.animTime * 2.2) * waveAmp;
+            ctx.fillStyle = '#399ec7';
+            ctx.beginPath();
+            ctx.moveTo(winX, winY + winH);
+            ctx.lineTo(winX, winY + winH - 14 + waterWave);
+            ctx.quadraticCurveTo(winX + winW * 0.5, winY + winH - 18 - waterWave, winX + winW, winY + winH - 14 + waterWave);
+            ctx.lineTo(winX + winW, winY + winH);
+            ctx.closePath();
+            ctx.fill();
 
-        // Rain on window if ATMOSPHERE or EARTH is active
-        if (activeRecord === 'atmosphere' || activeRecord === 'earth') {
-            ctx.strokeStyle = 'rgba(71, 216, 242, 0.45)';
-            ctx.lineWidth = 1.5;
-            this.rainDrops.forEach(drop => {
-                ctx.beginPath();
-                ctx.moveTo(drop.x, drop.y);
-                ctx.lineTo(drop.x - 1, drop.y + drop.length);
-                ctx.stroke();
-            });
+            // Rain on window if ATMOSPHERE or EARTH is active
+            if (activeRecord === 'atmosphere' || activeRecord === 'earth') {
+                ctx.strokeStyle = 'rgba(71, 216, 242, 0.45)';
+                ctx.lineWidth = 1.5;
+                this.rainDrops.forEach(drop => {
+                    ctx.beginPath();
+                    ctx.moveTo(drop.x, drop.y);
+                    ctx.lineTo(drop.x - 1, drop.y + drop.length);
+                    ctx.stroke();
+                });
+            }
         }
 
         ctx.restore();
@@ -724,6 +810,319 @@ class PixelRenderer {
         if (this.lightningFlash > 0) {
             ctx.fillStyle = `rgba(255, 255, 255, ${this.lightningFlash * 0.7})`;
             ctx.fillRect(0, 0, w, h);
+        }
+    }
+
+    // Panoramic Window View for Earth Archive Record 003: The Forest
+    drawForestWindowView(winX, winY, winW, winH) {
+        const ctx = this.ctx;
+        const t = this.animTime;
+
+        let metrics = null;
+        let soundscape = null;
+        if (window.forestSonification) {
+            metrics = window.forestSonification.getMetrics();
+            soundscape = metrics ? metrics.soundscape : null;
+        }
+
+        const mode = soundscape ? soundscape.mode : 'morning';
+        const windIntensity = soundscape ? soundscape.windIntensity : 0.4;
+        const streamIntensity = soundscape ? soundscape.streamIntensity : 0.5;
+        const rainIntensity = soundscape ? soundscape.rainIntensity : 0.0;
+        const energy = metrics ? metrics.energy : 0.4;
+        const lastBirdChirp = soundscape ? soundscape.lastBirdChirpTime : 0;
+        const isBirdActive = (performance.now() - lastBirdChirp) < 1800;
+
+        // 1. Sky Gradient based on Day/Night Mode
+        const skyGrad = ctx.createLinearGradient(winX, winY, winX, winY + winH);
+        if (mode === 'morning') {
+            skyGrad.addColorStop(0, '#ffb870'); // Golden dawn
+            skyGrad.addColorStop(0.4, '#ffd898');
+            skyGrad.addColorStop(0.8, '#a0cbe8');
+            skyGrad.addColorStop(1, '#6ea8d0');
+        } else if (mode === 'afternoon') {
+            skyGrad.addColorStop(0, '#2b78b8'); // Solar azure
+            skyGrad.addColorStop(0.5, '#5ea8dc');
+            skyGrad.addColorStop(1, '#a6d8f0');
+        } else if (mode === 'evening') {
+            skyGrad.addColorStop(0, '#361543'); // Violet / amber twilight
+            skyGrad.addColorStop(0.5, '#8c2d58');
+            skyGrad.addColorStop(0.85, '#e06840');
+            skyGrad.addColorStop(1, '#ffaa50');
+        } else {
+            // Night
+            skyGrad.addColorStop(0, '#04020e'); // Deep cosmic indigo
+            skyGrad.addColorStop(0.6, '#0f0c2a');
+            skyGrad.addColorStop(1, '#1b1442');
+        }
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(winX, winY, winW, winH);
+
+        // Sun / Moon / Celestial bodies
+        if (mode === 'morning') {
+            // Low golden sun
+            const sunX = winX + winW * 0.25;
+            const sunY = winY + winH * 0.35;
+            const sunGlow = ctx.createRadialGradient(sunX, sunY, 4, sunX, sunY, 45);
+            sunGlow.addColorStop(0, 'rgba(255, 240, 180, 0.9)');
+            sunGlow.addColorStop(0.4, 'rgba(255, 200, 110, 0.4)');
+            sunGlow.addColorStop(1, 'rgba(255, 180, 80, 0)');
+            ctx.fillStyle = sunGlow;
+            ctx.beginPath();
+            ctx.arc(sunX, sunY, 45, 0, Math.PI * 2);
+            ctx.fill();
+        } else if (mode === 'afternoon') {
+            // High warm sun
+            const sunX = winX + winW * 0.7;
+            const sunY = winY + 28;
+            ctx.fillStyle = 'rgba(255, 255, 220, 0.85)';
+            ctx.beginPath();
+            ctx.arc(sunX, sunY, 14, 0, Math.PI * 2);
+            ctx.fill();
+        } else if (mode === 'night') {
+            // Crescent moon & Stars
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            for (let i = 0; i < 35; i++) {
+                ctx.fillRect(winX + (i * 37) % winW, winY + (i * 23) % (winH * 0.55), 1.2, 1.2);
+            }
+            // Crescent Moon
+            const moonX = winX + winW * 0.82;
+            const moonY = winY + 28;
+            ctx.fillStyle = '#fdf3c6';
+            ctx.beginPath();
+            ctx.arc(moonX, moonY, 12, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#0f0c2a';
+            ctx.beginPath();
+            ctx.arc(moonX - 4, moonY - 2, 11, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // 2. Far Distant Mountain Ridges & Tree Horizon (Layer 1)
+        const mtColor = (mode === 'night') ? '#0b081c' : (mode === 'evening' ? '#2c1228' : '#224855');
+        ctx.fillStyle = mtColor;
+        ctx.beginPath();
+        ctx.moveTo(winX, winY + winH);
+        ctx.lineTo(winX, winY + 80);
+        ctx.lineTo(winX + 60, winY + 55);
+        ctx.lineTo(winX + 140, winY + 75);
+        ctx.lineTo(winX + 220, winY + 50);
+        ctx.lineTo(winX + winW, winY + 70);
+        ctx.lineTo(winX + winW, winY + winH);
+        ctx.closePath();
+        ctx.fill();
+
+        // Distant Evergreen Tree Silhouettes along ridge
+        ctx.fillStyle = (mode === 'night') ? '#070514' : (mode === 'evening' ? '#1f0d1c' : '#15323a');
+        for (let x = winX; x < winX + winW; x += 12) {
+            const th = 15 + Math.sin(x * 0.05) * 6;
+            ctx.beginPath();
+            ctx.moveTo(x, winY + 85);
+            ctx.lineTo(x + 6, winY + 85 - th);
+            ctx.lineTo(x + 12, winY + 85);
+            ctx.fill();
+        }
+
+        // 3. Midground Towering Ancient Tree Trunks (Layer 2)
+        const trunkColor = (mode === 'night') ? '#120f24' : (mode === 'evening' ? '#3d1e26' : '#3c2419');
+        const trunkHighlights = (mode === 'night') ? '#1f1b3b' : (mode === 'evening' ? '#5a2d36' : '#573626');
+        
+        const treePositions = [
+            { x: winX + 38, width: 22, height: winH },
+            { x: winX + 115, width: 28, height: winH },
+            { x: winX + 205, width: 18, height: winH },
+            { x: winX + 265, width: 26, height: winH }
+        ];
+
+        treePositions.forEach((tp, i) => {
+            ctx.fillStyle = trunkColor;
+            ctx.fillRect(tp.x, winY, tp.width, tp.height);
+            // Bark texture stripes
+            ctx.fillStyle = trunkHighlights;
+            ctx.fillRect(tp.x + 3, winY, 3, tp.height);
+            ctx.fillRect(tp.x + tp.width - 6, winY, 2, tp.height);
+
+            // Moss patches on trunks
+            ctx.fillStyle = (mode === 'night') ? '#11292a' : '#457a4a';
+            ctx.fillRect(tp.x + 2, winY + 45 + (i * 20), 4, 18);
+            ctx.fillRect(tp.x + 1, winY + 85 + (i * 15), 5, 12);
+        });
+
+        // 4. Forest Floor with Moss & Riverbank (Layer 3)
+        const bankColor = (mode === 'night') ? '#0d1a16' : (mode === 'evening' ? '#263825' : '#2d5a36');
+        ctx.fillStyle = bankColor;
+        ctx.fillRect(winX, winY + winH - 32, winW, 32);
+
+        // 5. Winding Forest Stream (Babbling Brook)
+        const streamWave = Math.sin(t * 3.5) * (2 + streamIntensity * 4);
+        const waterColor = (mode === 'night') ? '#102238' : (mode === 'evening' ? '#32546e' : '#3fa1cf');
+        ctx.fillStyle = waterColor;
+        ctx.beginPath();
+        ctx.moveTo(winX, winY + winH);
+        ctx.lineTo(winX, winY + winH - 20 + streamWave);
+        ctx.bezierCurveTo(
+            winX + winW * 0.35, winY + winH - 26 - streamWave,
+            winX + winW * 0.65, winY + winH - 14 + streamWave,
+            winX + winW, winY + winH - 18 + streamWave
+        );
+        ctx.lineTo(winX + winW, winY + winH);
+        ctx.closePath();
+        ctx.fill();
+
+        // Shimmering water ripples & foam
+        ctx.strokeStyle = (mode === 'night') ? 'rgba(98, 201, 138, 0.4)' : 'rgba(255, 255, 255, 0.65)';
+        ctx.lineWidth = 1;
+        for (let r = 0; r < 5; r++) {
+            const rx = winX + 30 + ((r * 62 + t * 25) % (winW - 60));
+            const ry = winY + winH - 12 + Math.sin(t * 4 + r) * 3;
+            ctx.beginPath();
+            ctx.moveTo(rx, ry);
+            ctx.lineTo(rx + 10 + (streamIntensity * 8), ry);
+            ctx.stroke();
+        }
+
+        // 6. Upper Canopy Branches & Foliage (Layer 4)
+        const swaySpeed = 2.0 + windIntensity * 3.5;
+        const swayAmp = 3.0 + windIntensity * 9.0;
+        const sway = Math.sin(t * swaySpeed) * swayAmp;
+
+        const folColor1 = (mode === 'night') ? '#0c221a' : (mode === 'evening' ? '#3d6139' : '#3da85a');
+        const folColor2 = (mode === 'night') ? '#123024' : (mode === 'evening' ? '#537d4e' : '#57c777');
+        const folColor3 = (mode === 'night') ? '#1a3f31' : (mode === 'evening' ? '#6b9c65' : '#7fe39e');
+
+        // Upper canopy domes
+        ctx.fillStyle = folColor1;
+        ctx.beginPath();
+        ctx.arc(winX + 45 + sway * 0.4, winY + 8, 48, 0, Math.PI);
+        ctx.arc(winX + 130 + sway * 0.6, winY + 12, 58, 0, Math.PI);
+        ctx.arc(winX + 225 + sway * 0.5, winY + 6, 52, 0, Math.PI);
+        ctx.arc(winX + 295 + sway * 0.7, winY + 14, 45, 0, Math.PI);
+        ctx.fill();
+
+        ctx.fillStyle = folColor2;
+        ctx.beginPath();
+        ctx.arc(winX + 85 + sway * 0.7, winY + 22, 42, 0, Math.PI);
+        ctx.arc(winX + 180 + sway * 0.8, winY + 24, 46, 0, Math.PI);
+        ctx.arc(winX + 260 + sway * 0.6, winY + 20, 38, 0, Math.PI);
+        ctx.fill();
+
+        // Branches reaching across window
+        ctx.strokeStyle = trunkColor;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(winX + 115, winY + 50);
+        ctx.quadraticCurveTo(winX + 160 + sway * 0.5, winY + 45, winX + 195 + sway, winY + 55);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(winX + 265, winY + 65);
+        ctx.quadraticCurveTo(winX + 235 + sway * 0.4, winY + 60, winX + 190 + sway, winY + 70);
+        ctx.stroke();
+
+        // Individual Leaf Clusters at branch tips
+        ctx.fillStyle = folColor3;
+        const leafClusters = [
+            { x: winX + 195 + sway, y: winY + 55 },
+            { x: winX + 165 + sway * 0.6, y: winY + 46 },
+            { x: winX + 190 + sway, y: winY + 70 },
+            { x: winX + 225 + sway * 0.5, y: winY + 62 }
+        ];
+        leafClusters.forEach(lc => {
+            ctx.beginPath();
+            ctx.arc(lc.x, lc.y, 6 + (energy * 3), 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        // 7. Sunlight Filtering Through Trees (Crepuscular God Rays)
+        if (mode === 'morning' || mode === 'afternoon') {
+            const rayAlpha = (0.12 + energy * 0.18);
+            const rayGrad = ctx.createLinearGradient(winX + 100, winY, winX + 180, winY + winH);
+            rayGrad.addColorStop(0, mode === 'morning' ? `rgba(255, 230, 160, ${rayAlpha})` : `rgba(255, 255, 200, ${rayAlpha})`);
+            rayGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = rayGrad;
+
+            // 3 Angled light beams
+            ctx.beginPath();
+            ctx.moveTo(winX + 70, winY);
+            ctx.lineTo(winX + 120, winY);
+            ctx.lineTo(winX + 190, winY + winH);
+            ctx.lineTo(winX + 130, winY + winH);
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(winX + 175, winY);
+            ctx.lineTo(winX + 215, winY);
+            ctx.lineTo(winX + 280, winY + winH);
+            ctx.lineTo(winX + 230, winY + winH);
+            ctx.fill();
+        }
+
+        // 8. Wildlife: Birds that react to bird calls
+        const birdBranchX = winX + 180 + sway * 0.5;
+        const birdBranchY = winY + 48;
+        // Perched bird
+        ctx.fillStyle = (mode === 'night') ? '#1e1a38' : '#e05a47'; // Red-breasted robin / thrush
+        ctx.fillRect(birdBranchX - 3, birdBranchY - 5, 6, 5);
+        ctx.fillStyle = '#f5c542'; // beak
+        ctx.fillRect(birdBranchX + 3, birdBranchY - 4, 2, 2);
+
+        // If a bird chirp triggered recently, animate fluttering wings!
+        if (isBirdActive) {
+            const wingFlap = Math.sin(t * 30) * 4;
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(birdBranchX - 2, birdBranchY - 4);
+            ctx.lineTo(birdBranchX - 6, birdBranchY - 8 - wingFlap);
+            ctx.stroke();
+
+            // Flying bird across canopy
+            const flyX = winX + ((t * 45) % (winW + 40)) - 20;
+            const flyY = winY + 35 + Math.sin(t * 5) * 8;
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            ctx.moveTo(flyX - 4, flyY - 2 + wingFlap * 0.5);
+            ctx.lineTo(flyX, flyY);
+            ctx.lineTo(flyX + 4, flyY - 2 + wingFlap * 0.5);
+            ctx.stroke();
+        }
+
+        // 9. Particles: Drifting Leaves, Pollen, or Glowing Fireflies
+        if (mode === 'night') {
+            // Glowing Fireflies
+            for (let f = 0; f < 14; f++) {
+                const fx = winX + ((f * 31 + t * 12 + Math.sin(t * 2 + f) * 15) % winW);
+                const fy = winY + 50 + ((f * 19 + Math.cos(t * 1.8 + f) * 18) % (winH - 65));
+                const glow = 0.4 + Math.sin(t * 4 + f) * 0.4;
+                ctx.fillStyle = `rgba(160, 255, 120, ${glow})`;
+                ctx.beginPath();
+                ctx.arc(fx, fy, 1.8, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        } else {
+            // Drifting leaf flakes & pollen
+            ctx.fillStyle = (mode === 'evening') ? 'rgba(235, 150, 70, 0.75)' : 'rgba(120, 220, 130, 0.7)';
+            for (let p = 0; p < 10; p++) {
+                const px = winX + ((p * 41 + t * (20 + windIntensity * 30)) % winW);
+                const py = winY + 25 + ((p * 29 + t * 12 + Math.sin(t * 3 + p) * 10) % (winH - 35));
+                ctx.fillRect(px, py, 2, 2);
+            }
+        }
+
+        // 10. Rain droplets if rain is active
+        if (rainIntensity > 0.0) {
+            ctx.strokeStyle = 'rgba(180, 225, 255, 0.55)';
+            ctx.lineWidth = 1.2;
+            const dropCount = Math.floor(15 + rainIntensity * 40);
+            for (let d = 0; d < dropCount; d++) {
+                const dx = winX + ((d * 23 + t * 40) % winW);
+                const dy = winY + ((t * 180 + d * 35) % winH);
+                ctx.beginPath();
+                ctx.moveTo(dx, dy);
+                ctx.lineTo(dx - 1, dy + 7);
+                ctx.stroke();
+            }
         }
     }
 
@@ -937,6 +1336,13 @@ class PixelRenderer {
             ctx.moveTo(vCenter.x, vCenter.y);
             ctx.lineTo(vCenter.x + Math.cos(rotAngle) * 4, vCenter.y + Math.sin(rotAngle) * 4);
             ctx.stroke();
+
+            // 4 Radial strobe dots to make vinyl rotation unmistakably visible
+            for (let d = 0; d < 4; d++) {
+                const a = rotAngle + (d * Math.PI / 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+                ctx.fillRect(vCenter.x + Math.cos(a) * 8.5, vCenter.y + Math.sin(a) * 8.5, 1.5, 1.5);
+            }
         }
 
         // Metal Tonearm
@@ -976,9 +1382,9 @@ class PixelRenderer {
 
             let displayText = 'EARTH ARCHIVE';
             if (isPlaying) {
-                if (activeRecord === 'forest') displayText = '001 FOREST';
+                if (activeRecord === 'forest') displayText = '003 FOREST';
                 else if (activeRecord === 'ocean') displayText = '002 OCEAN';
-                else if (activeRecord === 'atmosphere') displayText = '003 ATMOSPHERE';
+                else if (activeRecord === 'atmosphere') displayText = '001 ATMOSPHERE';
                 else if (activeRecord === 'earth') displayText = '004 EARTH';
             } else if (isPaused) {
                 displayText = '[PAUSED]';
@@ -1039,60 +1445,210 @@ class PixelRenderer {
         }
 
         if (recordKey === 'forest') {
-            // Record 001: Holographic miniature forest with fluttering birds
+            // Earth Archive Record 003: NASA GEDI Lidar Canopy Architecture & Forest Soundscape
             const hx = x;
             const hy = y - 35;
 
-            // Mini trees
-            ctx.strokeStyle = '#62c98a';
-            ctx.lineWidth = 1.5;
-            for (let i = -2; i <= 2; i++) {
-                const tx = hx + i * 14;
-                const th = 22 - Math.abs(i) * 3 + Math.sin(t * 3 + i) * 3;
-                ctx.beginPath();
-                ctx.moveTo(tx, hy);
-                ctx.lineTo(tx, hy - th);
-                ctx.stroke();
-
-                ctx.fillStyle = 'rgba(98, 201, 138, 0.7)';
-                ctx.beginPath();
-                ctx.arc(tx, hy - th, 5, 0, Math.PI * 2);
-                ctx.fill();
+            let forestMetrics = null;
+            if (window.forestSonification) {
+                forestMetrics = window.forestSonification.getMetrics();
             }
 
-            // Flying bird silhouette
-            const bx = hx + Math.sin(t * 1.5) * 28;
-            const by = hy - 32 + Math.cos(t * 2) * 6;
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 1;
+            const liveEnergy = (forestMetrics && forestMetrics.energy > 0) ? forestMetrics.energy : energy;
+            const canopyHeight = (forestMetrics && forestMetrics.canopyHeight != null) ? forestMetrics.canopyHeight : 45.0;
+            const canopyCover = (forestMetrics && forestMetrics.canopyCover != null) ? forestMetrics.canopyCover : 0.85;
+            const fhd = (forestMetrics && forestMetrics.fhd != null) ? forestMetrics.fhd : 3.2;
+            const note = (forestMetrics && forestMetrics.currentNote) ? forestMetrics.currentNote : 'F4';
+            const soundscape = forestMetrics ? forestMetrics.soundscape : null;
+            const isBirdActive = soundscape && (performance.now() - soundscape.lastBirdChirpTime < 1800);
+
+            // 1. Emerald Canopy Halo Glow
+            const haloR = 26 + liveEnergy * 18;
+            const haloGrad = ctx.createRadialGradient(hx, hy, 4, hx, hy, haloR);
+            haloGrad.addColorStop(0, `rgba(98, 201, 138, ${0.45 + liveEnergy * 0.4})`);
+            haloGrad.addColorStop(0.6, `rgba(71, 216, 242, ${0.2 + liveEnergy * 0.25})`);
+            haloGrad.addColorStop(1, 'rgba(38, 19, 77, 0)');
+            ctx.fillStyle = haloGrad;
             ctx.beginPath();
-            ctx.moveTo(bx - 4, by - 2);
-            ctx.lineTo(bx, by);
-            ctx.lineTo(bx + 4, by - 2);
+            ctx.arc(hx, hy, haloR, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 2. NASA GEDI Vertical Lidar Waveform Profile (Laser return amplitude curve)
+            ctx.strokeStyle = '#47d8f2';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            const waveBaseX = hx - 38;
+            const waveBaseY = hy + 18;
+            const waveHeight = 36;
+            ctx.moveTo(waveBaseX, waveBaseY);
+            for (let s = 0; s <= 20; s++) {
+                const sy = waveBaseY - (s / 20) * waveHeight;
+                const groundPeak = Math.exp(-Math.pow(s - 2, 2) / 3) * 12;
+                const crownPeak = Math.exp(-Math.pow(s - 16, 2) / 5) * (14 + canopyCover * 8);
+                const noise = Math.sin(t * 8 + s) * (liveEnergy * 2);
+                const sx = waveBaseX + groundPeak + crownPeak + noise;
+                ctx.lineTo(sx, sy);
+            }
             ctx.stroke();
 
-        } else if (recordKey === 'ocean') {
-            // Record 002: Miniature ocean wave spectrum reacting to NASA data
-            const hx = x;
-            const hy = y - 30;
+            // Lidar laser beam line
+            ctx.strokeStyle = 'rgba(71, 216, 242, 0.4)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([2, 3]);
+            ctx.beginPath();
+            ctx.moveTo(waveBaseX, waveBaseY);
+            ctx.lineTo(waveBaseX, waveBaseY - waveHeight);
+            ctx.stroke();
+            ctx.setLineDash([]);
 
+            // 3. Mini 3D Swaying Pixel Trees
+            const treeOffsets = [-16, 0, 16];
+            treeOffsets.forEach((ox, idx) => {
+                const tx = hx + ox;
+                const normH = Math.max(16, Math.min(32, (canopyHeight / 70) * 32 - Math.abs(idx) * 3));
+                const sway = Math.sin(t * 3.5 + idx) * (2 + liveEnergy * 3);
+
+                // Trunk
+                ctx.strokeStyle = '#a67c52';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(tx, hy + 18);
+                ctx.lineTo(tx + sway * 0.4, hy + 18 - normH * 0.45);
+                ctx.stroke();
+
+                // Foliage crown
+                ctx.fillStyle = (idx === 0) ? '#62c98a' : ((idx === 1) ? '#45b370' : '#7fe39e');
+                ctx.beginPath();
+                ctx.arc(tx + sway, hy + 18 - normH, 6 + (canopyCover * 3), 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // 4. Fluttering Bird Hologram
+            const bx = hx + Math.sin(t * 1.8) * 32;
+            const by = hy - 26 + Math.cos(t * 2.2) * 8;
+            const wingSpread = isBirdActive ? Math.sin(t * 28) * 4 : 2;
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            ctx.moveTo(bx - 5, by - wingSpread);
+            ctx.lineTo(bx, by);
+            ctx.lineTo(bx + 5, by - wingSpread);
+            ctx.stroke();
+
+            // 5. NASA GEDI Live Telemetry Annotation
+            ctx.fillStyle = '#ffca72';
+            ctx.font = '5px "Courier New", monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(`GEDI RH100: ${canopyHeight.toFixed(1)}m | PAI: ${fhd.toFixed(1)} | NOTE: ${note}`, hx, hy + 27);
+
+        } else if (recordKey === 'ocean') {
+            // Record 002: NASA ECCO Ocean Data Sonification & SVS 3912 Current Flows
+            const hx = x;
+            const hy = y - 35;
+
+            // Fetch live Tone.js ocean metrics if available
+            let oceanMetrics = null;
+            if (window.oceanSonification) {
+                oceanMetrics = window.oceanSonification.getMetrics();
+            }
+
+            const liveEnergy = (oceanMetrics && oceanMetrics.energy > 0) ? oceanMetrics.energy : energy;
+            const liveTemp = (oceanMetrics && oceanMetrics.temperature != null) ? oceanMetrics.temperature : 21.0;
+            const tempNorm = (oceanMetrics && oceanMetrics.tempNorm != null) ? oceanMetrics.tempNorm : 0.65;
+            const liveSpeed = (oceanMetrics && oceanMetrics.currentSpeed != null) ? oceanMetrics.currentSpeed : 0.45;
+            const isLandMask = oceanMetrics && oceanMetrics.isLandMask;
+
+            // 1. Temperature-Responsive Ocean Halo (Cold deep blue vs warm cyan/gold)
+            const haloR = 24 + liveEnergy * 16;
+            const haloGrad = ctx.createRadialGradient(hx, hy, 4, hx, hy, haloR);
+            if (isLandMask) {
+                haloGrad.addColorStop(0, 'rgba(126, 115, 153, 0.4)');
+                haloGrad.addColorStop(1, 'rgba(38, 19, 77, 0)');
+            } else if (tempNorm > 0.6) {
+                // Warm Gulf Stream Core: Vibrant cyan with golden shimmer
+                haloGrad.addColorStop(0, `rgba(71, 216, 242, ${0.4 + liveEnergy * 0.4})`);
+                haloGrad.addColorStop(0.6, `rgba(255, 202, 114, ${0.2 + liveEnergy * 0.25})`);
+                haloGrad.addColorStop(1, 'rgba(38, 19, 77, 0)');
+            } else {
+                // Cold Subpolar Water: Deep oceanic indigo & teal
+                haloGrad.addColorStop(0, `rgba(30, 136, 229, ${0.35 + liveEnergy * 0.35})`);
+                haloGrad.addColorStop(0.7, `rgba(49, 151, 149, ${0.15 + liveEnergy * 0.2})`);
+                haloGrad.addColorStop(1, 'rgba(38, 19, 77, 0)');
+            }
+            ctx.fillStyle = haloGrad;
+            ctx.beginPath();
+            ctx.arc(hx, hy, haloR, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 2. NASA SVS 3912 Surface Current Streamlines (Flow vectors)
+            ctx.lineWidth = 1.2;
+            const streamCount = 4;
+            const flowSpeed = (0.5 + liveSpeed * 1.5) * (0.8 + liveEnergy * 1.2);
+
+            for (let s = 0; s < streamCount; s++) {
+                const streamY = hy - 14 + s * 9;
+                const streamOffset = (t * flowSpeed * 35 + s * 22) % 76;
+                const sxStart = hx - 38 + streamOffset;
+
+                // Color lines by thermal gradient
+                ctx.strokeStyle = (tempNorm > 0.5) ? 'rgba(71, 216, 242, 0.65)' : 'rgba(98, 201, 138, 0.6)';
+                ctx.beginPath();
+                ctx.moveTo(sxStart, streamY + Math.sin(sxStart * 0.15 + t * 2) * 2);
+                ctx.lineTo(sxStart + 16, streamY + Math.sin((sxStart + 16) * 0.15 + t * 2) * 2);
+                ctx.stroke();
+
+                // Stream vector arrow tip
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(Math.floor(sxStart + 16), Math.floor(streamY + Math.sin((sxStart + 16) * 0.15 + t * 2) * 2) - 1, 2, 2);
+            }
+
+            // 3. Audio-Reactive Ocean Wave Crests
+            // Quiter notes = calm gentle ripples; stronger notes = surging wave crests
+            const waveHeightFactor = 4 + liveEnergy * 18;
             ctx.strokeStyle = this.palette.electricBlue;
             ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.moveTo(hx - 35, hy);
+            ctx.moveTo(hx - 36, hy + 8);
 
-            for (let ox = -35; ox <= 35; ox += 5) {
-                const waveHeight = Math.sin(t * 4 + ox * 0.2) * (6 + energy * 12);
-                ctx.lineTo(hx + ox, hy + waveHeight);
+            for (let ox = -36; ox <= 36; ox += 4) {
+                const wY = hy + 8 + Math.sin(t * 4.5 + ox * 0.18) * waveHeightFactor;
+                ctx.lineTo(hx + ox, wY);
             }
             ctx.stroke();
 
-            // Water droplet spray
+            // Secondary wave undercurrent
+            ctx.strokeStyle = 'rgba(71, 216, 242, 0.35)';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(hx - 36, hy + 12);
+            for (let ox = -36; ox <= 36; ox += 4) {
+                const wY = hy + 12 + Math.cos(t * 3.5 + ox * 0.22) * (waveHeightFactor * 0.6);
+                ctx.lineTo(hx + ox, wY);
+            }
+            ctx.stroke();
+
+            // 4. Buoyant Salinity Bubbles & Water Spray (scales with audio amplitude)
+            const sprayCount = 3 + Math.floor(liveEnergy * 5);
             ctx.fillStyle = '#b3f7ff';
-            for (let i = 0; i < 4; i++) {
-                const sx = hx + Math.sin(t * 5 + i * 2) * 20;
-                const sy = hy - 10 - (t * 20 + i * 8) % 18;
-                ctx.fillRect(sx, sy, 2, 2);
+            for (let i = 0; i < sprayCount; i++) {
+                const sx = hx + Math.sin(t * 4 + i * 2.3) * (18 + liveEnergy * 14);
+                const sy = hy - ((t * 30 + i * 14) % (28 + liveEnergy * 15));
+                const pSize = (i % 2 === 0) ? 2 : 1;
+                ctx.fillRect(Math.floor(sx), Math.floor(sy), pSize, pSize);
+            }
+
+            // 5. Land / Reef Mask Warning Indicator
+            if (isLandMask) {
+                ctx.fillStyle = this.palette.warmGold;
+                ctx.font = '6px "Courier New", monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText('▲ REEF / LAND MASK', hx, hy - 22);
+            } else if (oceanMetrics && oceanMetrics.note && oceanMetrics.note !== '—') {
+                // Real-time musical note readout floating in hologram
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '7px "Courier New", monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(`♪ ${oceanMetrics.note} (${liveTemp.toFixed(1)}°C)`, hx, hy - 22);
             }
 
         } else if (recordKey === 'atmosphere') {
@@ -1141,8 +1697,8 @@ class PixelRenderer {
     // CHARACTERS: ELI, KORU, THE LITTLE ONES
     // ----------------------------------------------------
 
-    // Eli — Human Teacher / Astronaut
-    drawEli(x, y, state = 'idle', facing = 1, isCarrying = false) {
+    // Ryan (Eli) — Human Teacher & Astronaut with full custom sprite animation
+    drawEli(x, y, state = 'idle', facing = 1, isCarrying = false, isSpeaking = false, isAstronautSuit = false) {
         const ctx = this.ctx;
         const t = this.animTime;
 
@@ -1152,7 +1708,57 @@ class PixelRenderer {
             ctx.scale(-1, 1);
         }
 
-        // Bobbing & leg swing
+        // 1. In regular gameplay (Scenes 1-6), render Ryan with his custom clothes & hair sprites!
+        if (!isAstronautSuit && this.ryanSprites) {
+            let spriteImg = null;
+            if (state === 'walk') {
+                // 6-frame walking cycle (Row 2)
+                const f = Math.floor(t * 10) % 6;
+                spriteImg = this.ryanSprites.walk[f];
+            } else if (state === 'hands' || state === 'gesture') {
+                // 4-frame clapping / gesturing / teaching cycle (Row 3)
+                const f = Math.floor(t * 5) % 4;
+                spriteImg = this.ryanSprites.hands[f];
+            } else if (isSpeaking || state === 'talk') {
+                // 6-frame talking / listening / touching glasses cycle (Row 1)
+                const f = Math.floor(t * 5) % 6;
+                spriteImg = this.ryanSprites.talk[f];
+            } else {
+                // Idle breathing pose (Row 1, Frame 0 & 2)
+                const f = (Math.sin(t * 2.2) > 0.5) ? 2 : 0;
+                spriteImg = this.ryanSprites.talk[f];
+            }
+
+            if (spriteImg && spriteImg.complete && spriteImg.naturalWidth > 0) {
+                // Scale Ryan to ~48px tall (consistent with world scale)
+                const baseScale = 48.0 / 234.0;
+                const w = spriteImg.naturalWidth * baseScale;
+                const h = spriteImg.naturalHeight * baseScale;
+                const bob = (state === 'walk') ? Math.abs(Math.sin(t * 10)) * 1.2 : Math.sin(t * 2.2) * 0.5;
+                const kneelOffset = (state === 'kneel') ? 10 : 0;
+
+                ctx.drawImage(spriteImg, -w / 2, -h - bob + kneelOffset, w, h);
+
+                // If carrying the retro jukebox
+                if (isCarrying) {
+                    ctx.save();
+                    const jx = 6;
+                    const jy = -28 - bob;
+                    ctx.fillStyle = '#663b14';
+                    ctx.fillRect(jx, jy, 16, 18);
+                    ctx.fillStyle = '#ffd15c';
+                    ctx.fillRect(jx + 2, jy + 2, 12, 5);
+                    ctx.fillStyle = '#47d8f2';
+                    ctx.fillRect(jx + 4, jy + 9, 8, 4);
+                    ctx.restore();
+                }
+
+                ctx.restore();
+                return;
+            }
+        }
+
+        // 2. White Astronaut EVA Suit (Used at Earth Arrival in Scene 7 / Credits)
         let walkOffset = 0;
         let legL = 0;
         let legR = 0;
@@ -1162,63 +1768,63 @@ class PixelRenderer {
             legL = Math.sin(t * 12) * 5;
             legR = -Math.sin(t * 12) * 5;
         } else if (state === 'kneel') {
-            // Kneeling down to inspect
             walkOffset = 8;
         }
 
         const by = -walkOffset;
 
         // Life support backpack
-        ctx.fillStyle = '#6b5c82';
+        ctx.fillStyle = '#64748b';
         ctx.fillRect(-11, by - 36, 7, 22);
         ctx.fillStyle = '#47d8f2';
-        ctx.fillRect(-10, by - 32, 5, 2); // oxygen gauge
+        ctx.fillRect(-10, by - 32, 5, 2);
 
         // Legs
         if (state === 'kneel') {
-            ctx.fillStyle = '#dcd3e8';
+            ctx.fillStyle = '#e2e8f0';
             ctx.fillRect(-5, by - 12, 14, 6);
-            ctx.fillStyle = '#26134d'; // boot
+            ctx.fillStyle = '#1e293b';
             ctx.fillRect(4, by - 6, 8, 6);
         } else {
             // Left leg
-            ctx.fillStyle = '#dcd3e8';
+            ctx.fillStyle = '#e2e8f0';
             ctx.fillRect(-6 + legL * 0.4, by - 14, 5, 12);
-            ctx.fillStyle = '#26134d'; // boot
+            ctx.fillStyle = '#1e293b';
             ctx.fillRect(-7 + legL * 0.4, by - 3, 7, 4);
 
             // Right leg
-            ctx.fillStyle = '#ece4f7';
+            ctx.fillStyle = '#f8fafc';
             ctx.fillRect(1 + legR * 0.4, by - 14, 5, 12);
-            ctx.fillStyle = '#26134d';
+            ctx.fillStyle = '#1e293b';
             ctx.fillRect(0 + legR * 0.4, by - 3, 7, 4);
         }
 
-        // White/Light Violet Astronaut Suit Body
-        ctx.fillStyle = '#ece4f7';
+        // White Thermal Astronaut Suit Body
+        ctx.fillStyle = '#ffffff';
         ctx.fillRect(-6, by - 34, 14, 20);
-        // Chest emblem (Blue Earth patch)
+        // Chest mission patch (Blue Earth)
         ctx.fillStyle = this.palette.electricBlue;
         ctx.fillRect(-1, by - 30, 4, 4);
 
         // Arms
         if (isCarrying) {
-            // Arms holding jukebox out front
-            ctx.fillStyle = '#ece4f7';
+            ctx.fillStyle = '#e2e8f0';
             ctx.fillRect(4, by - 28, 12, 5);
             ctx.fillRect(12, by - 26, 4, 8);
-            // Draw small carried jukebox
             ctx.fillStyle = '#663b14';
             ctx.fillRect(14, by - 32, 14, 16);
             ctx.fillStyle = '#ffd15c';
             ctx.fillRect(15, by - 31, 12, 3);
         } else if (state === 'kneel') {
-            ctx.fillStyle = '#ece4f7';
+            ctx.fillStyle = '#e2e8f0';
             ctx.fillRect(4, by - 26, 8, 14);
         } else {
-            ctx.fillStyle = '#ece4f7';
+            ctx.fillStyle = '#e2e8f0';
             const armSwing = (state === 'walk') ? -legL * 0.6 : 0;
+            // Hand gesturing towards dome
             ctx.fillRect(-2 + armSwing, by - 32, 4, 14);
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillRect(-2 + armSwing, by - 19, 4, 4); // Glove
         }
 
         // Helmet & Visor
@@ -1227,20 +1833,179 @@ class PixelRenderer {
         ctx.roundRect(-7, by - 48, 16, 15, 5);
         ctx.fill();
 
-        // Glowing Golden Visor
+        // Glowing Golden Visor reflecting the dome & snow
         ctx.fillStyle = this.palette.warmGold;
         ctx.beginPath();
         ctx.roundRect(0, by - 45, 8, 9, 3);
         ctx.fill();
-        // Visor reflection
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(1, by - 44, 2, 4);
 
         ctx.restore();
     }
 
-    // Koru — The Alien Friend (Friendly, rock-like alien with expressive glowing eyes)
-    drawKoru(x, y, state = 'idle', facing = 1) {
+    // Thought Bubble above Eli's Astronaut Helmet (Interactive Zoom-In Memory Portal)
+    drawThoughtBubble(x, y, activeRecord, isPlaying) {
+        if (!activeRecord) return;
+        const ctx = this.ctx;
+        const t = this.animTime;
+
+        ctx.save();
+        // Gentle vertical floating motion
+        const floatY = Math.sin(t * 2.2) * 4;
+        const bx = x + 35;
+        const by = y - 105 + floatY;
+
+        // 1. Rising connecting thought bubbles from helmet
+        const bubbles = [
+            { x: x + 8, y: y - 52, r: 3.5 },
+            { x: x + 18, y: y - 66, r: 5.5 },
+            { x: x + 26, y: y - 82, r: 7.5 }
+        ];
+
+        ctx.fillStyle = 'rgba(215, 240, 255, 0.75)';
+        ctx.strokeStyle = '#a4e6ff';
+        ctx.lineWidth = 1.2;
+
+        bubbles.forEach((b, idx) => {
+            const bWobble = Math.sin(t * 3.0 + idx) * 1.5;
+            ctx.beginPath();
+            ctx.arc(b.x + bWobble, b.y, b.r, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+        });
+
+        // 2. Large Cloud-like Thought Bubble
+        const bw = 124;
+        const bh = 72;
+
+        // Cloud body shadow & dream glow
+        ctx.shadowColor = 'rgba(164, 230, 255, 0.7)';
+        ctx.shadowBlur = 14;
+
+        ctx.fillStyle = 'rgba(12, 18, 38, 0.90)';
+        ctx.strokeStyle = '#8ee0ff';
+        ctx.lineWidth = 2.0;
+
+        // Draw cloud rounded container
+        ctx.beginPath();
+        ctx.roundRect(bx - bw / 2, by - bh / 2, bw, bh, 14);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.shadowBlur = 0; // reset shadow
+
+        // 3. Mini Animated Earth Memory Preview inside thought bubble
+        ctx.save();
+        ctx.beginPath();
+        ctx.roundRect(bx - bw / 2 + 3, by - bh / 2 + 3, bw - 6, bh - 6, 11);
+        ctx.clip();
+
+        if (activeRecord === 'forest') {
+            // Swaying green leaves & golden rays
+            ctx.fillStyle = '#0e2b1f';
+            ctx.fillRect(bx - bw / 2, by - bh / 2, bw, bh);
+
+            // Sunbeam
+            ctx.fillStyle = 'rgba(255, 240, 160, 0.28)';
+            ctx.beginPath();
+            ctx.moveTo(bx + 35, by - bh / 2);
+            ctx.lineTo(bx - 30, by + bh / 2);
+            ctx.lineTo(bx - 8, by + bh / 2);
+            ctx.lineTo(bx + 52, by - bh / 2);
+            ctx.fill();
+
+            // Animated Branch & Leaves
+            ctx.strokeStyle = '#3a2010';
+            ctx.lineWidth = 2.8;
+            ctx.beginPath();
+            ctx.moveTo(bx - 55, by - 8);
+            ctx.quadraticCurveTo(bx - 10, by + Math.sin(t * 3) * 3, bx + 45, by - 12);
+            ctx.stroke();
+
+            // 4 mini fluttering leaves
+            const leafColors = ['#45b367', '#62c98a', '#78e09e', '#399955'];
+            for (let l = 0; l < 4; l++) {
+                const lx = bx - 35 + l * 24;
+                const ly = by - 6 + Math.sin(t * 3.5 + l) * 4;
+                ctx.fillStyle = leafColors[l];
+                ctx.beginPath();
+                ctx.ellipse(lx, ly, 7, 3.5, 0.4 + Math.sin(t * 2.5 + l) * 0.2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Tiny fluttering songbird
+            const birdWing = Math.sin(t * 14) * 3.5;
+            ctx.fillStyle = '#ffcf40';
+            ctx.fillRect(bx + 26, by - 6, 5, 4);
+            ctx.fillStyle = '#ff9100';
+            ctx.fillRect(bx + 28, by - 8 + birdWing, 4, 3);
+
+        } else if (activeRecord === 'ocean') {
+            // Rolling turquoise waves
+            ctx.fillStyle = '#0a2238';
+            ctx.fillRect(bx - bw / 2, by - bh / 2, bw, bh);
+
+            // Sunset horizon
+            ctx.fillStyle = 'rgba(255, 180, 100, 0.4)';
+            ctx.fillRect(bx - bw / 2, by - bh / 2, bw, bh * 0.45);
+
+            // Sun
+            ctx.fillStyle = '#fff4d4';
+            ctx.beginPath();
+            ctx.arc(bx + 25, by - 10, 8, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Cresting rolling wave
+            ctx.fillStyle = '#1ba3b8';
+            ctx.beginPath();
+            ctx.moveTo(bx - bw / 2, by + bh / 2);
+            for (let wx = bx - bw / 2; wx <= bx + bw / 2; wx += 6) {
+                const wy = by + 8 + Math.sin(wx * 0.08 + t * 4) * 6;
+                ctx.lineTo(wx, wy);
+            }
+            ctx.lineTo(bx + bw / 2, by + bh / 2);
+            ctx.closePath();
+            ctx.fill();
+
+            // Foam crest
+            ctx.fillStyle = '#ffffff';
+            for (let wx = bx - bw / 2 + 5; wx <= bx + bw / 2; wx += 14) {
+                ctx.beginPath();
+                ctx.arc(wx, by + 6 + Math.sin(wx * 0.08 + t * 4) * 6, 2.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        } else {
+            // Atmosphere / Rain
+            ctx.fillStyle = '#101d28';
+            ctx.fillRect(bx - bw / 2, by - bh / 2, bw, bh);
+
+            ctx.strokeStyle = 'rgba(160, 220, 255, 0.75)';
+            ctx.lineWidth = 1.4;
+            for (let r = 0; r < 8; r++) {
+                const rx = bx - 45 + ((r * 15 + t * 40) % 90);
+                const ry = by - 25 + ((r * 23 + t * 80) % 50);
+                ctx.beginPath();
+                ctx.moveTo(rx, ry);
+                ctx.lineTo(rx - 2, ry + 7);
+                ctx.stroke();
+            }
+        }
+        ctx.restore();
+
+        // 4. Memory Callout Label
+        ctx.fillStyle = '#ffe8ff';
+        ctx.font = '6px "Press Start 2P", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('💭 MEMORY OF EARTH', bx, by + 19);
+        ctx.fillStyle = '#78f0ff';
+        ctx.fillText('[ZOOM: CLICK / Z]', bx, by + 28);
+
+        ctx.restore();
+    }
+
+    // Rocky (Koru) — The Alien Friend with full sprite animation (Walk, Talk, Moving Hands)
+    drawKoru(x, y, state = 'idle', facing = 1, isSpeaking = false) {
         const ctx = this.ctx;
         const t = this.animTime;
 
@@ -1250,6 +2015,43 @@ class PixelRenderer {
             ctx.scale(-1, 1);
         }
 
+        // 1. Try rendering from real Rocky character sprite frames
+        let spriteImg = null;
+        if (this.rockySprites) {
+            if (state === 'walk') {
+                // 4-frame walking cycle (Row 1)
+                const f = Math.floor(t * 8) % 4;
+                spriteImg = this.rockySprites.walk[f];
+            } else if (state === 'gesture' || state === 'hands') {
+                // 3-frame moving hands & gesturing cycle (Row 3)
+                const f = Math.floor(t * 5) % 3;
+                spriteImg = this.rockySprites.hands[f];
+            } else if (isSpeaking || state === 'talk') {
+                // 3-frame talking / gesturing cycle (Row 2)
+                const f = Math.floor(t * 6) % 3;
+                spriteImg = this.rockySprites.talk[f];
+            } else {
+                // Idle breathing pose (Row 2, Frame 0 & 1 subtle breathing)
+                const f = (Math.sin(t * 2.5) > 0.55) ? 1 : 0;
+                spriteImg = this.rockySprites.talk[f];
+            }
+        }
+
+        if (spriteImg && spriteImg.complete && spriteImg.naturalWidth > 0) {
+            // Scale sprite to fit the game environment (base body height ~31px, visibly smaller than Ryan at ~48px)
+            const baseScale = 31.0 / 375.0;
+            const w = spriteImg.naturalWidth * baseScale;
+            const h = spriteImg.naturalHeight * baseScale;
+
+            // Subtle bounce while walking or breathing
+            const bob = (state === 'walk') ? Math.abs(Math.sin(t * 10)) * 1.2 : Math.sin(t * 2.5) * 0.5;
+
+            ctx.drawImage(spriteImg, -w / 2, -h - bob, w, h);
+            ctx.restore();
+            return;
+        }
+
+        // 2. Procedural Fallback (while image assets are loading)
         let bob = Math.sin(t * 3.5) * 1.5;
         let legL = 0;
         let legR = 0;
@@ -1501,6 +2303,326 @@ class PixelRenderer {
         const shipX = 140 + flightProgress * (w - 220);
         const shipY = h * 0.65 - flightProgress * (h * 0.35);
         this.drawSpaceship(shipX, shipY, true, true);
+    }
+
+    // ----------------------------------------------------
+    // FINAL ARRIVAL: RYAN & ROCKY AT EARTH (GEODESIC XENONITE DOME)
+    // ----------------------------------------------------
+
+    drawGeodesicDomeScene(ryanX = 350, ryanY = 266, ryanFacing = -1, ryanState = 'idle', isRyanSpeaking = false, isRockySpeaking = false, rockyState = 'idle') {
+        const ctx = this.ctx;
+        const w = this.width;
+        const h = this.height;
+
+        // 1. Winter Earth Sky — Soft morning gradient (cold frosty blue to warm amber sunrise)
+        const skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.72);
+        skyGrad.addColorStop(0, '#537a9a');
+        skyGrad.addColorStop(0.35, '#87a8c4');
+        skyGrad.addColorStop(0.75, '#d4c4b2');
+        skyGrad.addColorStop(1, '#f6e4d0');
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, w, h);
+
+        // Soft distant morning winter sun through mist
+        ctx.fillStyle = 'rgba(255, 235, 200, 0.45)';
+        ctx.beginPath();
+        ctx.arc(w * 0.68, 75, 42, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 2. Distant Snow-Capped Mountain Range
+        ctx.fillStyle = '#7a96b0';
+        ctx.beginPath();
+        ctx.moveTo(0, h * 0.58);
+        ctx.lineTo(65, h * 0.38);
+        ctx.lineTo(145, h * 0.52);
+        ctx.lineTo(235, h * 0.31);
+        ctx.lineTo(335, h * 0.54);
+        ctx.lineTo(425, h * 0.35);
+        ctx.lineTo(525, h * 0.53);
+        ctx.lineTo(595, h * 0.39);
+        ctx.lineTo(w, h * 0.54);
+        ctx.lineTo(w, h * 0.75);
+        ctx.lineTo(0, h * 0.75);
+        ctx.fill();
+
+        // Mountain ridge snowy highlights
+        ctx.fillStyle = '#ffffff';
+        const peaks = [
+            [65, h * 0.38, 25],
+            [235, h * 0.31, 35],
+            [425, h * 0.35, 30],
+            [595, h * 0.39, 24]
+        ];
+        peaks.forEach(p => {
+            ctx.beginPath();
+            ctx.moveTo(p[0], p[1]);
+            ctx.lineTo(p[0] + p[2], p[1] + p[2] * 0.45);
+            ctx.lineTo(p[0] + p[2] * 0.6, p[1] + p[2] * 0.5);
+            ctx.lineTo(p[0], p[1]);
+            ctx.fill();
+        });
+
+        // 3. Layered Snowy Pine Forest
+        for (let i = 0; i < 14; i++) {
+            const px = 15 + i * 46;
+            const py = h * 0.61 + (i % 3) * 6;
+            this.drawSnowyPineTree(px, py, 0.72);
+        }
+        for (let i = 0; i < 10; i++) {
+            const px = 10 + i * 66;
+            const py = h * 0.67 + (i % 2) * 8;
+            this.drawSnowyPineTree(px, py, 1.0);
+        }
+
+        // 4. Snowy Ground & Rolling Drifts
+        const snowGrad = ctx.createLinearGradient(0, h * 0.69, 0, h);
+        snowGrad.addColorStop(0, '#eaf2f8');
+        snowGrad.addColorStop(0.3, '#d8e5f2');
+        snowGrad.addColorStop(0.7, '#c0d2e4');
+        snowGrad.addColorStop(1, '#9eb5cc');
+        ctx.fillStyle = snowGrad;
+
+        ctx.beginPath();
+        ctx.moveTo(0, h * 0.69);
+        ctx.bezierCurveTo(160, h * 0.67, 300, h * 0.72, 460, h * 0.68);
+        ctx.bezierCurveTo(540, h * 0.66, 590, h * 0.70, w, h * 0.68);
+        ctx.lineTo(w, h);
+        ctx.lineTo(0, h);
+        ctx.fill();
+
+        // Snow surface sparkles
+        ctx.fillStyle = '#ffffff';
+        for (let i = 0; i < 28; i++) {
+            const sx = (i * 37) % w;
+            const sy = h * 0.71 + ((i * 19) % (h * 0.26));
+            ctx.fillRect(sx, sy, 2, 1);
+        }
+
+        // 5. THE GEODESIC XENONITE SPHERE DOME (Matches reference photo)
+        const domeX = 220;
+        const domeY = h * 0.72 - 38;
+        const domeR = 56;
+        this.drawGeodesicDome(domeX, domeY, domeR, rockyState, isRockySpeaking);
+
+        // 6. RYAN IN HIS FULL WHITE ASTRONAUT SUIT (Outside in the cold Earth air)
+        this.drawEli(ryanX, ryanY, ryanState, ryanFacing, false, isRyanSpeaking, true /* astronaut suit */);
+
+        // 7. Falling Pixel Snow
+        this.drawFallingSnow();
+    }
+
+    drawGeodesicDome(cx, cy, R, rockyState = 'idle', isSpeaking = false) {
+        const ctx = this.ctx;
+        const t = this.animTime;
+
+        // Base foundation in snow
+        ctx.fillStyle = '#2c3540';
+        ctx.beginPath();
+        ctx.ellipse(cx, cy + R * 0.88, R * 0.8, 12, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#64748b';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // 1. Warm Glowing Xenonite Atmosphere inside the sphere (Erid environment: 200°C)
+        const eridAtmosphere = ctx.createRadialGradient(cx, cy - 4, R * 0.15, cx, cy, R);
+        eridAtmosphere.addColorStop(0, 'rgba(255, 185, 90, 0.52)');
+        eridAtmosphere.addColorStop(0.5, 'rgba(240, 140, 50, 0.35)');
+        eridAtmosphere.addColorStop(0.85, 'rgba(200, 90, 30, 0.20)');
+        eridAtmosphere.addColorStop(1, 'rgba(120, 40, 10, 0.08)');
+
+        ctx.fillStyle = eridAtmosphere;
+        ctx.beginPath();
+        ctx.arc(cx, cy, R, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 2. ROCKY INSIDE THE DOME!
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, R - 2, 0, Math.PI * 2);
+        ctx.clip();
+
+        // Rocky sits happily inside his warm geodesic habitat ball, facing right towards Ryan
+        const rockyY = cy + R * 0.70;
+        this.drawKoru(cx, rockyY, rockyState, 1, isSpeaking);
+        ctx.restore();
+
+        // 3. Geodesic Multi-Faceted Strut Grid (Classic icosahedron / geodesic sphere)
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, R, 0, Math.PI * 2);
+        ctx.clip();
+
+        const numOuter = 8;
+        const outerPts = [];
+        for (let i = 0; i < numOuter; i++) {
+            const ang = (i * Math.PI * 2 / numOuter) + 0.2;
+            outerPts.push({ x: cx + R * Math.cos(ang), y: cy + R * Math.sin(ang) });
+        }
+
+        const numInner = 6;
+        const innerPts = [];
+        for (let i = 0; i < numInner; i++) {
+            const ang = (i * Math.PI * 2 / numInner) + 0.5;
+            innerPts.push({ x: cx + (R * 0.58) * Math.cos(ang), y: cy + (R * 0.58) * Math.sin(ang) });
+        }
+
+        const centerPt = { x: cx - 4, y: cy - 6 };
+
+        // Shimmering triangular glass facets
+        const facets = [
+            [centerPt, innerPts[0], innerPts[1]],
+            [centerPt, innerPts[2], innerPts[3]],
+            [innerPts[0], innerPts[1], outerPts[1]],
+            [innerPts[4], innerPts[5], outerPts[5]]
+        ];
+
+        facets.forEach((f, idx) => {
+            const shimmer = Math.sin(t * 1.5 + idx * 1.2) * 0.06 + 0.16;
+            ctx.fillStyle = `rgba(220, 245, 255, ${shimmer})`;
+            ctx.beginPath();
+            ctx.moveTo(f[0].x, f[0].y);
+            ctx.lineTo(f[1].x, f[1].y);
+            ctx.lineTo(f[2].x, f[2].y);
+            ctx.closePath();
+            ctx.fill();
+        });
+
+        // Geodesic strut lines (silver / xenonite framing)
+        ctx.strokeStyle = 'rgba(225, 245, 255, 0.85)';
+        ctx.lineWidth = 1.4;
+
+        // Center to inner
+        for (let i = 0; i < numInner; i++) {
+            ctx.beginPath();
+            ctx.moveTo(centerPt.x, centerPt.y);
+            ctx.lineTo(innerPts[i].x, innerPts[i].y);
+            ctx.stroke();
+        }
+
+        // Inner ring loop
+        for (let i = 0; i < numInner; i++) {
+            const next = (i + 1) % numInner;
+            ctx.beginPath();
+            ctx.moveTo(innerPts[i].x, innerPts[i].y);
+            ctx.lineTo(innerPts[next].x, innerPts[next].y);
+            ctx.stroke();
+        }
+
+        // Inner to outer struts
+        for (let i = 0; i < numInner; i++) {
+            const o1 = i % numOuter;
+            const o2 = (i + 1) % numOuter;
+            ctx.beginPath();
+            ctx.moveTo(innerPts[i].x, innerPts[i].y);
+            ctx.lineTo(outerPts[o1].x, outerPts[o1].y);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(innerPts[i].x, innerPts[i].y);
+            ctx.lineTo(outerPts[o2].x, outerPts[o2].y);
+            ctx.stroke();
+        }
+
+        // Strut node rivets
+        ctx.fillStyle = '#ffffff';
+        [centerPt, ...innerPts].forEach(pt => {
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 1.8, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        // Glass specular glint arc
+        const glintGrad = ctx.createLinearGradient(cx - R * 0.7, cy - R * 0.7, cx + R * 0.4, cy + R * 0.4);
+        glintGrad.addColorStop(0, 'rgba(255, 255, 255, 0.35)');
+        glintGrad.addColorStop(0.3, 'rgba(255, 255, 255, 0.08)');
+        glintGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        ctx.fillStyle = glintGrad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, R - 1, -Math.PI * 0.85, -Math.PI * 0.15);
+        ctx.lineTo(cx, cy);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.restore();
+
+        // Exterior ring rim
+        ctx.strokeStyle = '#93c5fd';
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        ctx.arc(cx, cy, R, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Snow piled on base of dome
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.ellipse(cx - 24, cy + R * 0.85, 20, 6, 0.1, 0, Math.PI * 2);
+        ctx.ellipse(cx + 20, cy + R * 0.86, 22, 7, -0.1, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    drawSnowyPineTree(x, y, scale = 1.0) {
+        const ctx = this.ctx;
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.scale(scale, scale);
+
+        // Trunk
+        ctx.fillStyle = '#3a271c';
+        ctx.fillRect(-3, -10, 6, 12);
+
+        // Tiered evergreen pine boughs with white snow
+        const tiers = [
+            { w: 32, h: 16, y: -10 },
+            { w: 26, h: 14, y: -22 },
+            { w: 18, h: 12, y: -32 },
+            { w: 10, h: 10, y: -40 }
+        ];
+
+        tiers.forEach(t => {
+            // Dark pine green
+            ctx.fillStyle = '#1c3324';
+            ctx.beginPath();
+            ctx.moveTo(0, t.y - t.h);
+            ctx.lineTo(-t.w / 2, t.y);
+            ctx.lineTo(t.w / 2, t.y);
+            ctx.closePath();
+            ctx.fill();
+
+            // Snow layer on top of bough
+            ctx.fillStyle = '#edf4fa';
+            ctx.beginPath();
+            ctx.moveTo(0, t.y - t.h);
+            ctx.lineTo(-t.w / 2, t.y);
+            ctx.lineTo(-t.w / 2 + 5, t.y - 3);
+            ctx.lineTo(0, t.y - t.h + 4);
+            ctx.lineTo(t.w / 2 - 5, t.y - 3);
+            ctx.lineTo(t.w / 2, t.y);
+            ctx.closePath();
+            ctx.fill();
+        });
+
+        ctx.restore();
+    }
+
+    drawFallingSnow() {
+        const ctx = this.ctx;
+        if (!this.snowFlakes) return;
+        ctx.fillStyle = '#ffffff';
+        this.snowFlakes.forEach(f => {
+            f.y += f.speedY;
+            f.x += f.speedX;
+            if (f.y > this.height) {
+                f.y = -5;
+                f.x = Math.random() * this.width;
+            }
+            if (f.x > this.width) f.x = 0;
+            if (f.x < 0) f.x = this.width;
+
+            ctx.globalAlpha = f.alpha;
+            ctx.fillRect(Math.floor(f.x), Math.floor(f.y), Math.ceil(f.size), Math.ceil(f.size));
+        });
+        ctx.globalAlpha = 1.0;
     }
 
     // Render active particles

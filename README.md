@@ -64,17 +64,40 @@
 - **Power On:** Neon tubes illuminate sequentially, relay switch thumps, display reads `EARTH ARCHIVE — 001`.
 
 ### Scene 5 — The Sound Collection
-The jukebox contains 4 records with full interactive playback (Play, Pause, Stop, Replay, Eject) and live NASA data sonification:
+The jukebox contains 4 records with full interactive playback (Play, Pause, Stop, Replay, Eject) and live NASA Earth-observation data sonification:
 
-1. **Record 001 — Forest (`FOREST / EARTH ARCHIVE`)**
-   - *Sounds:* Birds chirping, leaves rustling, gentle wind.
-   - *Hologram:* Floating green spore particles, miniature swaying pixel trees, flying bird silhouette.
-   - *Dialogue:* Eli remembers the trees; Koru discovers birds.
-2. **Record 002 — Ocean (`OCEAN / EARTH ARCHIVE`)**
-   - *Sounds:* Ocean surf waves, water flowing, water spray.
-   - *Hologram:* Lapping blue waves reacting in real-time to the audio energy, splash particles.
-   - *Dialogue:* Eli describes oceans where you can travel for months; Koru asks if they can visit one day.
-3. **Record 003 — Atmosphere (`ATMOSPHERE / EARTH ARCHIVE`)**
+1. **Record 002 — Ocean (`RECORD 002: THE OCEAN`)**
+   - *Dataset:* NASA ECCO (Estimating the Circulation and Climate of the Ocean) Daily Mean 0.5° (Version 4 Release 4).
+   - *DOI:* `10.5067/ECG5D-OTS44` | *SVS Reference:* NASA SVS 3912 (Global Sea Surface Currents & Temperature).
+   - *Sonification:* Tone.js polyphonic ocean synthesis driven by real potential temperature (`THETA`), practical salinity (`SALT`), and surface currents (`UVEL`/`VVEL`).
+   - *Visuals:* NASA SVS 3912 surface current flow streamlines, temperature-reactive water color gradient, audio-reactive surging wave crests, and buoyant salinity particles.
+   - *Dialogue:* Ryland explains how cold waters sing low and warm Gulf Stream waters sing high.
+   - *Transparency:* Interactive scientific transparency panel documenting mathematical mappings and reanalysis attribution.
+
+2. **Record 003 — Forest (`RECORD 003: THE FOREST`)**
+   - *Primary Dataset:* NASA GEDI (Global Ecosystem Dynamics Investigation) Gridded Vegetation Structure Metrics & Biomass Density (L4B & L3 Gridded Metrics).
+   - *Permanent DOI:* `10.5067/GEDI/GEDI04_B.002` | *Complementary:* NASA Terra/Aqua MODIS 16-Day NDVI (`MOD13A2`).
+   - *Instrument:* High-resolution 1064nm laser altimeter aboard the International Space Station (ISS).
+   - *Variables:* Canopy Height (`rh100`, m), Canopy Cover (fraction), Foliage Height Diversity (`FHD`), Plant Area Index (`PAI`), Aboveground Biomass Density (`AGBD`, Mg/ha).
+   - *Sonification Engine:* Tone.js polyphonic multi-octave Earth Lydian scale where canopy height drives pitch ($rh100 \to \text{F2–C6}$), canopy closure drives harmonic filter cutoffs (600Hz–2800Hz) and chorus, foliage diversity drives multi-voice arpeggiator counterpoint, and biomass density drives resonant sub-bass foundation.
+   - *Natural Soundscape Manager:* Layered procedural acoustic environmental generator for rustling leaves, canopy wind gusts, branch creaks, morning dawn bird chorus, individual avian chirps, woodpecker territorial drumming, afternoon cicadas, nocturnal crickets and frogs, flowing forest streams, and rainfall on leaves.
+   - *Day & Night Modes:* Interactive soundscape & lighting modes:
+     - 🌅 **DAWN (Morning):** Fresh golden dawn sky, vibrant avian dawn chorus, light dew, gentle breeze.
+     - ☀️ **DAY (Afternoon):** Solar azure sky, cicadas stridulating, warm rustling canopy, bright god rays.
+     - 🌇 **DUSK (Evening):** Violet/amber twilight sky, twilight thrushes and owls, crickets beginning.
+     - 🌙 **NIGHT:** Deep starlit cosmic sky, moonlit branches, choir of crickets and tree frogs, nocturnal calls, glowing fireflies!
+   - *Visuals:* Full transformation of the panoramic habitat window into a living ancient forest with layered parallax depth, audio-reactive swaying branches, flowing crystal brook, sunbeams (crepuscular rays), fluttering birds, drifting leaf flakes, and fireflies.
+   - *Controls:* Dedicated toolbar with Day/Night mode selector (<kbd>M</kbd>), layer mute buttons (🎵 Music, 🍃 Canopy, 🐦 Birds, 💧 Stream), ambience slider, and scientific transparency panel (`HOW DOES THE FOREST BECOME MUSIC?`).
+
+3. **Record 001 — Atmosphere (`RECORD 001: THE ATMOSPHERE`)**
+   - *Dataset:* NASA MERRA-2 Aerosol Optical Depth & AIRS CO2
+   - *Sounds:* Rain falling on glass, thunder rumbling, atmospheric wind sweeps.
+   - *Visuals:* Rainfall on the panoramic window, lightning flashes, misty atmosphere.
+
+4. **Record 004 — Earth (`RECORD 004: COMPLETE EARTH ARCHIVE`)**
+   - *Unlocked:* Automatically unlocked after experiencing the archive records!
+   - *Sounds:* Full Earth symphony uniting biosphere, hydrosphere, and atmosphere with nostalgic piano memories.
+   - *Visuals:* Rotating high-detail pixel-art Earth hologram and warm golden ambient room lighting.
    - *Sounds:* Wind gusts, rain falling against the habitat window, distant rolling thunder.
    - *Hologram & FX:* Swirling purple storm cloud, raindrops sliding down the glass pane, lightning flashes.
    - *Dialogue:* Koru wonders how anyone could forget something so beautiful.
@@ -101,16 +124,38 @@ The jukebox contains 4 records with full interactive playback (Play, Pause, Stop
 
 ## 🔬 REAL NASA SCIENCE DATA & SONIFICATION ARCHITECTURE
 
-All audio in **Sound of Times** is synthesized procedurally in real-time using the **Web Audio API** driven by documented NASA scientific datasets:
+All audio in **Sound of Times** is synthesized procedurally in real-time using **Tone.js** and the **Web Audio API** driven by documented NASA scientific datasets:
 
-| Dataset | Satellite / Mission | Scientific Phenomenon | Sonification Pipeline |
-|---|---|---|---|
-| **MODIS NDVI** | NASA Terra & Aqua Satellites | 12-month global Normalized Difference Vegetation Index (0.312 – 0.445) | Normalized canopy greenness maps to fundamental pitches of a pentatonic C Major scale (261.6Hz – 587.3Hz) with resonant lowpass filter Q modulation reflecting photosynthetic vigor. |
-| **TOPEX / Poseidon & Jason-3 SSHA & SST** | NASA/CNES Ocean Altimetry Missions | 30-year Sea Surface Height Anomalies (-18.2mm to +71.3mm) and Sea Surface Temperature (18.15°C – 18.89°C) | Sea level elevation drives sub-bass wave surge resonance (65Hz – 110Hz) while sea surface temperature modulates aquatic bell chime overtones (220Hz – 659.2Hz). |
-| **MERRA-2 Aerosol Optical Depth & AIRS CO2** | NASA MERRA-2 Atmospheric Reanalysis & Aqua AIRS | Global Aerosol Optical Depth at 550nm (0.118 – 0.198) and Tropospheric CO2 Keeling Curve (410 – 421 ppm) | Atmospheric aerosol density dynamically modulates bandpass noise sweeps (wind gusts), while greenhouse gas concentrations shift the harmonic tension of an ethereal open-fifth ambient pad. |
-| **Unified Earth Observation** | Integrated NASA Biosphere, Hydrosphere & Atmosphere | Multi-system planetary balance | Counterpoint sonification intertwining canopy marimba, ocean bass swells, and atmospheric pads alongside a nostalgic acoustic piano progression. |
+| Record | Dataset | Source Archive & Instrument | Variables & Physical Range | Sonification & Soundscape Pipeline |
+|---|---|---|---|---|
+| **002: Ocean** | **NASA ECCO V4r4** | NASA JPL / PO.DAAC (DOI: `10.5067/ECG5D-OTS44`) | Potential Temp (`THETA`, 4°C–28°C), Salinity (`SALT`, 33–37 PSU), Current Velocity (`UVEL`/`VVEL`) | Potential temperature maps to pitch across an oceanic Dorian scale; $\Delta T$ controls melodic variation; salinity modulates FM overtone brightness; current vectors control stereo panning and wave surge. |
+| **003: Forest** | **NASA GEDI (L4B & L3)** | NASA Goddard / LP DAAC (DOI: `10.5067/GEDI/GEDI04_B.002`) & MODIS NDVI | Canopy Height (`rh100`, 8m–68m), Canopy Cover (0.0–1.0), PAI ($m^2/m^2$), FHD (1.2–3.8), Biomass (`AGBD`, Mg/ha) | Canopy height maps to multi-octave Earth Lydian pitch; canopy closure opens filter cutoffs (600Hz–2800Hz) and chorus; FHD diversity drives multi-voice arpeggio counterpoint; biomass density triggers deep sub-bass foundation; procedural soundscape models rustling leaves, wind gusts, avian dawn chorus, woodpeckers, cicadas, crickets, frogs, and streams across 4 Day/Night modes. |
+| **001: Atmosphere** | **MERRA-2 & AIRS** | NASA MERRA-2 & Aqua AIRS | Aerosol Optical Depth (0.118–0.198) and CO2 Keeling Curve (410–421 ppm) | Atmospheric aerosol density modulates bandpass noise sweeps (wind gusts), while greenhouse gas concentrations shift the harmonic tension of an ethereal open-fifth ambient pad. |
+| **004: Complete Earth** | **Integrated NASA Biosphere & Hydrosphere** | NASA Earth Observatory Multidisciplinary Composite | Planetary coupled ecological balance | Counterpoint sonification intertwining canopy marimba, ocean bass swells, and atmospheric pads alongside a nostalgic acoustic piano progression. |
 
-The in-game **NASA Sonification Live HUD** features a real-time oscilloscope and 32-band spectral analyzer displaying live waveform data as each record plays.
+The in-game **NASA Sonification Live HUD** features a real-time oscilloscope displaying live Tone.js audio waveform analysis as each record plays.
+
+---
+
+## 🧪 AUTOMATED QA TEST SUITES
+
+The project includes 4 comprehensive automated test suites running unit, mathematical mapping, and end-to-end integration tests:
+
+1. **[`test-forest-sonification.html`](file:///c:/Users/Lenovo/Desktop/Sound%20of%20time/test-forest-sonification.html)** (45 Tests):
+   - Validates NASA GEDI L4B/L3 dataset schema, variables (`rh100`, `canopyCover`, `pai`, `fhd`, `biomass`), and units.
+   - Tests deterministic mathematical sonification mappings (Height $\to$ Pitch, Cover $\to$ Filter/Chorus, FHD $\to$ Arpeggio, Biomass $\to$ Sub-Bass).
+   - Validates `ForestSoundscapeManager` modes (Dawn, Day, Dusk, Night), layer mutes, and volume scaling.
+   - Tests missing data / water body mask handling.
+2. **[`test-forest-game-e2e.html`](file:///c:/Users/Lenovo/Desktop/Sound%20of%20time/test-forest-game-e2e.html)** (50 Tests):
+   - Full end-to-end game integration test of Record 003 insertion in Scene 5.
+   - Validates Ryland's narrative dialogue triggers and NASA GEDI mentions.
+   - Tests all interactive transport controls (Play, Pause, Resume, Stop, Replay, Eject, Volume).
+   - Tests Soundscape mode switching buttons and layer mute toggles.
+   - Tests record switching isolation between Ocean Record 002 and Forest Record 003 (zero audio overlap or bleed).
+3. **[`test-ocean-sonification.html`](file:///c:/Users/Lenovo/Desktop/Sound%20of%20time/test-ocean-sonification.html)** (43 Tests):
+   - NASA ECCO Ocean unit and mathematical sonification test suite.
+4. **[`test-game-e2e.html`](file:///c:/Users/Lenovo/Desktop/Sound%20of%20time/test-game-e2e.html)** (31 Tests):
+   - Ocean Record 002 end-to-end integration test runner.
 
 ---
 
@@ -130,12 +175,23 @@ Constructed with strict adherence to the cinematic cosmic palette:
 
 ```text
 Sound of time/
-├── index.html          # Main HTML5 entry point with canvas, dialogue UI, jukebox deck, and HUD
+├── index.html                    # Main HTML5 entry point with responsive canvas, jukebox dashboard, and NASA HUD
+├── forest-data.json              # Verified NASA GEDI L4B/L3 canopy structure & biomass measurements
+├── ocean-data.json               # Verified NASA ECCO V4r4 ocean temperature & salinity measurements
+├── audio-manifest.json           # Natural forest sound library & acoustic attribution manifest
+├── test-forest-sonification.html # Forest sonification & soundscape unit test suite (45/45 passing)
+├── test-forest-game-e2e.html     # Forest Record 003 end-to-end integration test suite (50/50 passing)
+├── test-ocean-sonification.html  # Ocean sonification unit test suite (43/43 passing)
+├── test-game-e2e.html            # Ocean Record 002 end-to-end integration test suite (31/31 passing)
 ├── css/
-│   └── style.css       # Pixel-art UI styles, typography, scanlines, and CRT effects
-├── js/
-│   ├── audio.js        # Web Audio API engine, procedural synthesizers & real NASA sonification pipelines
-│   ├── pixelart.js     # Pixel-art rendering engine, character sprites, environments & dynamic holograms
-│   └── game.js         # Scene manager, input handler, narrative dialogue system & interactive jukebox state
-└── README.md           # Game design, controls guide, and scientific documentation
+│   └── style.css                 # Pixel-art UI styles, jukebox layout, mode toolbars & CRT scanlines
+└── js/
+    ├── forest-data-source.js     # Embedded NASA GEDI data provider for offline & file:/// resilience
+    ├── ocean-data-source.js      # Embedded NASA ECCO data provider for offline & file:/// resilience
+    ├── tone.js                   # Tone.js v14.8.49 audio framework
+    ├── forest-sonification.js    # ForestSonificationEngine & ForestSoundscapeManager (Tone.js)
+    ├── ocean-sonification.js     # OceanSonificationEngine (Tone.js)
+    ├── audio.js                  # Base Web Audio API synthesizer engine & scene ambiences
+    ├── pixelart.js               # Pixel art renderer: audio-reactive forest, god rays, fluttering birds, & holograms
+    └── game.js                   # Scene manager, dialogue controller, HUD streaming & jukebox integration
 ```
