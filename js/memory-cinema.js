@@ -320,7 +320,7 @@
             this.startRenderLoop();
 
             if (window.game) {
-                window.game.showPrompt('[ 💭 MEMORY CINEMA: [ → / ← ] SWITCH MEMORY  |  [ENTER] ZOOM OUT TO HABITAT ]');
+                window.game.showPrompt('[ 💭 MEMORY CINEMA: [ < / > ] SWITCH MEMORY  |  [ENTER] ZOOM OUT TO HABITAT ]');
             }
         }
 
@@ -351,7 +351,7 @@
                 this.rafId = null;
             }
             if (window.game) {
-                window.game.showPrompt('[ RETURNED TO HABITAT — [ → / ← ] WALK  |  [ENTER] ZOOM INTO MEMORY ]');
+                window.game.showPrompt('[ RETURNED TO HABITAT — [ < / > ] WALK  |  [ENTER] ZOOM INTO MEMORY ]');
             }
         }
 

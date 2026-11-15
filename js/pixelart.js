@@ -3286,9 +3286,6 @@ class PixelRenderer {
             ctx.stroke();
         }
 
-        // 4. THE ICONIC JURASSIC COAST SEA ARCH (Durdle Door formation)
-        this.drawDurdleDoorSeaArch(w * 0.72, h * 0.42);
-
         // 5. Pebble / Shingle Shoreline (sloping beach)
         const beachTopY = h * 0.65;
         const beachGrad = ctx.createLinearGradient(0, beachTopY, 0, h);

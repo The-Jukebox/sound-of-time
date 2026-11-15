@@ -111,16 +111,32 @@ class Game {
         const btnJumpJukebox = document.getElementById('btnJumpJukebox');
         if (btnJumpJukebox) {
             btnJumpJukebox.onclick = () => {
+                this.enterFullscreen();
                 this.sound.init();
                 this.sound.resume();
+                if (typeof Tone !== 'undefined' && Tone.start) {
+                    Tone.start().catch(() => {});
+                }
+                this.hasAudioPermission = true;
+                if (this.audioPermissionOverlay) {
+                    this.audioPermissionOverlay.style.display = 'none';
+                }
                 this.initScene('scene5');
             };
         }
         const btnStoryMode = document.getElementById('btnStoryMode');
         if (btnStoryMode) {
             btnStoryMode.onclick = () => {
+                this.enterFullscreen();
                 this.sound.init();
                 this.sound.resume();
+                if (typeof Tone !== 'undefined' && Tone.start) {
+                    Tone.start().catch(() => {});
+                }
+                this.hasAudioPermission = true;
+                if (this.audioPermissionOverlay) {
+                    this.audioPermissionOverlay.style.display = 'none';
+                }
                 this.initScene('scene1');
             };
         }
@@ -150,6 +166,7 @@ class Game {
 
         const grantAudio = (enableSound) => {
             if (this.hasAudioPermission) return;
+            this.enterFullscreen();
             this.hasAudioPermission = true;
             this.isAudioMuted = !enableSound;
 
@@ -374,11 +391,13 @@ class Game {
                 return;
             }
 
-            // Power button toggle shortcut
+            // Power button toggle shortcut & failsafe advance in Scene 4
             if (this.currentScene === 'scene4') {
-                if (e.key === 'p' || e.key === 'P') {
-                    this.toggleJukeboxPower();
-                    e.preventDefault();
+                if (e.key === 'p' || e.key === 'P' || e.key === 'Enter' || e.code === 'Space' || e.key === 'e' || e.key === 'E') {
+                    if (!this.currentDialogue && !this.activeChoice) {
+                        this.powerOnJukebox(true);
+                        e.preventDefault();
+                    }
                 }
             }
         });
@@ -389,10 +408,15 @@ class Game {
             this.keys[e.code] = false;
         });
 
-        // Click on canvas to resume sound, zoom into memory bubble, or advance dialogue
+        // Click on canvas to resume sound, enter fullscreen by default, zoom into memory bubble, or advance dialogue
         this.canvas.addEventListener('click', (e) => {
+            this.enterFullscreen();
             if (!this.isAudioMuted) {
                 this.sound.resume();
+            }
+            if (this.currentScene === 'scene4' && !this.currentDialogue && !this.activeChoice) {
+                this.powerOnJukebox(true);
+                return;
             }
             if (this.currentScene === 'scene5' && this.jukeboxState.activeRecord) {
                 const rect = this.canvas.getBoundingClientRect();
@@ -435,6 +459,25 @@ class Game {
         const onFsChange = () => this.updateFullscreenUI();
         document.addEventListener('fullscreenchange', onFsChange);
         document.addEventListener('webkitfullscreenchange', onFsChange);
+    }
+
+    enterFullscreen() {
+        const isNativeFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+        const isWindowFs = document.body.classList.contains('is-fullscreen');
+        if (isNativeFs || isWindowFs) return;
+
+        const target = document.documentElement;
+        if (target.requestFullscreen) {
+            target.requestFullscreen().catch(() => {
+                document.body.classList.add('is-fullscreen');
+                this.updateFullscreenUI();
+            });
+        } else if (target.webkitRequestFullscreen) {
+            target.webkitRequestFullscreen();
+        } else {
+            document.body.classList.add('is-fullscreen');
+            this.updateFullscreenUI();
+        }
     }
 
     toggleFullscreen() {
@@ -686,6 +729,11 @@ class Game {
 
     // SCENE 4 — THE JUKEBOX
     initScene4() {
+        this.sound.stopRecord();
+        if (window.oceanSonification) window.oceanSonification.stop();
+        if (window.forestSonification) window.forestSonification.stop();
+        if (window.atmosphereSonification) window.atmosphereSonification.stop();
+        if (window.earthSonification) window.earthSonification.stop();
         this.sound.startSceneAmbience('home_interior');
         this.sound.init();
 
@@ -704,7 +752,7 @@ class Game {
             this.showChoiceMenu('CHOICE 2 — What should we do with the jukebox?', [
                 {
                     text: '1. TURN IT ON',
-                    action: () => this.powerOnJukebox()
+                    action: () => this.powerOnJukebox(true)
                 },
                 {
                     text: '2. INSPECT THE RECORDS',
@@ -728,7 +776,7 @@ class Game {
             { speaker: 'ROCKY', text: 'Question: Does the machine produce audio waves? Does it sing?' },
             { speaker: 'RYAN', text: 'Let\'s turn it on to find out!' }
         ], () => {
-            this.powerOnJukebox();
+            this.powerOnJukebox(true);
         });
     }
 
@@ -758,7 +806,7 @@ class Game {
         const pwrBtn = document.getElementById('btnPower');
         if (pwrBtn) pwrBtn.classList.add('primary');
 
-        if (fromDialogue) {
+        if (fromDialogue || this.currentScene === 'scene4') {
             this.queueDialogues([
                 { speaker: 'SYSTEM', text: '*BZZT... CLUNK... WARM VACUUM TUBE HUM...*' },
                 { speaker: 'SYSTEM', text: 'DISPLAY: [ NASA EARTH INFORMATION CENTER — ARCHIVE 001 ]' },
@@ -1020,6 +1068,7 @@ class Game {
         const recordBtns = document.querySelectorAll('.record-btn');
         recordBtns.forEach(btn => {
             btn.onclick = () => {
+                this.enterFullscreen();
                 this.sound.resume();
                 if (typeof Tone !== 'undefined' && Tone.context && Tone.context.state !== 'running') {
                     Tone.start();
@@ -1039,6 +1088,7 @@ class Game {
         const btnPlay = document.getElementById('btnPlay');
         if (btnPlay) {
             btnPlay.onclick = () => {
+                this.enterFullscreen();
                 this.sound.resume();
                 if (typeof Tone !== 'undefined' && Tone.context && Tone.context.state !== 'running') {
                     Tone.start();
@@ -2036,8 +2086,8 @@ class Game {
             this.eli.state = 'idle';
         }
 
-        // Clamp Ryan along the shoreline (explore up to the rocky arch base)
-        this.eli.x = Math.max(50, Math.min(385, this.eli.x));
+        // Clamp Ryan along the open shoreline
+        this.eli.x = Math.max(50, Math.min(560, this.eli.x));
 
         // Rocky walks alongside Ryan on the pebble beach in his form-fitting suit!
         const targetRockyX = this.eli.x - 45 * this.eli.facing;

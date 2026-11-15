@@ -1363,8 +1363,10 @@ body.is-fullscreen {
 }
 
 :fullscreen .game-header,
-body.is-fullscreen .game-header {
-    display: none;
+body.is-fullscreen .game-header,
+:fullscreen .eic-navigation-dock,
+body.is-fullscreen .eic-navigation-dock {
+    display: none !important;
 }
 
 :fullscreen .game-container,
