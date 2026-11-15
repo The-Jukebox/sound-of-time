@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOUND OF TIMES — Project Presentation | Team Space Sounds</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #070414;
+            --bg-card: rgba(18, 10, 36, 0.92);
+            --border-glow: #47d8f2;
+            --neon-gold: #ffd166;
+            --neon-pink: #f28bbd;
+            --neon-green: #62c98a;
+            --neon-cyan: #47d8f2;
+            --neon-purple: #9b5de5;
+            --text-main: #f3f0fa;
+            --text-dim: #a89bc4;
+            --pixel-font: 'Press Start 2P', monospace;
+            --mono-font: 'VT323', 'Courier New', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            background-image: 
+                radial-gradient(circle at 15% 20%, rgba(155, 93, 229, 0.18) 0%, transparent 45%),
+                radial-gradient(circle at 85% 80%, rgba(71, 216, 242, 0.15) 0%, transparent 45%),
+                linear-gradient(to bottom, #070414, #120826);
+            color: var(--text-main);
+            font-family: var(--mono-font);
+            font-size: 19px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            overflow-x: hidden;
+            padding: 16px 20px 24px;
+        }
+
+        /* Scanlines Overlay */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 1000;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.28) 50%);
+            background-size: 100% 4px;
+            opacity: 0.75;
+            transition: opacity 0.3s ease;
+        }
+        .scanlines.off { opacity: 0; }
+
+        /* Top Header Navigation Bar */
+        header.deck-header {
+            width: 100%;
+            max-width: 1220px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 18px;
+            background: rgba(18, 10, 36, 0.85);
+            border: 2px solid #362254;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+            backdrop-filter: blur(8px);
+            margin-bottom: 14px;
+        }
+
+        .header-logo-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-emblem {
+            font-size: 22px;
+            animation: pulseGlow 2.5s infinite alternate;
+        }
+
+        .header-title-text {
+            font-family: var(--pixel-font);
+            font-size: 11px;
+            color: var(--neon-cyan);
+            letter-spacing: 1px;
+            text-shadow: 0 0 8px rgba(71, 216, 242, 0.6);
+        }
+
+        .header-team-badge {
+            font-family: var(--pixel-font);
+            font-size: 8px;
+            color: var(--neon-gold);
+            background: rgba(255, 209, 102, 0.12);
+            border: 1px solid rgba(255, 209, 102, 0.4);
+            padding: 4px 10px;
+            border-radius: 4px;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .deck-btn {
+            background: #190f30;
+            color: var(--neon-cyan);
+            border: 1.5px solid #4a2d75;
+            border-radius: 4px;
+            font-family: var(--pixel-font);
+            font-size: 8px;
+            padding: 7px 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .deck-btn:hover {
+            background: var(--neon-cyan);
+            color: #070414;
+            border-color: #fff;
+            box-shadow: 0 0 12px rgba(71, 216, 242, 0.8);
+            transform: translateY(-1px);
+        }
+
+        /* Slide Stage Container (16:9 Widescreen) */
+        .stage-wrapper {
+            width: 100%;
+            max-width: 1220px;
+            aspect-ratio: 16 / 9;
+            position: relative;
+            background: var(--bg-card);
+            border: 3px solid #4c2f7a;
+            box-shadow: 
+                0 0 35px rgba(155, 93, 229, 0.25),
+                inset 0 0 30px rgba(71, 216, 242, 0.05);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Slide Content Panels */
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 38px 48px 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.98) translateY(12px);
+            transition: opacity 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .slide.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: scale(1) translateY(0);
+            z-index: 2;
+        }
+
+        /* Slide Header */
+        .slide-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px dashed rgba(155, 93, 229, 0.4);
+            padding-bottom: 12px;
+            margin-bottom: 14px;
+        }
+
+        .slide-category-tag {
+            font-family: var(--pixel-font);
+            font-size: 8px;
+            color: var(--neon-gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .slide-title {
+            font-family: var(--pixel-font);
+            font-size: 20px;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+            text-shadow: 0 0 14px rgba(71, 216, 242, 0.5);
+            line-height: 1.35;
+        }
+
+        .slide-index-pill {
+            font-family: var(--pixel-font);
+            font-size: 9px;
+            background: rgba(71, 216, 242, 0.15);
+            color: var(--neon-cyan);
+            border: 1px solid var(--neon-cyan);
+            padding: 5px 10px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        /* Slide Main Body Layouts */
+        .slide-body {
+            flex: 1;
+            display: flex;
+            gap: 28px;
+            align-items: stretch;
+            min-height: 0;
+        }
+
+        .col-left {
+            flex: 1.15;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+        }
+
+        .col-right {
+            flex: 0.85;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        /* Feature & Info Cards */
+        .pixel-card {
+            background: rgba(26, 16, 50, 0.7);
+            border: 1.5px solid #4a2d75;
+            border-radius: 6px;
+            padding: 14px 18px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            transition: all 0.2s ease;
+        }
+
+        .pixel-card:hover {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 16px rgba(71, 216, 242, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .card-heading {
+            font-family: var(--pixel-font);
+            font-size: 10px;
+            color: var(--neon-cyan);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-text {
+            font-size: 18px;
+            line-height: 1.4;
+            color: #d6cee8;
+        }
+
+        .bullet-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .bullet-list li {
+            position: relative;
+            padding-left: 20px;
+            line-height: 1.35;
+            font-size: 18px;
+            color: #e4ddf4;
+        }
+
+        .bullet-list li::before {
+            content: '▶';
+            position: absolute;
+            left: 0;
+            color: var(--neon-gold);
+            font-size: 12px;
+            top: 2px;
+        }
+
+        /* Visual Graphic Boxes */
+        .visual-display-box {
+            background: #0d061c;
+            border: 2px solid #5a3691;
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+        }
+
+        .visual-display-box::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        /* Slide 1 Hero Specifics */
+        .hero-title-box {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .hero-game-title {
+            font-family: var(--pixel-font);
+            font-size: 38px;
+            color: var(--neon-gold);
+            text-shadow: 
+                0 0 10px rgba(255, 209, 102, 0.8),
+                0 0 30px rgba(242, 139, 189, 0.6);
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+            line-height: 1.25;
+        }
+
+        .hero-tagline {
+            font-family: var(--pixel-font);
+            font-size: 11px;
+            color: var(--neon-cyan);
+            letter-spacing: 1px;
+            margin-bottom: 24px;
+        }
+
+        .team-banner-card {
+            background: linear-gradient(145deg, #1c1136, #100822);
+            border: 2px solid var(--neon-gold);
+            box-shadow: 0 0 25px rgba(255, 209, 102, 0.35);
+            padding: 20px 32px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 14px auto 0;
+            width: 100%;
+            max-width: 880px;
+        }
+
+        .team-title-label {
+            font-family: var(--pixel-font);
+            font-size: 10px;
+            color: #a496c4;
+            margin-bottom: 6px;
+        }
+
+        .team-name-big {
+            font-family: var(--pixel-font);
+            font-size: 16px;
+            color: var(--neon-gold);
+            letter-spacing: 1px;
+        }
+
+        .member-badge-group {
+            display: flex;
+            gap: 16px;
+        }
+
+        .member-pill {
+            background: rgba(71, 216, 242, 0.12);
+            border: 1px solid var(--neon-cyan);
+            color: #ffffff;
+            font-family: var(--pixel-font);
+            font-size: 9px;
+            padding: 8px 16px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 0 12px rgba(71, 216, 242, 0.3);
+        }
+
+        /* Mini Pixel Badges & Highlights */
+        .highlight-gold { color: var(--neon-gold); font-weight: bold; }
+        .highlight-cyan { color: var(--neon-cyan); font-weight: bold; }
+        .highlight-pink { color: var(--neon-pink); font-weight: bold; }
+        .highlight-green { color: var(--neon-green); font-weight: bold; }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            width: 100%;
+        }
+
+        .stat-box {
+            background: rgba(14, 8, 30, 0.85);
+            border: 1.5px solid #4a2d75;
+            padding: 10px 14px;
+            border-radius: 6px;
+        }
+
+        .stat-num {
+            font-family: var(--pixel-font);
+            font-size: 14px;
+            color: var(--neon-cyan);
+            margin-bottom: 4px;
+        }
+
+        .stat-lbl {
+            font-size: 16px;
+            color: #a99bc4;
+            line-height: 1.25;
+        }
+
+        /* Slide Footer */
+        .slide-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(155, 93, 229, 0.25);
+            padding-top: 10px;
+            margin-top: 12px;
+            font-size: 16px;
+            color: #8c7aa8;
+        }
+
+        /* Bottom Deck Navigation Bar */
+        footer.deck-footer {
+            width: 100%;
+            max-width: 1220px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            background: rgba(18, 10, 36, 0.85);
+            border: 2px solid #362254;
+            border-radius: 8px;
+            margin-top: 14px;
+        }
+
+        .slide-indicator-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .slide-pill-btn {
+            background: #140b29;
+            color: #8c7aa8;
+            border: 1px solid #4a2d75;
+            border-radius: 4px;
+            font-family: var(--pixel-font);
+            font-size: 8px;
+            padding: 6px 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .slide-pill-btn:hover {
+            color: var(--neon-cyan);
+            border-color: var(--neon-cyan);
+        }
+
+        .slide-pill-btn.active {
+            background: var(--neon-cyan);
+            color: #070414;
+            border-color: #fff;
+            box-shadow: 0 0 10px rgba(71, 216, 242, 0.7);
+            font-weight: bold;
+        }
+
+        .nav-controls-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-btn {
+            background: #190f30;
+            color: #ffffff;
+            border: 1.5px solid var(--neon-gold);
+            border-radius: 6px;
+            font-family: var(--pixel-font);
+            font-size: 9px;
+            padding: 9px 18px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-btn:hover {
+            background: var(--neon-gold);
+            color: #070414;
+            box-shadow: 0 0 16px rgba(255, 209, 102, 0.8);
+            transform: scale(1.03);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        /* Animations */
+        @keyframes pulseGlow {
+            from { filter: drop-shadow(0 0 4px var(--neon-cyan)); }
+            to { filter: drop-shadow(0 0 14px var(--neon-gold)); }
+        }
+
+        /* Print to PDF Styling */
+        @media print {
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                padding: 0;
+            }
+            .scanlines, header.deck-header, footer.deck-footer { display: none !important; }
+            .stage-wrapper {
+                border: none !important;
+                box-shadow: none !important;
+                aspect-ratio: auto !important;
+            }
+            .slide {
+                position: relative !important;
+                display: flex !important;
+                opacity: 1 !important;
+                transform: none !important;
+                page-break-after: always !important;
+                height: 100vh !important;
+                border-bottom: 2px solid #ccc;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Retro Scanlines Simulation -->
+    <div class="scanlines" id="scanlines"></div>
+
+    <!-- Top Deck Header -->
+    <header class="deck-header">
+        <div class="header-logo-group">
+            <span class="logo-emblem">🪐</span>
+            <div>
+                <div class="header-title-text">SOUND OF TIMES // PRESENTATION DECK</div>
+                <div style="font-size: 14px; color: #8e7eb0;">NASA Sonification &amp; Retro Pixel-Art Game</div>
+            </div>
+        </div>
+
+        <div class="header-team-badge">
+            TEAM: SPACE SOUNDS
+        </div>
+
+        <div class="header-controls">
+            <button class="deck-btn" id="btnAudioToggle" title="Toggle 8-bit Sound FX">🔊 SFX: ON</button>
+            <button class="deck-btn" id="btnScanlinesToggle" title="Toggle CRT Scanlines">📺 CRT: ON</button>
+            <button class="deck-btn" id="btnFullscreen" title="Fullscreen Presentation Mode (F)">⛶ FULLSCREEN</button>
+            <button class="deck-btn" id="btnPrintPDF" title="Export / Print Slides (P)">🖨️ PDF EXPORT</button>
+        </div>
+    </header>
+
+    <!-- Main Slide Stage Area (16:9 Widescreen) -->
+    <main class="stage-wrapper" id="stageWrapper">
+
+        <!-- ==============================================
+             SLIDE 1: TITLE & TEAM SHOWCASE
+             ============================================== -->
+        <section class="slide active" id="slide-1">
+            <div class="slide-header">
+                <div>
+                    <div class="slide-category-tag">🚀 NASA DATA SONIFICATION &amp; PIXEL-ART ADVENTURE</div>
+                    <h1 class="slide-title" style="color: var(--neon-cyan);">PROJECT PRESENTATION</h1>
+                </div>
+                <div class="slide-index-pill">SLIDE 01 / 07</div>
+            </div>
+
+            <div class="hero-title-box">
+                <h1 class="hero-game-title">SOUND OF TIMES</h1>
+                <p class="hero-tagline">"A LITTLE PIECE OF EARTH, FAR AWAY FROM HOME."</p>
+
+                <div class="team-banner-card">
+                    <div>
+                        <div class="team-title-label">PROJECT CREATORS &amp; ENGINEERS</div>
+                        <div class="team-name-big">TEAM SPACE SOUNDS</div>
+                    </div>
+                    <div class="member-badge-group">
+                        <div class="member-pill">
+                            <span>⭐</span>
+                            <div>
+                                <div style="color: var(--neon-cyan); font-weight: bold;">CAROL PILLAI</div>
+                                <div style="font-size: 8px; color: #a497be;">Engineering &amp; Audio</div>
+                            </div>
+                        </div>
+                        <div class="member-pill">
+                            <span>⭐</span>
+                            <div>
+                                <div style="color: var(--neon-pink); font-weight: bold;">ZIVEN PEREIRA</div>
+                                <div style="font-size: 8px; color: #a497be;">Systems &amp; Design</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-grid" style="margin-top: 16px;">
+                <div class="stat-box">
+                    <div class="stat-num">4 NASA ARCHIVES</div>
+                    <div class="stat-lbl">Real satellite telemetry sonified from GEDI, ECCO, MERRA-2 &amp; Sol-3</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-num">8 NARRATIVE SCENES</div>
+                    <div class="stat-lbl">From 40 Eridani classroom to the Jurassic Coast grand finale reunion</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-num">WEB AUDIO + TONE.JS</div>
+                    <div class="stat-lbl">100% procedural sound synthesis with zero external audio assets</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-num">4K MEMORY CINEMA</div>
+                    <div class="stat-lbl">Photorealistic slow-motion memory vision overlays &amp; video archives</div>
+                </div>
+            </div>
+
+            <div class="slide-footer">
+                <span>Space Sounds Presentation &bull; Sound of Times</span>
+                <span>Use [ &rarr; ] or [ SPACE ] to advance</span>
+            </div>
+        </section>
+
+        <!-- ==============================================
+             SLIDE 2: NARRATIVE & PROJECT OVERVIEW
+             ============================================== -->
+        <section class="slide" id="slide-2">
+            <div class="slide-header">
+                <div>
+                    <div class="slide-category-tag">📖 NARRATIVE GENESIS &amp; INSPIRATION</div>
+                    <h2 class="slide-title">PROJECT OVERVIEW: THE ERID JOURNEY</h2>
+                </div>
+                <div class="slide-index-pill">SLIDE 02 / 07</div>
+            </div>
+
+            <div class="slide-body">
+                <div class="col-left">
+                    <div class="pixel-card">
+                        <div class="card-heading">🌌 The Core Premise</div>
+                        <p class="card-text">
+                            Inspired by Andy Weir’s <span class="highlight-gold">Project Hail Mary</span>, the story follows astronaut-scientist <span class="highlight-cyan">Dr. Ryland Grace (Ryan)</span> and his extraterrestrial five-legged engineer companion <span class="highlight-pink">Rocky</span> on the alien world of 40 Eridani.
+                        </p>
+                    </div>
+
+                    <div class="pixel-card">
+                        <div class="card-heading">🏫 Teaching on Alien Soil</div>
+                        <p class="card-text">
+                            Ryan teaches young Eridian children (<span class="highlight-green">"the little ones"</span>) about planetary atmospheres and liquid water oceans in a natural amphitheater of stepped basalt pillars.
+                        </p>
+                    </div>
+
+                    <div class="pixel-card">
+                        <div class="card-heading">📻 The Buried Sol-3 Jukebox</div>
+                        <p class="card-text">
+                            An ancient 1940s-style retro jukebox buried in the obsidian volcanic dust holds the only surviving acoustic recordings of Earth’s ecosystems. Exploring it reawakens Ryan's deep longing for home.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-right">
+                    <div class="visual-display-box" style="height: 100%;">
+                        <div style="font-size: 40px; margin-bottom: 10px;">🪐 &bull; 🎵 &bull; 🦀</div>
+                        <div style="font-family: var(--pixel-font); font-size: 11px; color: var(--neon-gold); margin-bottom: 12px;">EMOTIONAL ARC</div>
+                        <ul class="bullet-list" style="text-align: left; width: 100%;">
+                            <li><span class="highlight-cyan">Exile on Erid:</span> Isolation, longing, teaching science across species.</li>
+                            <li><span class="highlight-gold">The Acoustic Discovery:</span> Unlocking Earth’s winds, rains, and waves.</li>
+                            <li><span class="highlight-pink">Rocky's Loyalty:</span> "I will not let you travel alone! We go together!"</li>
+                            <li><span class="highlight-green">The Homecoming:</span> Standing together on Earth's pebble coast.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide-footer">
+                <span>Team Space Sounds &bull; Carol Pillai &amp; Ziven Pereira</span>
+                <span>Andy Weir's Project Hail Mary Universe</span>
+            </div>
+        </section>
+
+        <!-- ==============================================
+             SLIDE 3: NASA DATA SONIFICATION PIPELINE
+             ============================================== -->
+        <section class="slide" id="slide-3">
+            <div class="slide-header">
+                <div>
+                    <div class="slide-category-tag">🛰️ SCIENTIFIC DATA ARCHITECTURE</div>
+                    <h2 class="slide-title">REAL NASA SATELLITE SONIFICATION</h2>
+                </div>
+                <div class="slide-index-pill">SLIDE 03 / 07</div>
+            </div>
+
+            <div class="slide-body">
+                <div class="col-left">
+                    <div class="pixel-card">
+                        <div class="card-heading">🌊 Record 002: The Ocean &bull; NASA ECCO V4r4</div>
+                        <p class="card-text">
+                            Daily potential temperatures (<span class="highlight-cyan">4&deg;C to 28&deg;C</span>) drive pitch along an oceanic Dorian scale. Practical salinity (<span class="highlight-gold">SALT PSU</span>) modulates FM synthesis brightness; surface flow velocity dynamically steers stereo spatial panning.
+                        </p>
+                    </div>
+
+                    <div class="pixel-card">
+                        <div class="card-heading">🌲 Record 003: The Forest &bull; NASA GEDI Lidar &amp; MODIS</div>
+                        <p class="card-text">
+                            Spaceborne 1064nm lidar canopy heights (<span class="highlight-green">L4B/L3 Biomass</span>) control granular wind filters. Avian call synthesizers algorithmically voice authentic songs of Nightingales, Mourning Doves, and Chickadees.
+                        </p>
+                    </div>
+
+                    <div class="pixel-card">
+                        <div class="card-heading">🌧️ Record 001: The Atmosphere &bull; MERRA-2 &amp; GPM</div>
+                        <p class="card-text">
+                            Precipitation rates (mm/hr) synthesize textured pink-noise raindrops and micro-droplet clicks. Barometric gradients govern resonant thunder sub-bass rumbles.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-right">
+                    <div class="visual-display-box" style="height: 100%;">
+                        <div style="font-family: var(--pixel-font); font-size: 10px; color: var(--neon-cyan); margin-bottom: 12px;">SCIENCE &rarr; SOUND PIPELINE</div>
+                        <div style="background: rgba(71, 216, 242, 0.1); border: 1px solid var(--neon-cyan); padding: 12px; border-radius: 6px; width: 100%; text-align: left; font-size: 16px; margin-bottom: 12px;">
+                            <div>1. Ingest Daily Numerical Datasets</div>
+                            <div>2. Normalize Physical Variables [0.0 - 1.0]</div>
+                            <div>3. Mathematical Scale Quantization</div>
+                            <div>4. Real-Time Tone.js / Web Audio Generation</div>
+                            <div>5. Live Oscilloscope Canvas Rendering</div>
+                        </div>
+                        <div style="font-size: 13px; color: #8e7eb0;">
+                            &bull; Certified scientific transparency &bull; Not field recordings &bull; Genuine data sonification
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide-footer">
+                <span>NASA Earth Science Telemetry: GEDI, ECCO, MERRA-2, GPM</span>
+                <span>Team Space Sounds</span>
+            </div>
+        </section>
+
+        <!-- ==============================================
+             SLIDE 4: TECHNICAL ARCHITECTURE & AUDIO ENGINE
+             ============================================== -->
+        <section class="slide" id="slide-4">
+            <div class="slide-header">
+                <div>
+                    <div class="slide-category-tag">⚙️ ENGINEERING &amp; AUDIO SYSTEMS</div>
+                    <h2 class="slide-title">TECHNICAL ARCHITECTURE &amp; WEB AUDIO</h2>
+                </div>
+                <div class="slide-index-pill">SLIDE 04 / 07</div>
+            </div>
+
+            <div class="slide-body">
+                <div class="col-left">
+                    <div class="pixel-card">
+                        <div class="card-heading">💻 Zero-Dependency Vanilla JavaScript Engine</div>
+                        <p class="card-text">
+                            Built entirely with pure modern JavaScript (ES6+), HTML5 Canvas, and Tone.js. No React, no heavy frameworks, zero backend latency. Loads in under 400ms and runs at a rock-solid 60 FPS.
+                        </p>
+                    </div>
+
+                    <div class="pixel-card">
+                        <div class="card-heading">🔊 Compliant Web Audio Permission Gate</div>
+                        <p class="card-text">
+                            Eliminated browser autoplay audio blocks via a dedicated retro sci-fi <span class="highlight-gold">Permission Dialog</span> that primes the <code style="color:var(--neon-cyan);">AudioContext</code> and Tone.js engines upon first interaction. Includes hotkey <kbd>[M]</kbd> instant sound toggle.
+                        </p>
+                    </div>
+
+                    <div class="pixel-card">
+                        <div class="card-heading">📼 Tactile Mechanical Sound Effects</div>
+                        <p class="card-text">
+                            Custom procedural synthesizers emulate authentic 1940s analog mechanics: motor turntable spin-up gliding from 45Hz to 320Hz, needle contact thud, and ratchet carousel indexing.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-right">
+                    <div class="visual-display-box" style="height: 100%;">
+                        <div style="font-family: var(--pixel-font); font-size: 10px; color: var(--neon-gold); margin-bottom: 12px;">SYSTEM ARCHITECTURE</div>
+                        <div style="text-align: left; width: 100%; font-size: 15px; color: #d6cee8; display: flex; flex-direction: column; gap: 8px;">
+                            <div style="border-left: 2px solid var(--neon-cyan); padding-left: 8px;">
+                                <strong style="color:var(--neon-cyan);">Canvas Renderer:</strong> 640x360 pixel art pipeline with camera lerp &amp; dynamic lighting.
+                            </div>
+                            <div style="border-left: 2px solid var(--neon-green); padding-left: 8px;">
+                                <strong style="color:var(--neon-green);">Sonification Engines:</strong> 4 independent procedural Tone.js synthesizer suites.
+                            </div>
+                            <div style="border-left: 2px solid var(--neon-pink); padding-left: 8px;">
+                                <strong style="color:var(--neon-pink);">Cinema Overlay:</strong> Full HD photographic memory renderer with variable slow-mo.
+                            </div>
+                            <div style="border-left: 2px solid var(--neon-gold); padding-left: 8px;">
+                                <strong style="color:var(--neon-gold);">State &amp; Dialogues:</strong> Non-blocking typewriter queue with keyboard action clamps.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide-footer">
+                <span>Space Sounds &bull; Carol Pillai &amp; Ziven Pereira</span>
+                <span>Web Audio API, Tone.js, HTML5 Canvas 2D</span>
+            </div>
+        </section>
+
+        <!-- ==============================================
+             SLIDE 5: ART DIRECTION & CHARACTER DESIGN
+             ============================================== -->
+        <section class="slide" id="slide-5">
+            <div class="slide-header">
+                <div>
+                    <div class="slide-category-tag">🎨 PIXEL ART DIRECTION &amp; WORLD BUILDING</div>
+                    <h2 class="slide-title">CHARACTERS &amp; ENVIRONMENTS</h2>
+                </div>
+                <div class="slide-index-pill">SLIDE 05 / 07</div>
+            </div>
+
+            <div class="slide-body">
+                <div class="col-left">
+                    <div class="pixel-card">
+                        <div class="card-heading">🧑‍🚀 Ryan Grace (~82px)</div>
+                        <p class="card-text">
+                            Human astronaut and teacher. Dressed in his EVA spacesuit on Erid, and his iconic cream-and-chocolate mountain-ram fleece jacket when relaxing by the Jurassic Coast.
+                        </p>
+                    </div>
+
+                    <div class="pixel-card">
+                        <div class="card-heading">🦀 Rocky the Eridian (~58px)</div>
+                        <p class="card-text">
+                            Segmented rock carapace, 5 articulated mineral legs. For visiting Earth, he is equipped with an articulated <span class="highlight-gold">form-fitting geodesic xenonite exoskeleton</span> with golden triangular struts and pressurized internal atmosphere.
+                        </p>
+                    </div>
+
+                    <div class="pixel-card">
+                        <div class="card-heading">🪨 The Young Eridian Students ("Little Ones")</div>
+                        <p class="card-text">
+                            4 color &amp; behavioral variants (Obsidian stacker, Ochre listener, Turquoise leaper, Copper purrer) seated on chiseled stepped basalt amphitheater columns.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-right">
+                    <div class="visual-display-box" style="height: 100%;">
+                        <div style="font-family: var(--pixel-font); font-size: 10px; color: var(--neon-cyan); margin-bottom: 10px;">ENVIRONMENT CONTRAST</div>
+                        <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; text-align: left;">
+                            <div style="background: rgba(18, 8, 38, 0.9); border: 1px solid #7842a8; padding: 10px; border-radius: 4px;">
+                                <div style="color: var(--neon-purple); font-weight: bold;">40 ERIDANI (Night World)</div>
+                                <div style="font-size: 15px; color: #baa7d6;">Deep purple cosmos, glowing ringed gas giant, sister moon, and dark volcanic peaks.</div>
+                            </div>
+                            <div style="background: rgba(30, 48, 45, 0.9); border: 1px solid #47d8f2; padding: 10px; border-radius: 4px;">
+                                <div style="color: var(--neon-cyan); font-weight: bold;">JURASSIC COAST (Earth Finale)</div>
+                                <div style="font-size: 15px; color: #aee3eb;">Pale misty daylight, Durdle Door sea arch, multi-depth turquoise waves &amp; pebble shoreline.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide-footer">
+                <span>Hand-Crafted Procedural Pixel-Art Engine</span>
+                <span>Team Space Sounds</span>
+            </div>
+        </section>
+
+        <!-- ==============================================
+             SLIDE 6: INTERACTIVE GAMEPLAY & CINEMA
+             ============================================== -->
+        <section class="slide" id="slide-6">
+            <div class="slide-header">
+                <div>
+                    <div class="slide-category-tag">🎮 PLAYER EXPERIENCE &amp; FEATURES</div>
+                    <h2 class="slide-title">INTERACTIVE GAMEPLAY &amp; MEMORY CINEMA</h2>
+                </div>
+                <div class="slide-index-pill">SLIDE 06 / 07</div>
+            </div>
+
+            <div class="slide-body">
+                <div class="col-left">
+                    <div class="pixel-card">
+                        <div class="card-heading">💬 Authentic Andy Weir Dialogue Engine</div>
+                        <p class="card-text">
+                            Typewriter text with authentic dialogue patterns: Rocky's iconic <span class="highlight-cyan">"Question:"</span>, <span class="highlight-gold">"Amaze! Amaze! Amaze!"</span>, and the celebrated <span class="highlight-pink">"Fist my bump!"</span> with synced harmonic spark animations.
+                        </p>
+                    </div>
+
+                    <div class="pixel-card">
+                        <div class="card-heading">🎛️ Physical Jukebox Deck Controls</div>
+                        <p class="card-text">
+                            Tactile interactive shelf to switch records (1-4), toggle power, play, pause, stop, replay, and adjust volume sliders with real-time NASA waveform oscilloscope readout.
+                        </p>
+                    </div>
+
+                    <div class="pixel-card">
+                        <div class="card-heading">🎞️ Full HD Slow-Motion Memory Vision</div>
+                        <p class="card-text">
+                            Zoom into Ryan's memories of Black Forest, ocean surf, and birds with speed control toggles (<span class="highlight-cyan">0.2x Ultra Slow</span>, <span class="highlight-gold">0.35x Slow-Mo</span>, 1.0x Normal) and photorealistic particulate drift.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-right">
+                    <div class="visual-display-box" style="height: 100%;">
+                        <div style="font-family: var(--pixel-font); font-size: 10px; color: var(--neon-gold); margin-bottom: 12px;">KEYBOARD &amp; CONTROLS</div>
+                        <div style="width: 100%; text-align: left; font-size: 15px; display: flex; flex-direction: column; gap: 8px;">
+                            <div><kbd style="color:var(--neon-gold); background:#221238; padding:2px 6px; border:1px solid #663e99;">[A/D] / [←/→]</kbd> Walk characters</div>
+                            <div><kbd style="color:var(--neon-gold); background:#221238; padding:2px 6px; border:1px solid #663e99;">[ENTER] / [E]</kbd> Inspect, Advance, Zoom</div>
+                            <div><kbd style="color:var(--neon-gold); background:#221238; padding:2px 6px; border:1px solid #663e99;">[1] - [4]</kbd> Select Earth Records</div>
+                            <div><kbd style="color:var(--neon-gold); background:#221238; padding:2px 6px; border:1px solid #663e99;">[SPACE]</kbd> Play / Pause Jukebox</div>
+                            <div><kbd style="color:var(--neon-gold); background:#221238; padding:2px 6px; border:1px solid #663e99;">[M]</kbd> Instant Audio Mute / Unmute</div>
+                            <div><kbd style="color:var(--neon-gold); background:#221238; padding:2px 6px; border:1px solid #663e99;">[F]</kbd> Seamless Fullscreen Toggle</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide-footer">
+                <span>Intuitive Retro-Arcade Controls &bull; 60 FPS</span>
+                <span>Team Space Sounds</span>
+            </div>
+        </section>
+
+        <!-- ==============================================
+             SLIDE 7: SUMMARY & ROADMAP
+             ============================================== -->
+        <section class="slide" id="slide-7">
+            <div class="slide-header">
+                <div>
+                    <div class="slide-category-tag">🏆 ACCOMPLISHMENTS &amp; FUTURE HORIZONS</div>
+                    <h2 class="slide-title">CONCLUSION &amp; FUTURE ROADMAP</h2>
+                </div>
+                <div class="slide-index-pill">SLIDE 07 / 07</div>
+            </div>
+
+            <div class="slide-body">
+                <div class="col-left">
+                    <div class="pixel-card">
+                        <div class="card-heading">🌟 Key Accomplishments</div>
+                        <ul class="bullet-list">
+                            <li>Merged rigorous NASA satellite science with an emotionally gripping narrative game.</li>
+                            <li>Engineered 4 live procedural sonification suites converting numbers to symphony.</li>
+                            <li>Designed a full retro pixel universe with authentic extraterrestrial biology.</li>
+                            <li>100% web-native, accessible on any modern desktop or mobile browser.</li>
+                        </ul>
+                    </div>
+
+                    <div class="pixel-card">
+                        <div class="card-heading">🚀 Future Expansion Roadmap</div>
+                        <ul class="bullet-list">
+                            <li><span class="highlight-cyan">Planetary Archives:</span> Mars seismic sonification (InSight) &amp; Jovian radio waves (Juno).</li>
+                            <li><span class="highlight-gold">Classroom STEM Mode:</span> Educational puzzles teaching sound waves to young Eridians.</li>
+                            <li><span class="highlight-pink">MIDI Device Support:</span> Allow players to plug in synthesizers to jam with Rocky.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-right">
+                    <div class="visual-display-box" style="height: 100%; border-color: var(--neon-gold);">
+                        <div style="font-size: 32px; margin-bottom: 8px;">🤝 &bull; ✨ &bull; 💙</div>
+                        <div style="font-family: var(--pixel-font); font-size: 13px; color: var(--neon-gold); margin-bottom: 8px;">THANK YOU!</div>
+                        <p style="font-size: 16px; color: #baa7d6; font-style: italic; margin-bottom: 16px;">
+                            "Good. Proud. We saved two worlds, Grace. We are friends forever. Fist my bump!"
+                        </p>
+                        <div style="background: rgba(255, 209, 102, 0.1); border: 1px solid var(--neon-gold); padding: 10px 16px; border-radius: 4px; font-family: var(--pixel-font); font-size: 9px; color: #fff;">
+                            TEAM SPACE SOUNDS<br>
+                            <span style="color:var(--neon-cyan);">Carol Pillai</span> &amp; <span style="color:var(--neon-pink);">Ziven Pereira</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide-footer">
+                <span>Sound of Times &bull; Space Sounds Team &bull; 2026</span>
+                <span>Press [ P ] to Print / Export to PDF</span>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Bottom Deck Navigation Bar -->
+    <footer class="deck-footer">
+        <div class="slide-indicator-group">
+            <span style="font-family: var(--pixel-font); font-size: 9px; color: #8e7eb0; margin-right: 6px;">SLIDES:</span>
+            <button class="slide-pill-btn active" data-slide="0">01</button>
+            <button class="slide-pill-btn" data-slide="1">02</button>
+            <button class="slide-pill-btn" data-slide="2">03</button>
+            <button class="slide-pill-btn" data-slide="3">04</button>
+            <button class="slide-pill-btn" data-slide="4">05</button>
+            <button class="slide-pill-btn" data-slide="5">06</button>
+            <button class="slide-pill-btn" data-slide="6">07</button>
+        </div>
+
+        <div class="nav-controls-group">
+            <button class="nav-btn" id="btnPrevSlide" disabled>&larr; PREVIOUS</button>
+            <button class="nav-btn" id="btnNextSlide">NEXT SLIDE &rarr;</button>
+        </div>
+    </footer>
+
+    <!-- Interactive Deck Engine Script -->
+    <script>
+        (function() {
+            let currentSlide = 0;
+            const totalSlides = 7;
+            const slides = document.querySelectorAll('.slide');
+            const pillBtns = document.querySelectorAll('.slide-pill-btn');
+            const btnPrev = document.getElementById('btnPrevSlide');
+            const btnNext = document.getElementById('btnNextSlide');
+            const btnAudio = document.getElementById('btnAudioToggle');
+            const btnScanlines = document.getElementById('btnScanlinesToggle');
+            const btnFullscreen = document.getElementById('btnFullscreen');
+            const btnPrintPDF = document.getElementById('btnPrintPDF');
+            const scanlinesEl = document.getElementById('scanlines');
+
+            let sfxEnabled = true;
+            let audioCtx = null;
+
+            // Simple Web Audio 8-bit Sound Generator
+            function playBlip(freq = 520, type = 'square', duration = 0.08) {
+                if (!sfxEnabled) return;
+                try {
+                    if (!audioCtx) {
+                        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    }
+                    if (audioCtx.state === 'suspended') {
+                        audioCtx.resume();
+                    }
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(freq * 1.5, audioCtx.currentTime + duration);
+                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + duration);
+                } catch(e) {}
+            }
+
+            function goToSlide(index) {
+                if (index < 0 || index >= totalSlides) return;
+                slides[currentSlide].classList.remove('active');
+                pillBtns[currentSlide].classList.remove('active');
+
+                currentSlide = index;
+
+                slides[currentSlide].classList.add('active');
+                pillBtns[currentSlide].classList.add('active');
+
+                btnPrev.disabled = (currentSlide === 0);
+                btnNext.disabled = (currentSlide === totalSlides - 1);
+
+                playBlip(440 + currentSlide * 55, 'triangle', 0.09);
+            }
+
+            // Button Click Handlers
+            btnPrev.addEventListener('click', () => goToSlide(currentSlide - 1));
+            btnNext.addEventListener('click', () => goToSlide(currentSlide + 1));
+
+            pillBtns.forEach((btn, idx) => {
+                btn.addEventListener('click', () => goToSlide(idx));
+            });
+
+            btnAudio.addEventListener('click', () => {
+                sfxEnabled = !sfxEnabled;
+                btnAudio.innerText = sfxEnabled ? '🔊 SFX: ON' : '🔇 SFX: OFF';
+                if (sfxEnabled) playBlip(660, 'sine', 0.1);
+            });
+
+            btnScanlines.addEventListener('click', () => {
+                scanlinesEl.classList.toggle('off');
+                btnScanlines.innerText = scanlinesEl.classList.contains('off') ? '📺 CRT: OFF' : '📺 CRT: ON';
+                playBlip(330, 'square', 0.05);
+            });
+
+            btnFullscreen.addEventListener('click', () => {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(() => {});
+                } else {
+                    document.exitFullscreen().catch(() => {});
+                }
+                playBlip(750, 'sine', 0.12);
+            });
+
+            btnPrintPDF.addEventListener('click', () => {
+                window.print();
+            });
+
+            // Keyboard Navigation
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+                    if (currentSlide < totalSlides - 1) {
+                        e.preventDefault();
+                        goToSlide(currentSlide + 1);
+                    }
+                } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+                    if (currentSlide > 0) {
+                        e.preventDefault();
+                        goToSlide(currentSlide - 1);
+                    }
+                } else if (e.key === 'f' || e.key === 'F') {
+                    e.preventDefault();
+                    btnFullscreen.click();
+                } else if (e.key === 'p' || e.key === 'P') {
+                    e.preventDefault();
+                    window.print();
+                } else if (e.key >= '1' && e.key <= '7') {
+                    goToSlide(parseInt(e.key) - 1);
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

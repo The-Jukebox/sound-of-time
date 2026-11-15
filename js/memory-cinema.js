@@ -24,6 +24,17 @@
             this.rafId = null;
             this.forceCanvasMode = false;
 
+            // Pixelated Retro Slideshow Memory System
+            this.isPixelated = true; // TRUE by default for authentic pixel art memory
+            this.pixelScale = 4; // 4x downsampling for crisp retro 16-bit look
+            this.pixelCanvas = null;
+            this.currentSlideIndex = 0;
+            this.lastSlideIndex = 0;
+            this.slideTimer = 0;
+            this.slideInterval = 5.0; // 5 seconds per slide transition
+            this.fadeAlpha = 1.0;
+            this.isSlideshowPaused = false;
+
             // DOM Elements
             this.overlay = null;
             this.canvas = null;
@@ -35,7 +46,7 @@
             this.speedTag = null;
             this.nasaTag = null;
 
-            // Vision metadata and nostalgic Eli quotes
+            // Vision metadata and nostalgic Eli quotes with multi-image slideshows
             this.visionMeta = {
                 earth: {
                     title: "THE WHOLE BLUE PLANET: SEEING EARTH AS ONLY NASA CAN",
@@ -44,7 +55,8 @@
                     defaultFor: 'earth',
                     isYoutube: true,
                     youtubeId: "iTHUUjTA-LI",
-                    youtubeUrl: "https://youtu.be/iTHUUjTA-LI"
+                    youtubeUrl: "https://youtu.be/iTHUUjTA-LI",
+                    slides: ['earth', 'earth_sunrise']
                 },
                 blackforest: {
                     title: "BLACK FOREST: WUTACH STREAM & EUROPEAN BIRDSONG",
@@ -53,13 +65,15 @@
                     defaultFor: 'forest',
                     isYoutube: true,
                     youtubeId: "_FtPdpids-Y",
-                    youtubeUrl: "https://youtu.be/_FtPdpids-Y"
+                    youtubeUrl: "https://youtu.be/_FtPdpids-Y",
+                    slides: ['blackforest', 'leaves', 'stream', 'rain_forest']
                 },
                 leaves: {
                     title: "LUSH CANOPY LEAVES SWAYING IN THE SUNLIGHT",
                     quote: "“I remember lying under the trees on warm summer afternoons... watching thousands of leaves move so gently in the wind.”",
                     nasaTag: "NASA EIC Exhibit | NASA GEDI L4B 58.4m Canopy Architecture",
-                    defaultFor: 'forest'
+                    defaultFor: 'forest',
+                    slides: ['leaves', 'blackforest', 'stream']
                 },
                 ocean: {
                     title: "MAJESTIC OCEAN SURF & CRESTING BREAKERS: RELAXING CRASHING BEACH WAVES",
@@ -68,7 +82,8 @@
                     defaultFor: 'ocean',
                     isYoutube: true,
                     youtubeId: "rET3lp6kk2E",
-                    youtubeUrl: "https://youtu.be/rET3lp6kk2E"
+                    youtubeUrl: "https://youtu.be/rET3lp6kk2E",
+                    slides: ['ocean', 'ocean_sunset', 'ocean_deep']
                 },
                 birds: {
                     title: "BIRD SOUNDS SPECTACULAR: MORNING CHORUS & IRIDESCENT HUMMINGBIRD",
@@ -77,34 +92,43 @@
                     defaultFor: 'birds',
                     isYoutube: true,
                     youtubeId: "rYoZgpAEkFs",
-                    youtubeUrl: "https://youtu.be/rYoZgpAEkFs"
+                    youtubeUrl: "https://youtu.be/rYoZgpAEkFs",
+                    slides: ['birds', 'birds_robin', 'birds_canopy']
                 },
                 stream: {
                     title: "MOUNTAIN BROOK & SUSPENDED DROPLETS",
                     quote: "“Pure glacial water trickling across river stones. On hot hikes, we would cup our hands to drink from the brook.”",
                     nasaTag: "NASA EIC Exhibit | NASA GEDI Riparian Corridor Transect",
-                    defaultFor: 'stream'
+                    defaultFor: 'stream',
+                    slides: ['stream', 'blackforest', 'leaves']
                 },
                 rain: {
                     title: "SOFT FOREST RAIN FALLING ON THE CANOPY",
                     quote: "“Water falling from the sky... tapping against the glass window. Earth's quietest, most peaceful lullaby.”",
                     nasaTag: "NASA EIC Exhibit | NASA MERRA-2 Atmospheric Precipitation",
-                    defaultFor: 'atmosphere'
+                    defaultFor: 'atmosphere',
+                    slides: ['rain', 'rain_forest', 'leaves']
                 }
             };
 
             // Vision progression order for arrow-key navigation
             this.visionOrder = ['leaves', 'ocean', 'birds', 'stream', 'rain'];
 
-            // Full HD Photographic Images
+            // Full HD Photographic Images & Slideshow Library
             this.hdImages = {
                 earth: this.loadHDImage('earth_hd.jpg'),
+                earth_sunrise: this.loadHDImage('earth_sunrise_hd.jpg'),
                 blackforest: this.loadHDImage('blackforest_hd.jpg'),
                 leaves: this.loadHDImage('leaves_hd.jpg'),
-                ocean: this.loadHDImage('ocean_hd.jpg'),
-                birds: this.loadHDImage('birds_hd.jpg'),
                 stream: this.loadHDImage('stream_hd.jpg'),
-                rain: this.loadHDImage('rain_hd.jpg')
+                ocean: this.loadHDImage('ocean_hd.jpg'),
+                ocean_sunset: this.loadHDImage('ocean_sunset_hd.jpg'),
+                ocean_deep: this.loadHDImage('ocean_deep_hd.jpg'),
+                birds: this.loadHDImage('birds_hd.jpg'),
+                birds_robin: this.loadHDImage('birds_robin_hd.jpg'),
+                birds_canopy: this.loadHDImage('birds_canopy_hd.jpg'),
+                rain: this.loadHDImage('rain_hd.jpg'),
+                rain_forest: this.loadHDImage('rain_forest_hd.jpg')
             };
 
             // Slow-motion particle systems
@@ -224,12 +248,29 @@
                 closeBtn.onclick = () => this.close();
             }
 
-            // Click canvas to trigger interactive memory audio (e.g. bird chirps in slow-mo)
+            // Wire Toggle Pixel Mode Button
+            const togglePixelBtn = document.getElementById('btnTogglePixelMode');
+            if (togglePixelBtn) {
+                togglePixelBtn.onclick = () => this.togglePixelMode();
+            }
+
+            // Wire Slideshow Previous / Next Buttons
+            const btnPrev = document.getElementById('btnPrevSlide');
+            if (btnPrev) {
+                btnPrev.onclick = () => this.prevSlide();
+            }
+            const btnNext = document.getElementById('btnNextSlide');
+            if (btnNext) {
+                btnNext.onclick = () => this.nextSlide();
+            }
+
+            // Click canvas to trigger interactive memory audio and advance slide
             if (this.canvas) {
                 this.canvas.addEventListener('click', () => {
                     if (this.currentVision === 'birds' && window.forestSonification && window.forestSonification.soundscape) {
                         window.forestSonification.soundscape.callBird('random');
                     }
+                    this.nextSlide();
                 });
             }
 
@@ -241,6 +282,15 @@
                     e.preventDefault();
                 } else if (e.key === 'ArrowLeft') {
                     this.cycleVision(-1);
+                    e.preventDefault();
+                } else if (e.key === 'ArrowUp') {
+                    this.prevSlide();
+                    e.preventDefault();
+                } else if (e.key === 'ArrowDown') {
+                    this.nextSlide();
+                    e.preventDefault();
+                } else if (e.key === 'p' || e.key === 'P') {
+                    this.togglePixelMode();
                     e.preventDefault();
                 } else if (e.key === 'Enter' || e.key === 'Escape') {
                     this.close();
@@ -254,6 +304,54 @@
                     this.resizeCanvas();
                 }
             });
+        }
+
+        nextSlide(auto = false) {
+            const meta = this.visionMeta[this.currentVision];
+            const slides = (meta && meta.slides && meta.slides.length > 0) ? meta.slides : [this.currentVision];
+            if (slides.length <= 1) return;
+            this.lastSlideIndex = this.currentSlideIndex;
+            this.currentSlideIndex = (this.currentSlideIndex + 1) % slides.length;
+            this.fadeAlpha = 0.0;
+            this.slideTimer = 0;
+            this.updateSlideUI();
+        }
+
+        prevSlide() {
+            const meta = this.visionMeta[this.currentVision];
+            const slides = (meta && meta.slides && meta.slides.length > 0) ? meta.slides : [this.currentVision];
+            if (slides.length <= 1) return;
+            this.lastSlideIndex = this.currentSlideIndex;
+            this.currentSlideIndex = (this.currentSlideIndex - 1 + slides.length) % slides.length;
+            this.fadeAlpha = 0.0;
+            this.slideTimer = 0;
+            this.updateSlideUI();
+        }
+
+        togglePixelMode() {
+            this.isPixelated = !this.isPixelated;
+            this.updatePixelModeUI();
+        }
+
+        toggleSlideshowPause() {
+            this.isSlideshowPaused = !this.isSlideshowPaused;
+        }
+
+        updateSlideUI() {
+            const meta = this.visionMeta[this.currentVision];
+            const slides = (meta && meta.slides && meta.slides.length > 0) ? meta.slides : [this.currentVision];
+            const indicator = document.getElementById('slideIndicator');
+            if (indicator) {
+                indicator.textContent = `SLIDE ${this.currentSlideIndex + 1}/${slides.length}`;
+            }
+        }
+
+        updatePixelModeUI() {
+            const btn = document.getElementById('btnTogglePixelMode');
+            if (btn) {
+                btn.textContent = this.isPixelated ? '🕹️ PIXEL ART: ON' : '🎨 CRISP HD: ON';
+                btn.classList.toggle('pixel-active', this.isPixelated);
+            }
         }
 
         toggleVideoMode() {
@@ -366,6 +464,12 @@
         setVision(visionKey) {
             if (!this.visionMeta[visionKey]) return;
             this.currentVision = visionKey;
+            this.currentSlideIndex = 0;
+            this.lastSlideIndex = 0;
+            this.fadeAlpha = 1.0;
+            this.slideTimer = 0;
+            this.updateSlideUI();
+            this.updatePixelModeUI();
             this.initParticles();
             this.updateMetadataUI();
 
@@ -530,6 +634,17 @@
                 this.lastFrameTime = now;
                 this.animTime += dt * this.slowMoFactor;
 
+                // Slideshow progression & crossfade transition
+                if (!this.isSlideshowPaused) {
+                    this.slideTimer += dt * this.slowMoFactor;
+                    if (this.slideTimer >= this.slideInterval) {
+                        this.nextSlide(true);
+                    }
+                }
+                if (this.fadeAlpha < 1.0) {
+                    this.fadeAlpha = Math.min(1.0, this.fadeAlpha + dt * 1.8 * this.slowMoFactor);
+                }
+
                 this.drawScene();
                 this.rafId = requestAnimationFrame(render);
             };
@@ -537,8 +652,44 @@
         }
 
         // ----------------------------------------------------
-        // FULL HD SLOW-MO CINEMATIC DRAWING
+        // FULL HD SLOW-MO CINEMATIC DRAWING & SLIDESHOW SYSTEM
         // ----------------------------------------------------
+
+        getActiveSlideImage() {
+            const meta = this.visionMeta[this.currentVision];
+            const slides = (meta && meta.slides && meta.slides.length > 0) ? meta.slides : [this.currentVision];
+            const key = slides[this.currentSlideIndex % slides.length];
+            return this.hdImages[key] || this.hdImages[this.currentVision];
+        }
+
+        getLastSlideImage() {
+            const meta = this.visionMeta[this.currentVision];
+            const slides = (meta && meta.slides && meta.slides.length > 0) ? meta.slides : [this.currentVision];
+            const key = slides[this.lastSlideIndex % slides.length];
+            return this.hdImages[key] || this.hdImages[this.currentVision];
+        }
+
+        drawSlowMoImageWithCrossfade(ctx, w, h, t) {
+            const currImg = this.getActiveSlideImage();
+            const lastImg = this.getLastSlideImage();
+
+            if (!currImg || !currImg.complete || currImg.naturalWidth === 0) {
+                return false;
+            }
+
+            if (this.fadeAlpha < 1.0 && lastImg && lastImg.complete && lastImg.naturalWidth > 0 && lastImg !== currImg) {
+                // Render previous slide
+                this.drawHDImage(ctx, lastImg, w, h, t);
+                // Crossfade in active slide
+                ctx.save();
+                ctx.globalAlpha = Math.min(1.0, Math.max(0.0, this.fadeAlpha));
+                this.drawHDImage(ctx, currImg, w, h, t);
+                ctx.restore();
+                return true;
+            } else {
+                return this.drawHDImage(ctx, currImg, w, h, t);
+            }
+        }
 
         drawHDImage(ctx, img, w, h, t) {
             if (!img || !img.complete || img.naturalWidth === 0) return false;
@@ -580,8 +731,51 @@
             const h = this.canvas.clientHeight || 540;
             const t = this.animTime;
 
-            ctx.clearRect(0, 0, w, h);
+            if (this.isPixelated) {
+                if (!this.pixelCanvas) {
+                    this.pixelCanvas = document.createElement('canvas');
+                }
+                const scale = this.pixelScale || 4;
+                const lowW = Math.max(80, Math.floor(w / scale));
+                const lowH = Math.max(45, Math.floor(h / scale));
+                if (this.pixelCanvas.width !== lowW || this.pixelCanvas.height !== lowH) {
+                    this.pixelCanvas.width = lowW;
+                    this.pixelCanvas.height = lowH;
+                }
+                const pCtx = this.pixelCanvas.getContext('2d');
+                pCtx.clearRect(0, 0, lowW, lowH);
 
+                // Render active vision on low-res pixel canvas
+                this.renderVisionContent(pCtx, lowW, lowH, t);
+
+                // Upscale to display canvas using nearest-neighbor interpolation
+                ctx.clearRect(0, 0, w, h);
+                ctx.save();
+                ctx.imageSmoothingEnabled = false;
+                ctx.mozImageSmoothingEnabled = false;
+                ctx.webkitImageSmoothingEnabled = false;
+                ctx.msImageSmoothingEnabled = false;
+                ctx.drawImage(this.pixelCanvas, 0, 0, lowW, lowH, 0, 0, w, h);
+
+                // Subtle CRT scanline effect for authentic 16-bit retro arcade aesthetic
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
+                for (let y = 0; y < h; y += scale) {
+                    ctx.fillRect(0, y, w, 1);
+                }
+                ctx.restore();
+            } else {
+                ctx.clearRect(0, 0, w, h);
+                this.renderVisionContent(ctx, w, h, t);
+            }
+
+            // Cinematic Slow-Motion Vignette & Dream Bloom
+            this.drawCinematicVignette(ctx, w, h);
+
+            // Draw Slideshow Indicator Dots on Canvas
+            this.drawSlideshowOverlay(ctx, w, h);
+        }
+
+        renderVisionContent(ctx, w, h, t) {
             switch (this.currentVision) {
                 case 'earth':
                     this.drawSlowMoEarth(ctx, w, h, t);
@@ -605,14 +799,41 @@
                     this.drawSlowMoRain(ctx, w, h, t);
                     break;
             }
+        }
 
-            // Cinematic Slow-Motion Vignette & Dream Bloom
-            this.drawCinematicVignette(ctx, w, h);
+        drawSlideshowOverlay(ctx, w, h) {
+            const meta = this.visionMeta[this.currentVision];
+            const slides = (meta && meta.slides && meta.slides.length > 0) ? meta.slides : [this.currentVision];
+            if (slides.length <= 1) return;
+
+            ctx.save();
+            const totalDots = slides.length;
+            const dotSpacing = 16;
+            const startX = (w - (totalDots - 1) * dotSpacing) / 2;
+            const dotY = h - 68;
+
+            // Background pill for slide dots
+            ctx.fillStyle = 'rgba(10, 6, 22, 0.65)';
+            ctx.beginPath();
+            ctx.roundRect(startX - 20, dotY - 10, (totalDots - 1) * dotSpacing + 40, 20, 10);
+            ctx.fill();
+
+            for (let i = 0; i < totalDots; i++) {
+                const dx = startX + i * dotSpacing;
+                const isActive = (i === this.currentSlideIndex);
+                ctx.beginPath();
+                ctx.arc(dx, dotY, isActive ? 4.5 : 2.5, 0, Math.PI * 2);
+                ctx.fillStyle = isActive ? '#a4e6ff' : 'rgba(255, 255, 255, 0.4)';
+                ctx.fill();
+            }
+            ctx.restore();
         }
 
         // VISION 0-A: THE WHOLE BLUE PLANET (SEEING EARTH AS ONLY NASA CAN)
         drawSlowMoEarth(ctx, w, h, t) {
-            const hasHD = this.drawHDImage(ctx, this.hdImages.earth, w, h, t);
+            const hasHD = (this.currentVision === 'earth')
+                ? this.drawSlowMoImageWithCrossfade(ctx, w, h, t)
+                : this.drawHDImage(ctx, this.hdImages.earth, w, h, t);
             if (!hasHD) {
                 // Procedural deep space background
                 ctx.fillStyle = '#020108';
@@ -670,7 +891,9 @@
 
         // VISION 0: BLACK FOREST WUTACH STREAM (SLOW-MO NATURE AMBIENCE)
         drawSlowMoBlackForest(ctx, w, h, t) {
-            const hasHD = this.drawHDImage(ctx, this.hdImages.blackforest || this.hdImages.stream, w, h, t);
+            const hasHD = (this.currentVision === 'blackforest')
+                ? this.drawSlowMoImageWithCrossfade(ctx, w, h, t)
+                : this.drawHDImage(ctx, this.hdImages.blackforest || this.hdImages.stream, w, h, t);
             if (!hasHD) {
                 // Procedural deep Black Forest evergreen ravine
                 const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
@@ -757,7 +980,9 @@
 
         // VISION 1: CANOPY LEAVES SWAYING IN BREEZE (SLOW-MO)
         drawSlowMoLeaves(ctx, w, h, t) {
-            const hasHD = this.drawHDImage(ctx, this.hdImages.leaves, w, h, t);
+            const hasHD = (this.currentVision === 'leaves')
+                ? this.drawSlowMoImageWithCrossfade(ctx, w, h, t)
+                : this.drawHDImage(ctx, this.hdImages.leaves, w, h, t);
             if (!hasHD) {
                 // Procedural fallback
                 const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
@@ -925,7 +1150,9 @@
 
         // VISION 2: MAJESTIC OCEAN SURF & BREAKERS (SLOW-MO)
         drawSlowMoOcean(ctx, w, h, t) {
-            const hasHD = this.drawHDImage(ctx, this.hdImages.ocean, w, h, t);
+            const hasHD = (this.currentVision === 'ocean')
+                ? this.drawSlowMoImageWithCrossfade(ctx, w, h, t)
+                : this.drawHDImage(ctx, this.hdImages.ocean, w, h, t);
             if (!hasHD) {
                 // Procedural fallback
                 const skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.55);
@@ -1040,7 +1267,9 @@
 
         // VISION 3: HOVERING HUMMINGBIRD & SONGBIRD (SLOW-MO)
         drawSlowMoBirds(ctx, w, h, t) {
-            const hasHD = this.drawHDImage(ctx, this.hdImages.birds, w, h, t);
+            const hasHD = (this.currentVision === 'birds')
+                ? this.drawSlowMoImageWithCrossfade(ctx, w, h, t)
+                : this.drawHDImage(ctx, this.hdImages.birds, w, h, t);
             if (!hasHD) {
                 // Soft Dappled Garden Background
                 const bgGrad = ctx.createRadialGradient(w * 0.5, h * 0.4, 40, w * 0.5, h * 0.5, w * 0.7);
@@ -1265,7 +1494,9 @@
 
         // VISION 4: MOUNTAIN STREAM & DROPLET IMPACT CROWN (SLOW-MO)
         drawSlowMoStream(ctx, w, h, t) {
-            const hasHD = this.drawHDImage(ctx, this.hdImages.stream, w, h, t);
+            const hasHD = (this.currentVision === 'stream')
+                ? this.drawSlowMoImageWithCrossfade(ctx, w, h, t)
+                : this.drawHDImage(ctx, this.hdImages.stream, w, h, t);
             if (!hasHD) {
                 // Mountain Forest Background
                 const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
@@ -1405,7 +1636,9 @@
 
         // VISION 5: CANOPY RAIN IN SLOW MOTION
         drawSlowMoRain(ctx, w, h, t) {
-            const hasHD = this.drawHDImage(ctx, this.hdImages.rain, w, h, t);
+            const hasHD = (this.currentVision === 'rain')
+                ? this.drawSlowMoImageWithCrossfade(ctx, w, h, t)
+                : this.drawHDImage(ctx, this.hdImages.rain, w, h, t);
             if (!hasHD) {
                 // Moody Twilight Forest Background
                 const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
