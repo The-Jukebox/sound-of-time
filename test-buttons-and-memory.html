@@ -256,6 +256,8 @@
             assert(getTxt('memoryTitle').includes("OCEAN SURF"), "Title updated to 'MAJESTIC OCEAN SURF'", ul3);
             assert(getTxt('memoryQuote').includes("tide rolling in"), "Quote contains Eli's ocean wave memory", ul3);
             assert(getTxt('memoryNasaTag').includes("NASA ECCO"), "NASA tag references ECCO tropical gyre", ul3);
+            assert(mem.visionMeta.ocean.youtubeId === "rET3lp6kk2E", "Ocean vision has requested YouTube video ID (rET3lp6kk2E)", ul3);
+            assert(mem.visionMeta.ocean.isYoutube === true, "Ocean vision is marked isYoutube = true", ul3);
 
             // Vision Switching: Birds
             mem.setVision('birds');

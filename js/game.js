@@ -317,6 +317,22 @@ class Game {
                 }
             }
 
+            // SCENE 7 & 8 WHOLE EARTH VIEWPORT CINEMA CONTROLS
+            if (this.currentScene === 'scene7' || this.currentScene === 'scene8') {
+                if (e.key === 'Enter') {
+                    if (window.memoryCinema && window.memoryCinema.isOpen) {
+                        window.memoryCinema.close();
+                        e.preventDefault();
+                        return;
+                    }
+                    if (!this.currentDialogue) {
+                        this.openMemoryVision('earth');
+                        e.preventDefault();
+                        return;
+                    }
+                }
+            }
+
             // Dialogue continue / Choice select
             if (e.key === 'e' || e.key === 'E' || e.key === 'Enter' || e.code === 'Space') {
                 if (this.currentDialogue) {
@@ -372,6 +388,15 @@ class Game {
                 if (Math.abs(clickX - bx) < 85 && Math.abs(clickY - by) < 65) {
                     this.dismissDialogue();
                     this.openMemoryVision();
+                    return;
+                }
+            }
+            if (this.currentScene === 'scene7') {
+                const rect = this.canvas.getBoundingClientRect();
+                const scaleY = this.canvas.height / rect.height;
+                const clickY = (e.clientY - rect.top) * scaleY;
+                if (clickY < this.canvas.height * 0.72) {
+                    this.openMemoryVision('earth');
                     return;
                 }
             }
@@ -808,7 +833,10 @@ class Game {
         this.queueDialogues([
             {
                 speaker: 'ROCKY',
-                text: 'Grace! Grace! Look at viewport! Look ahead!'
+                text: 'Grace! Grace! Look at viewport! Look ahead!',
+                onShow: () => {
+                    this.showPrompt('[ENTER] / CLICK VIEWPORT: WATCH WHOLE EARTH IN 4K (NASA ARCHIVE) | [SPACE] CONTINUE');
+                }
             },
             {
                 speaker: 'RYAN',
@@ -945,7 +973,7 @@ class Game {
                     }
                 }
             ], () => {
-                this.showPrompt('[A/D] or [←/→] WALK TOGETHER BY THE WATER  |  [ENTER] SIT ON PEBBLES  |  [R] REPLAY');
+                this.showPrompt('[ENTER] WATCH NASA WHOLE EARTH CINEMA (4K)  |  [←/→] WALK BY WATER  |  [R] REPLAY');
             });
         }, 2200);
     }

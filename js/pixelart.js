@@ -730,71 +730,148 @@ class PixelRenderer {
         ctx.rect(winX, winY, winW, winH);
         ctx.clip();
 
-        if (activeRecord === 'forest') {
-            this.drawForestWindowView(winX, winY, winW, winH);
-        } else {
-            // Alien sky through window
-            const outSky = ctx.createLinearGradient(winX, winY, winX, winY + winH);
-            outSky.addColorStop(0, '#0a0517');
-            outSky.addColorStop(0.6, '#281347');
-            outSky.addColorStop(1, '#441d66');
-            ctx.fillStyle = outSky;
-            ctx.fillRect(winX, winY, winW, winH);
+        // 1. Deep midnight cosmic sky gradient (Dark outside on Erid)
+        const outSky = ctx.createLinearGradient(winX, winY, winX, winY + winH);
+        outSky.addColorStop(0, '#060310');
+        outSky.addColorStop(0.45, '#130826');
+        outSky.addColorStop(0.85, '#220e3d');
+        outSky.addColorStop(1, '#341558');
+        ctx.fillStyle = outSky;
+        ctx.fillRect(winX, winY, winW, winH);
 
-            // Distant stars & moon
-            ctx.fillStyle = '#ffffff';
-            for (let i = 0; i < 25; i++) {
-                ctx.fillRect(winX + (i * 47) % winW, winY + (i * 29) % (winH * 0.5), 1.5, 1.5);
-            }
-            ctx.fillStyle = '#ffca72';
-            ctx.beginPath();
-            ctx.arc(winX + 230, winY + 40, 16, 0, Math.PI * 2);
-            ctx.fill();
+        // 2. Twinkling Distant Cosmic Stars
+        ctx.fillStyle = '#ffffff';
+        for (let i = 0; i < 35; i++) {
+            const sx = winX + (i * 49 + 17) % (winW - 10);
+            const sy = winY + (i * 31 + 11) % (winH * 0.65);
+            const twinkle = Math.sin(this.animTime * 2.5 + i * 1.5) * 0.35 + 0.65;
+            ctx.globalAlpha = twinkle;
+            ctx.fillRect(Math.floor(sx), Math.floor(sy), (i % 6 === 0) ? 2 : 1, (i % 6 === 0) ? 2 : 1);
+        }
+        ctx.globalAlpha = 1.0;
 
-            // Purple mountains outside window
-            ctx.fillStyle = '#1e0c33';
-            ctx.beginPath();
-            ctx.moveTo(winX, winY + winH);
-            ctx.lineTo(winX, winY + 90);
-            ctx.lineTo(winX + 70, winY + 65);
-            ctx.lineTo(winX + 160, winY + 95);
-            ctx.lineTo(winX + 240, winY + 60);
-            ctx.lineTo(winX + winW, winY + 85);
-            ctx.lineTo(winX + winW, winY + winH);
-            ctx.closePath();
-            ctx.fill();
+        // 3. Small Distant Turquoise Moon (Left sky)
+        const moon2X = winX + 68;
+        const moon2Y = winY + 36;
+        ctx.fillStyle = 'rgba(71, 216, 242, 0.25)';
+        ctx.beginPath();
+        ctx.arc(moon2X, moon2Y, 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#6ee7fc';
+        ctx.beginPath();
+        ctx.arc(moon2X, moon2Y, 5, 0, Math.PI * 2);
+        ctx.fill();
 
-            // Artificial Beach & Gentle Waves (visible outside habitat)
-            ctx.fillStyle = '#ffcc80'; // sandy shore
-            ctx.fillRect(winX, winY + winH - 22, winW, 22);
+        // 4. Large Ringed Gas Giant Planet (Right sky - Erid's sister world)
+        const planetX = winX + 215;
+        const planetY = winY + 48;
+        const pR = 22;
 
-            // Water with gentle waves (surges in sync with ocean sonification)
-            let waveAmp = 4;
-            if (activeRecord === 'ocean' && window.oceanSonification && window.oceanSonification.isPlaying) {
-                const m = window.oceanSonification.getMetrics();
-                waveAmp = 3 + m.energy * 9;
-            }
-            const waterWave = Math.sin(this.animTime * 2.2) * waveAmp;
-            ctx.fillStyle = '#399ec7';
-            ctx.beginPath();
-            ctx.moveTo(winX, winY + winH);
-            ctx.lineTo(winX, winY + winH - 14 + waterWave);
-            ctx.quadraticCurveTo(winX + winW * 0.5, winY + winH - 18 - waterWave, winX + winW, winY + winH - 14 + waterWave);
-            ctx.lineTo(winX + winW, winY + winH);
-            ctx.closePath();
-            ctx.fill();
+        // Atmospheric haze glow around planet
+        const pGlow = ctx.createRadialGradient(planetX, planetY, pR * 0.5, planetX, planetY, pR * 2.2);
+        pGlow.addColorStop(0, 'rgba(235, 130, 190, 0.35)');
+        pGlow.addColorStop(0.5, 'rgba(110, 60, 200, 0.15)');
+        pGlow.addColorStop(1, 'rgba(20, 10, 45, 0)');
+        ctx.fillStyle = pGlow;
+        ctx.beginPath();
+        ctx.arc(planetX, planetY, pR * 2.2, 0, Math.PI * 2);
+        ctx.fill();
 
-            // Rain on window if ATMOSPHERE or EARTH is active
-            if (activeRecord === 'atmosphere' || activeRecord === 'earth') {
-                ctx.strokeStyle = 'rgba(71, 216, 242, 0.45)';
-                ctx.lineWidth = 1.5;
-                this.rainDrops.forEach(drop => {
-                    ctx.beginPath();
-                    ctx.moveTo(drop.x, drop.y);
-                    ctx.lineTo(drop.x - 1, drop.y + drop.length);
-                    ctx.stroke();
-                });
-            }
+        // Planet Body
+        const pGrad = ctx.createLinearGradient(planetX - pR, planetY - pR, planetX + pR, planetY + pR);
+        pGrad.addColorStop(0, '#f28bbd');
+        pGrad.addColorStop(0.45, '#7e42d6');
+        pGrad.addColorStop(1, '#200e40');
+        ctx.fillStyle = pGrad;
+        ctx.beginPath();
+        ctx.arc(planetX, planetY, pR, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Tilted Golden Planetary Rings
+        ctx.save();
+        ctx.translate(planetX, planetY);
+        ctx.rotate(-0.32);
+        ctx.strokeStyle = 'rgba(255, 209, 115, 0.82)';
+        ctx.lineWidth = 2.8;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 44, 10, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+
+        // 5. Dark Distant Mountain Ridge 1 (Far background)
+        ctx.fillStyle = '#110720';
+        ctx.beginPath();
+        ctx.moveTo(winX, winY + winH);
+        ctx.lineTo(winX, winY + 98);
+        ctx.lineTo(winX + 45, winY + 76);
+        ctx.lineTo(winX + 110, winY + 94);
+        ctx.lineTo(winX + 180, winY + 68);
+        ctx.lineTo(winX + 250, winY + 88);
+        ctx.lineTo(winX + winW, winY + 74);
+        ctx.lineTo(winX + winW, winY + winH);
+        ctx.closePath();
+        ctx.fill();
+
+        // 6. Mid Alien Mountain Ridge (Deep volcanic violet)
+        ctx.fillStyle = '#1c0c32';
+        ctx.beginPath();
+        ctx.moveTo(winX, winY + winH);
+        ctx.lineTo(winX, winY + 110);
+        ctx.lineTo(winX + 60, winY + 90);
+        ctx.lineTo(winX + 130, winY + 104);
+        ctx.lineTo(winX + 205, winY + 84);
+        ctx.lineTo(winX + 265, winY + 102);
+        ctx.lineTo(winX + winW, winY + 95);
+        ctx.lineTo(winX + winW, winY + winH);
+        ctx.closePath();
+        ctx.fill();
+
+        // 7. Dark Alien Foreground Terrain Ridge (Obsidian crust)
+        ctx.fillStyle = '#261142';
+        ctx.beginPath();
+        ctx.moveTo(winX, winY + winH);
+        ctx.lineTo(winX, winY + 128);
+        ctx.quadraticCurveTo(winX + 120, winY + 118, winX + winW, winY + 124);
+        ctx.lineTo(winX + winW, winY + winH);
+        ctx.closePath();
+        ctx.fill();
+
+        // Distant glowing alien bioluminescent flora on the dark terrain
+        const sporeCoords = [
+            { x: winX + 35, y: winY + 124 },
+            { x: winX + 95, y: winY + 120 },
+            { x: winX + 190, y: winY + 121 },
+            { x: winX + 255, y: winY + 123 }
+        ];
+        sporeCoords.forEach((sp, idx) => {
+            const glowAlpha = Math.sin(this.animTime * 2 + idx) * 0.3 + 0.6;
+            ctx.fillStyle = `rgba(71, 216, 242, ${glowAlpha})`;
+            ctx.fillRect(sp.x, sp.y, 2, 2);
+            ctx.fillStyle = `rgba(71, 216, 242, ${glowAlpha * 0.3})`;
+            ctx.fillRect(sp.x - 1, sp.y - 1, 4, 4);
+        });
+
+        // 8. Subtle diagonal window glass reflection
+        const glassSheen = ctx.createLinearGradient(winX, winY, winX + winW, winY + winH);
+        glassSheen.addColorStop(0, 'rgba(255, 255, 255, 0.06)');
+        glassSheen.addColorStop(0.3, 'rgba(255, 255, 255, 0.02)');
+        glassSheen.addColorStop(0.5, 'rgba(255, 255, 255, 0.08)');
+        glassSheen.addColorStop(1, 'rgba(255, 255, 255, 0.01)');
+        ctx.fillStyle = glassSheen;
+        ctx.fillRect(winX, winY, winW, winH);
+
+        // 9. Rain streaks on the glass if Atmosphere record is playing
+        if (activeRecord === 'atmosphere') {
+            ctx.strokeStyle = 'rgba(150, 235, 255, 0.35)';
+            ctx.lineWidth = 1.2;
+            this.rainDrops.forEach(drop => {
+                const rx = winX + (drop.x % winW);
+                const ry = winY + (drop.y % winH);
+                ctx.beginPath();
+                ctx.moveTo(rx, ry);
+                ctx.lineTo(rx - 1, ry + drop.length);
+                ctx.stroke();
+            });
         }
 
         ctx.restore();

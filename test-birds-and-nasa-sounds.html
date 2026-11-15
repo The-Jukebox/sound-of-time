@@ -328,6 +328,8 @@
                 cinema.open('birds');
                 assert(cinema.currentVision === 'birds', "Memory cinema sets vision to 'birds'", ul6);
                 assert(cinema.visionMeta.birds.title.includes("HUMMINGBIRD"), "Birds vision metadata is accurate", ul6);
+                assert(cinema.visionMeta.birds.youtubeId === "rYoZgpAEkFs", "Birds vision uses requested YouTube video ID (rYoZgpAEkFs)", ul6);
+                assert(cinema.visionMeta.birds.isYoutube === true, "Birds vision has isYoutube = true for video memory flashback", ul6);
                 cinema.close();
 
                 // Clean up

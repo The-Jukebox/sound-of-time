@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
     <title>SOUND OF TIMES — A Little Piece of Earth, Far Away from Home</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -391,6 +392,37 @@
                         referrerpolicy="strict-origin-when-cross-origin"
                         allowfullscreen>
                 </iframe>
+
+                <!-- Local file protocol advisory & direct launch card -->
+                <div id="videoLocalAdvisory" class="video-local-advisory" style="display: none;">
+                    <div class="video-advisory-badge">🌲 BLACK FOREST — 4K HDR NATURE STREAM &amp; BIRDSONG</div>
+                    <div class="video-advisory-body">
+                        <div class="video-advisory-thumb">
+                            <img src="assets/memories/blackforest_hd.jpg" alt="Black Forest 4K Stream">
+                            <div class="video-advisory-play-overlay">▶</div>
+                        </div>
+                        <div class="video-advisory-info">
+                            <h3 class="video-advisory-title">Wutach Creek Stream &amp; European Songbird Chorus</h3>
+                            <p class="video-advisory-meta">🎥 Reference: YouTube 4K HDR Nature Ambience (_FtPdpids-Y)</p>
+                            <p class="video-advisory-text">
+                                “I remember hiking deep into Germany's Black Forest... Wutach Creek murmuring gently over mossy stones, tall firs whispering in the cool mountain breeze, and soft robins calling from the canopy.”
+                            </p>
+                            <div class="video-advisory-actions">
+                                <a href="https://youtu.be/_FtPdpids-Y" target="_blank" rel="noopener noreferrer" class="advisory-btn primary-yt">
+                                    ▶️ WATCH 4K VIDEO ON YOUTUBE ↗
+                                </a>
+                                <button type="button" class="advisory-btn secondary-canvas" id="btnAdvisorySwitchCanvas">
+                                    🎨 VIEW INTERACTIVE HD NATURE CINEMA
+                                </button>
+                                <button type="button" class="advisory-btn tertiary-embed" id="btnAdvisoryTryEmbed">
+                                    📺 TRY EMBEDDED PLAYER
+                                </button>
+                            </div>
+                            <p class="video-advisory-note">💡 Running locally via <code>file://</code>: Browsers block embedded YouTube players on desktop files (Error 153). Opening on YouTube plays in crystal-clear 4K HDR!</p>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="memory-video-bar">
                     <span class="video-status-indicator">🔴 4K HDR LIVE ARCHIVE: WUTACH CREEK, BLACK FOREST</span>
                     <div class="video-actions">
@@ -409,6 +441,7 @@
                     <span class="memory-tag">💭 ELI'S MEMORY OF EARTH</span>
                     <span class="memory-speed-tag" id="memorySpeedTag">⏱️ SLOW MOTION 0.35x</span>
                     <span class="memory-nasa-tag" id="memoryNasaTag">NASA EARTH OBSERVATION</span>
+                    <a href="https://youtu.be/_FtPdpids-Y" target="_blank" rel="noopener noreferrer" class="memory-tag youtube-header-link" id="btnHeaderYoutube" title="Watch authentic 4K HDR Black Forest Nature Ambience on YouTube">▶️ 4K VIDEO (YOUTUBE) ↗</a>
                 </div>
                 <h2 class="memory-title" id="memoryTitle">CANOPY LEAVES SWAYING IN THE SUNLIGHT</h2>
                 <p class="memory-quote" id="memoryQuote">"I remember how the sun felt filtering through the leaves... moving so gently in the wind."</p>
@@ -417,10 +450,11 @@
             <!-- Memory Vision Selector Dock -->
             <div class="memory-dock">
                 <div class="memory-btn-group">
+                    <button class="mem-select-btn" data-vision="earth">🌍 WHOLE EARTH (NASA 4K)</button>
                     <button class="mem-select-btn" data-vision="blackforest">🌲 BLACK FOREST (4K VIDEO)</button>
                     <button class="mem-select-btn active" data-vision="leaves">🍃 LEAVES IN BREEZE</button>
-                    <button class="mem-select-btn" data-vision="ocean">🌊 OCEAN SURF & WAVES</button>
-                    <button class="mem-select-btn" data-vision="birds">🐦 HUMMINGBIRDS & CHIRP</button>
+                    <button class="mem-select-btn" data-vision="ocean">🌊 OCEAN SURF (4K VIDEO)</button>
+                    <button class="mem-select-btn" data-vision="birds">🐦 BIRD CHIRPING (4K VIDEO)</button>
                     <button class="mem-select-btn" data-vision="stream">💧 MOUNTAIN STREAM</button>
                     <button class="mem-select-btn" data-vision="rain">🌧️ CANOPY RAIN</button>
                 </div>
