@@ -2008,8 +2008,8 @@ class Game {
             this.eli.state = 'idle';
         }
 
-        // Clamp Ryan along the shoreline (explore up to the rocky arch base)
-        this.eli.x = Math.max(50, Math.min(385, this.eli.x));
+        // Clamp Ryan along the open shoreline
+        this.eli.x = Math.max(50, Math.min(560, this.eli.x));
 
         // Rocky walks alongside Ryan on the pebble beach in his form-fitting suit!
         const targetRockyX = this.eli.x - 45 * this.eli.facing;
