@@ -339,47 +339,50 @@ class PixelRenderer {
     // Eli's Habitat Exterior Dome (Scene 1)
     drawHabitatExterior(x, y) {
         const ctx = this.ctx;
-        // Habitat structure
+        // Habitat structure (properly proportioned for adult Ryan ~82px)
         ctx.fillStyle = '#42325c';
-        ctx.fillRect(x, y - 80, 160, 80);
+        ctx.fillRect(x, y - 105, 175, 105);
         ctx.fillStyle = '#2c1e42';
-        ctx.fillRect(x + 10, y - 70, 140, 70);
+        ctx.fillRect(x + 10, y - 95, 155, 95);
 
         // Curved dome roof
         ctx.fillStyle = '#5c487d';
         ctx.beginPath();
-        ctx.ellipse(x + 80, y - 80, 80, 35, 0, Math.PI, 0);
+        ctx.ellipse(x + 88, y - 105, 88, 42, 0, Math.PI, 0);
         ctx.fill();
 
         // Glowing panoramic observation window (Artificial beach & warm lights inside)
-        const winGrad = ctx.createLinearGradient(x + 25, y - 65, x + 135, y - 15);
+        const winGrad = ctx.createLinearGradient(x + 20, y - 85, x + 125, y - 20);
         winGrad.addColorStop(0, '#ffca72');
         winGrad.addColorStop(0.5, '#47d8f2');
         winGrad.addColorStop(1, '#26134d');
         ctx.fillStyle = winGrad;
-        ctx.fillRect(x + 25, y - 65, 110, 50);
+        ctx.fillRect(x + 20, y - 85, 105, 65);
 
         // Window frame dividers
         ctx.fillStyle = '#1e142e';
-        ctx.fillRect(x + 60, y - 65, 4, 50);
-        ctx.fillRect(x + 95, y - 65, 4, 50);
+        ctx.fillRect(x + 55, y - 85, 4, 65);
+        ctx.fillRect(x + 90, y - 85, 4, 65);
 
         // Internal artificial fog / wave silhouette inside window
         ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
         ctx.beginPath();
-        const waveY = y - 25 + Math.sin(this.animTime * 2) * 2;
-        ctx.moveTo(x + 25, waveY);
-        ctx.bezierCurveTo(x + 50, waveY - 4, x + 85, waveY + 4, x + 135, waveY);
-        ctx.lineTo(x + 135, y - 15);
-        ctx.lineTo(x + 25, y - 15);
+        const waveY = y - 30 + Math.sin(this.animTime * 2) * 2;
+        ctx.moveTo(x + 20, waveY);
+        ctx.bezierCurveTo(x + 50, waveY - 4, x + 85, waveY + 4, x + 125, waveY);
+        ctx.lineTo(x + 125, y - 20);
+        ctx.lineTo(x + 20, y - 20);
         ctx.closePath();
         ctx.fill();
 
-        // Habitat entrance door
+        // Habitat entrance door (tall enough for adult Ryan ~82px to walk through)
         ctx.fillStyle = '#ffca72';
-        ctx.fillRect(x + 135, y - 45, 20, 45);
+        ctx.fillRect(x + 135, y - 88, 28, 88);
         ctx.fillStyle = '#311b52';
-        ctx.fillRect(x + 137, y - 43, 16, 43);
+        ctx.fillRect(x + 137, y - 86, 24, 86);
+        // Door light sensor
+        ctx.fillStyle = this.palette.electricBlue;
+        ctx.fillRect(x + 145, y - 76, 8, 3);
     }
 
     // Classroom Scene (Scene 2)
@@ -793,8 +796,8 @@ class PixelRenderer {
         const tableY = h * 0.70;
         this.drawWorkbench(tableX, tableY);
 
-        // Retro Lamp on the workbench
-        this.drawDeskLamp(tableX - 35, tableY - 32);
+        // Retro Lamp on the workbench (sitting securely on the left of tabletop)
+        this.drawDeskLamp(tableX - 5, tableY - 28);
 
         // If Earth record is active, room lighting shifts warmly!
         if (activeRecord === 'earth') {
@@ -1190,29 +1193,36 @@ class PixelRenderer {
 
     drawDeskLamp(x, y) {
         const ctx = this.ctx;
-        // Brass neck & lamp shade
+        // Lamp weighted base plate on tabletop
+        ctx.fillStyle = '#261608';
+        ctx.fillRect(x - 5, y - 2, 10, 3);
+        ctx.fillStyle = this.palette.warmGold;
+        ctx.fillRect(x - 4, y - 3, 8, 2);
+
+        // Brass arched gooseneck
         ctx.strokeStyle = this.palette.warmGold;
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(x, y - 24);
-        ctx.lineTo(x + 12, y - 28);
+        ctx.moveTo(x, y - 3);
+        ctx.lineTo(x - 2, y - 20);
+        ctx.lineTo(x + 10, y - 26);
         ctx.stroke();
 
+        // Lamp shade angled toward jukebox
         ctx.fillStyle = '#5c4323';
         ctx.beginPath();
-        ctx.arc(x + 14, y - 28, 7, 0, Math.PI * 2);
+        ctx.arc(x + 12, y - 26, 7, 0, Math.PI * 2);
         ctx.fill();
 
-        // Warm light cone downwards
-        const lightGrad = ctx.createRadialGradient(x + 14, y - 26, 2, x + 14, y + 10, 42);
-        lightGrad.addColorStop(0, 'rgba(255, 202, 114, 0.45)');
+        // Warm light cone directed down onto the workbench
+        const lightGrad = ctx.createRadialGradient(x + 12, y - 24, 2, x + 16, y - 4, 38);
+        lightGrad.addColorStop(0, 'rgba(255, 202, 114, 0.40)');
         lightGrad.addColorStop(1, 'rgba(255, 202, 114, 0)');
         ctx.fillStyle = lightGrad;
         ctx.beginPath();
-        ctx.moveTo(x + 10, y - 26);
-        ctx.lineTo(x - 16, y + 12);
-        ctx.lineTo(x + 44, y + 12);
+        ctx.moveTo(x + 12, y - 24);
+        ctx.lineTo(x - 10, y);
+        ctx.lineTo(x + 42, y);
         ctx.closePath();
         ctx.fill();
     }
@@ -1230,10 +1240,18 @@ class PixelRenderer {
         const activeRecord = state.activeRecord || null;
         const audioMetrics = state.audioMetrics || { energy: 0, bass: 0, treble: 0 };
 
+        // Scale factor: Jukebox is a compact tabletop retro audio unit (~51px tall, 44px wide)
+        // making Ryan (~82px tall) visibly bigger and taller than the jukebox!
+        const jbScale = 0.58;
         const jw = 76;
         const jh = 88;
-        const jx = x - jw * 0.5;
-        const jy = y - jh;
+
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.scale(jbScale, jbScale);
+
+        const jx = -jw * 0.5;
+        const jy = -jh;
 
         // 1. Wooden Outer Rounded Frame
         ctx.fillStyle = '#3a1b0b'; // dark mahogany
@@ -1414,9 +1432,11 @@ class PixelRenderer {
             ctx.fillRect(bx, jy + 74, 4, 4);
         }
 
+        ctx.restore();
+
         // 7. Holographic Projection Above Jukebox if record is playing
         if (isPlaying && !isPaused && activeRecord) {
-            this.drawRecordHologram(x, jy - 10, activeRecord, audioMetrics);
+            this.drawRecordHologram(x, y - jh * jbScale, activeRecord, audioMetrics);
         }
     }
 
@@ -1730,26 +1750,26 @@ class PixelRenderer {
             }
 
             if (spriteImg && spriteImg.complete && spriteImg.naturalWidth > 0) {
-                // Scale Ryan to ~48px tall (consistent with world scale)
-                const baseScale = 48.0 / 234.0;
+                // Scale Ryan to ~82px tall (adult human height, visibly larger than jukebox at ~51px)
+                const baseScale = 82.0 / 234.0;
                 const w = spriteImg.naturalWidth * baseScale;
                 const h = spriteImg.naturalHeight * baseScale;
-                const bob = (state === 'walk') ? Math.abs(Math.sin(t * 10)) * 1.2 : Math.sin(t * 2.2) * 0.5;
-                const kneelOffset = (state === 'kneel') ? 10 : 0;
+                const bob = (state === 'walk') ? Math.abs(Math.sin(t * 10)) * 1.5 : Math.sin(t * 2.2) * 0.7;
+                const kneelOffset = (state === 'kneel') ? 16 : 0;
 
                 ctx.drawImage(spriteImg, -w / 2, -h - bob + kneelOffset, w, h);
 
                 // If carrying the retro jukebox
                 if (isCarrying) {
                     ctx.save();
-                    const jx = 6;
-                    const jy = -28 - bob;
+                    const jx = 10;
+                    const jy = -48 - bob;
                     ctx.fillStyle = '#663b14';
-                    ctx.fillRect(jx, jy, 16, 18);
+                    ctx.fillRect(jx, jy, 26, 30);
                     ctx.fillStyle = '#ffd15c';
-                    ctx.fillRect(jx + 2, jy + 2, 12, 5);
+                    ctx.fillRect(jx + 3, jy + 3, 20, 8);
                     ctx.fillStyle = '#47d8f2';
-                    ctx.fillRect(jx + 4, jy + 9, 8, 4);
+                    ctx.fillRect(jx + 6, jy + 14, 14, 6);
                     ctx.restore();
                 }
 
@@ -1759,6 +1779,9 @@ class PixelRenderer {
         }
 
         // 2. White Astronaut EVA Suit (Used at Earth Arrival in Scene 7 / Credits)
+        // Scaled to match Ryan's 82px height
+        const astroScale = 82.0 / 48.0;
+        ctx.scale(astroScale, astroScale);
         let walkOffset = 0;
         let legL = 0;
         let legR = 0;
@@ -2038,13 +2061,13 @@ class PixelRenderer {
         }
 
         if (spriteImg && spriteImg.complete && spriteImg.naturalWidth > 0) {
-            // Scale sprite to fit the game environment (base body height ~31px, visibly smaller than Ryan at ~48px)
-            const baseScale = 31.0 / 375.0;
+            // Scale sprite to fit the game environment (base body height ~58px, bigger and more prominent, while appropriately smaller than Ryan at ~82px)
+            const baseScale = 58.0 / 375.0;
             const w = spriteImg.naturalWidth * baseScale;
             const h = spriteImg.naturalHeight * baseScale;
 
             // Subtle bounce while walking or breathing
-            const bob = (state === 'walk') ? Math.abs(Math.sin(t * 10)) * 1.2 : Math.sin(t * 2.5) * 0.5;
+            const bob = (state === 'walk') ? Math.abs(Math.sin(t * 10)) * 1.6 : Math.sin(t * 2.5) * 0.8;
 
             ctx.drawImage(spriteImg, -w / 2, -h - bob, w, h);
             ctx.restore();
@@ -2052,6 +2075,8 @@ class PixelRenderer {
         }
 
         // 2. Procedural Fallback (while image assets are loading)
+        const procScale = 58.0 / 36.0;
+        ctx.scale(procScale, procScale);
         let bob = Math.sin(t * 3.5) * 1.5;
         let legL = 0;
         let legR = 0;
@@ -2400,8 +2425,8 @@ class PixelRenderer {
 
         // 5. THE GEODESIC XENONITE SPHERE DOME (Matches reference photo)
         const domeX = 220;
-        const domeY = h * 0.72 - 38;
-        const domeR = 56;
+        const domeY = h * 0.72 - 44;
+        const domeR = 68;
         this.drawGeodesicDome(domeX, domeY, domeR, rockyState, isRockySpeaking);
 
         // 6. RYAN IN HIS FULL WHITE ASTRONAUT SUIT (Outside in the cold Earth air)
@@ -2443,7 +2468,7 @@ class PixelRenderer {
         ctx.clip();
 
         // Rocky sits happily inside his warm geodesic habitat ball, facing right towards Ryan
-        const rockyY = cy + R * 0.70;
+        const rockyY = cy + R * 0.65;
         this.drawKoru(cx, rockyY, rockyState, 1, isSpeaking);
         ctx.restore();
 
