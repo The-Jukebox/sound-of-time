@@ -387,49 +387,17 @@
             <div id="memoryVideoContainer" class="memory-video-container" style="display: none;">
                 <iframe id="memoryYoutubeIframe" 
                         src="" 
-                        title="Black Forest Nature Ambience Video Memory" 
+                        title="4K Nature Ambience Video Memory" 
                         frameborder="0" 
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
                         referrerpolicy="strict-origin-when-cross-origin"
                         allowfullscreen>
                 </iframe>
 
-                <!-- Local file protocol advisory & direct launch card -->
-                <div id="videoLocalAdvisory" class="video-local-advisory" style="display: none;">
-                    <div class="video-advisory-badge">🌲 BLACK FOREST — 4K HDR NATURE STREAM &amp; BIRDSONG</div>
-                    <div class="video-advisory-body">
-                        <div class="video-advisory-thumb">
-                            <img src="assets/memories/blackforest_hd.jpg" alt="Black Forest 4K Stream">
-                            <div class="video-advisory-play-overlay">▶</div>
-                        </div>
-                        <div class="video-advisory-info">
-                            <h3 class="video-advisory-title">Wutach Creek Stream &amp; European Songbird Chorus</h3>
-                            <p class="video-advisory-meta">🎥 Reference: YouTube 4K HDR Nature Ambience (_FtPdpids-Y)</p>
-                            <p class="video-advisory-text">
-                                “I remember hiking deep into Germany's Black Forest... Wutach Creek murmuring gently over mossy stones, tall firs whispering in the cool mountain breeze, and soft robins calling from the canopy.”
-                            </p>
-                            <div class="video-advisory-actions">
-                                <a href="https://youtu.be/_FtPdpids-Y" target="_blank" rel="noopener noreferrer" class="advisory-btn primary-yt">
-                                    ▶️ WATCH 4K VIDEO ON YOUTUBE ↗
-                                </a>
-                                <button type="button" class="advisory-btn secondary-canvas" id="btnAdvisorySwitchCanvas">
-                                    🎨 VIEW INTERACTIVE HD NATURE CINEMA
-                                </button>
-                                <button type="button" class="advisory-btn tertiary-embed" id="btnAdvisoryTryEmbed">
-                                    📺 TRY EMBEDDED PLAYER
-                                </button>
-                            </div>
-                            <p class="video-advisory-note">💡 Running locally via <code>file://</code>: Browsers block embedded YouTube players on desktop files (Error 153). Opening on YouTube plays in crystal-clear 4K HDR!</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="memory-video-bar">
-                    <span class="video-status-indicator">🔴 4K HDR LIVE ARCHIVE: WUTACH CREEK, BLACK FOREST</span>
-                    <div class="video-actions">
-                        <button class="video-toggle-btn" id="btnToggleVideoMode" title="Switch between 4K Video and HD Canvas">🎨 SWITCH TO HD CANVAS</button>
-                        <a href="https://youtu.be/_FtPdpids-Y" target="_blank" rel="noopener noreferrer" class="video-external-link">OPEN ON YOUTUBE ↗</a>
-                    </div>
+                <!-- Sleek Minimal Floating Control Bar (Zero Clutter) -->
+                <div class="memory-video-floating-bar" id="memoryVideoFloatingBar">
+                    <button class="video-toggle-btn" id="btnToggleVideoMode" title="Switch between 4K Video and HD Canvas">🎨 HD CANVAS MODE</button>
+                    <a href="https://youtu.be/_FtPdpids-Y" target="_blank" rel="noopener noreferrer" class="video-external-link" id="videoExternalLink">↗ OPEN ON YOUTUBE</a>
                 </div>
             </div>
             

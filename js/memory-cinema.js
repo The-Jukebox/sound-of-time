@@ -172,6 +172,8 @@
             }
             this.videoContainer = document.getElementById('memoryVideoContainer');
             this.iframe = document.getElementById('memoryYoutubeIframe');
+            this.headerEl = document.querySelector('.memory-header');
+            this.vignetteEl = document.querySelector('.memory-dream-vignette');
             this.titleEl = document.getElementById('memoryTitle');
             this.quoteEl = document.getElementById('memoryQuote');
             this.speedTag = document.getElementById('memorySpeedTag');
@@ -331,6 +333,8 @@
             }
             if (this.videoContainer) this.videoContainer.style.display = 'none';
             if (this.canvas) this.canvas.style.display = 'block';
+            if (this.headerEl) this.headerEl.style.display = 'block';
+            if (this.vignetteEl) this.vignetteEl.style.display = 'block';
 
             if (this.overlay) {
                 this.overlay.classList.add('zooming-out');
@@ -374,22 +378,23 @@
             if (meta && meta.isYoutube && !this.forceCanvasMode) {
                 if (this.videoContainer) this.videoContainer.style.display = 'flex';
                 if (this.canvas) this.canvas.style.display = 'none';
+                if (this.headerEl) this.headerEl.style.display = 'none';
+                if (this.vignetteEl) this.vignetteEl.style.display = 'none';
                 if (this.iframe) {
                     const ytId = (meta && meta.youtubeId) ? meta.youtubeId : '_FtPdpids-Y';
-                    const embedUrl = `https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&mute=0&rel=0&modestbranding=1&loop=1&playlist=${ytId}`;
+                    const embedUrl = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1&controls=1&enablejsapi=1&rel=0`;
                     if (!this.iframe.src || this.iframe.src.indexOf(ytId) === -1) {
                         this.iframe.src = embedUrl;
                     }
                 }
                 const advisory = document.getElementById('videoLocalAdvisory');
-                if (advisory) {
-                    const isFileOrigin = (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:');
-                    advisory.style.display = isFileOrigin ? 'flex' : 'none';
-                }
+                if (advisory) advisory.style.display = 'none';
                 this.updateVideoUI(meta);
             } else {
                 if (this.videoContainer) this.videoContainer.style.display = 'none';
                 if (this.canvas) this.canvas.style.display = 'block';
+                if (this.headerEl) this.headerEl.style.display = 'block';
+                if (this.vignetteEl) this.vignetteEl.style.display = 'block';
                 if (this.iframe) {
                     try { this.iframe.src = ''; } catch (e) {}
                 }
