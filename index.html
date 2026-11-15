@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOUND OF TIMES — A Little Piece of Earth, Far Away from Home</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <header class="game-header">
+        <h1 class="game-title">SOUND OF TIMES</h1>
+        <p class="game-subtitle">A little piece of Earth, far away from home.</p>
+    </header>
+
+    <!-- Main Game Viewport -->
+    <main class="game-viewport">
+        <!-- Pixel Canvas -->
+        <canvas id="gameCanvas" width="640" height="360"></canvas>
+
+        <!-- Subtle CRT Scanlines -->
+        <div class="crt-overlay"></div>
+
+        <!-- On-Screen Action Prompt -->
+        <div id="screenPrompt">[A/D] WALK TOWARDS THE CLASSROOM</div>
+
+        <!-- Dialogue Box -->
+        <div id="dialogueBox">
+            <div id="speakerName">ELI</div>
+            <div id="dialogueText">...</div>
+            <div id="continuePrompt">PRESS [E] / [ENTER] TO CONTINUE ▶</div>
+        </div>
+
+        <!-- Narrative Choice Dialog -->
+        <div id="choiceBox">
+            <div id="choiceTitle">MAKE A CHOICE</div>
+            <div id="choiceOptions">
+                <!-- Injected via JavaScript -->
+            </div>
+        </div>
+
+        <!-- Cinematic Title & Transition Overlay -->
+        <div id="sceneOverlay">
+            <h2 id="overlayTitle">SOUND OF TIMES</h2>
+            <p id="overlaySubtitle">ERID — SOME TIME AFTER THE JOURNEY</p>
+        </div>
+    </main>
+
+    <!-- Interactive Jukebox Control Dashboard (Scene 4 & 5) -->
+    <section id="jukeboxPanel">
+        <div class="jukebox-header">
+            <span class="jukebox-title">RETRO EARTH ARCHIVE JUKEBOX</span>
+            <span class="jukebox-emblem">🌍 SOL-3 REPOSITORY</span>
+        </div>
+
+        <!-- 4 Jukebox Records -->
+        <div class="record-shelf">
+            <button class="record-btn active" data-record="forest" id="btnRecForest">
+                <span class="rec-icon">🌲</span>
+                <span>001 FOREST</span>
+            </button>
+            <button class="record-btn" data-record="ocean" id="btnRecOcean">
+                <span class="rec-icon">🌊</span>
+                <span>002 OCEAN</span>
+            </button>
+            <button class="record-btn" data-record="atmosphere" id="btnRecAtmosphere">
+                <span class="rec-icon">🌧️</span>
+                <span>003 ATMOSPHERE</span>
+            </button>
+            <button class="record-btn locked" data-record="earth" id="btnRecEarth">
+                <span class="rec-icon">🔒</span>
+                <span>004 EARTH [LOCKED]</span>
+            </button>
+        </div>
+
+        <!-- Playback Transport Bar -->
+        <div class="control-deck">
+            <button class="deck-btn" id="btnPower" title="Power On/Off (P)">⚡ POWER</button>
+            <button class="deck-btn primary" id="btnPlay" title="Play (Space)">▶ PLAY</button>
+            <button class="deck-btn" id="btnPause" title="Pause (Space)">⏸ PAUSE</button>
+            <button class="deck-btn" id="btnStop" title="Stop (S)">⏹ STOP</button>
+            <button class="deck-btn" id="btnReplay" title="Replay (R)">🔄 REPLAY</button>
+            <button class="deck-btn" id="btnEject" title="Eject (E)">⏏ EJECT</button>
+            <button class="deck-btn" id="btnProceed">🚀 PROCEED TO DEPARTURE ▶</button>
+        </div>
+    </section>
+
+    <!-- NASA Science Sonification Live HUD -->
+    <aside id="nasaHud">
+        <div class="hud-title-bar">
+            <span id="hudMetric">NASA OBSERVATION PIPELINE</span>
+            <span id="hudValue">INITIALIZING DATA...</span>
+        </div>
+        <canvas id="nasaWaveform" width="612" height="36"></canvas>
+        <p id="hudDesc">Connecting real NASA satellite observations to procedural Web Audio sonification engine...</p>
+    </aside>
+
+    <!-- Player Controls Reference Guide -->
+    <footer class="controls-guide">
+        <div>
+            <span class="key-badge">A</span>/<span class="key-badge">D</span> or <span class="key-badge">←</span>/<span class="key-badge">→</span> Walk
+            &nbsp;|&nbsp;
+            <span class="key-badge">E</span> / <span class="key-badge">Enter</span> Inspect & Advance Dialogue
+        </div>
+        <div>
+            <span class="key-badge">Space</span> Play/Pause
+            &nbsp;|&nbsp;
+            <span class="key-badge">S</span> Stop
+            &nbsp;|&nbsp;
+            <span class="key-badge">R</span> Replay
+            &nbsp;|&nbsp;
+            <span class="key-badge">1-4</span> Select Record
+        </div>
+    </footer>
+
+    <!-- Game Scripts -->
+    <script src="js/audio.js"></script>
+    <script src="js/pixelart.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>
