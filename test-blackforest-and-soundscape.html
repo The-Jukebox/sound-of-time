@@ -195,8 +195,8 @@
                 assert(window.memoryCinema.visionMeta.blackforest != null, "visionMeta has 'blackforest' metadata", ul1);
                 assert(window.memoryCinema.visionMeta.blackforest.youtubeId === "_FtPdpids-Y", "youtubeId matches requested video ID (_FtPdpids-Y)", ul1);
                 assert(window.memoryCinema.visionMeta.blackforest.isYoutube === true, "isYoutube flag is set to true", ul1);
-                assert(window.memoryCinema.visionOrder.includes('blackforest'), "visionOrder includes 'blackforest'", ul1);
-                assert(window.memoryCinema.visionOrder[0] === 'blackforest', "'blackforest' is the primary default vision in progression", ul1);
+                assert(window.memoryCinema.visionMeta.blackforest.defaultFor === 'forest', "'blackforest' is default vision for the Forest Record", ul1);
+                assert(window.memoryCinema.hdImages.blackforest != null, "blackforest HD image registered", ul1);
 
                 // Open Black Forest vision
                 window.memoryCinema.open('blackforest');

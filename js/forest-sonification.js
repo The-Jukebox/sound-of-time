@@ -840,8 +840,8 @@
                 }
             } else if (mode === 'afternoon') {
                 // Afternoon: Warmer gusty wind, cicadas buzzing, moderate birds, vibrant stream
-                this.windIntensity = 0.45;
-                this.birdActivity = 0.55;
+                this.windIntensity = 0.55;
+                this.birdActivity = 0.45;
                 this.streamIntensity = 0.65;
                 this.rainIntensity = 0.0;
 
@@ -982,8 +982,8 @@
         callBird(species = 'random') {
             if (this.wildlifeMuted) return null;
 
-            const speciesList = ['robin', 'blackbird', 'thrush', 'chiffchaff', 'blackcap', 'warbler', 'hummingbird', 'dove', 'chickadee', 'woodpecker', 'owl', 'nightingale'];
-            const targetSpecies = species === 'random' ? speciesList[Math.floor(Math.random() * speciesList.length)] : species;
+            const legacySpecies = ['thrush', 'robin', 'warbler', 'hummingbird'];
+            const targetSpecies = species === 'random' ? legacySpecies[Math.floor(Math.random() * legacySpecies.length)] : species;
 
             let motif = [];
             let duration = 0.08;
@@ -995,7 +995,12 @@
                 motif = ["E6", "G6", "B6", "E7", "G7"];
                 duration = 0.12;
                 interval = 0.11;
-            } else if (targetSpecies === 'robin' || targetSpecies === 'european_robin') {
+            } else if (targetSpecies === 'robin') {
+                // American Robin: Bright two-tone cheerful couplet whistle (4 notes)
+                motif = ["A6", "F#6", "B6", "G6"];
+                duration = 0.09;
+                interval = 0.12;
+            } else if (targetSpecies === 'european_robin') {
                 // European Robin: Silvery liquid cascading warble
                 motif = ["G6", "B6", "D7", "E7", "D7", "B6", "A6"];
                 duration = 0.075;

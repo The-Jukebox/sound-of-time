@@ -79,7 +79,7 @@
             };
 
             // Vision progression order for arrow-key navigation
-            this.visionOrder = ['blackforest', 'leaves', 'ocean', 'birds', 'stream', 'rain'];
+            this.visionOrder = ['leaves', 'ocean', 'birds', 'stream', 'rain'];
 
             // Full HD Photographic Images
             this.hdImages = {
@@ -117,7 +117,15 @@
         }
 
         cycleVision(dir) {
+            if (this.currentVision === 'blackforest') {
+                this.setVision(dir > 0 ? 'leaves' : 'rain');
+                return;
+            }
             const idx = this.visionOrder.indexOf(this.currentVision);
+            if (idx === -1) {
+                this.setVision('leaves');
+                return;
+            }
             const nextIdx = (idx + dir + this.visionOrder.length) % this.visionOrder.length;
             this.setVision(this.visionOrder[nextIdx]);
         }
