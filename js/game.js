@@ -111,6 +111,7 @@ class Game {
         const btnJumpJukebox = document.getElementById('btnJumpJukebox');
         if (btnJumpJukebox) {
             btnJumpJukebox.onclick = () => {
+                this.sound.init();
                 this.sound.resume();
                 this.initScene('scene5');
             };
@@ -118,6 +119,7 @@ class Game {
         const btnStoryMode = document.getElementById('btnStoryMode');
         if (btnStoryMode) {
             btnStoryMode.onclick = () => {
+                this.sound.init();
                 this.sound.resume();
                 this.initScene('scene1');
             };
@@ -152,6 +154,7 @@ class Game {
             this.isAudioMuted = !enableSound;
 
             if (enableSound) {
+                this.sound.init();
                 this.sound.resume();
                 if (typeof Tone !== 'undefined' && Tone.start) {
                     Tone.start().catch(() => {});
@@ -205,6 +208,7 @@ class Game {
                 Tone.Destination.mute = true;
             }
         } else {
+            this.sound.init();
             this.sound.resume();
             if (typeof Tone !== 'undefined' && Tone.start) {
                 Tone.start().catch(() => {});
@@ -231,6 +235,17 @@ class Game {
             this.btnAudioToggle.style.color = '#ffd166';
             this.btnAudioToggle.style.borderColor = '#63431d';
         }
+    }
+
+    clearActionKeys() {
+        this.keys['enter'] = false;
+        this.keys['Enter'] = false;
+        this.keys['e'] = false;
+        this.keys['E'] = false;
+        this.keys[' '] = false;
+        this.keys['Space'] = false;
+        this.keys['q'] = false;
+        this.keys['Q'] = false;
     }
 
     setupInput() {
@@ -337,6 +352,7 @@ class Game {
             if (e.key === 'e' || e.key === 'E' || e.key === 'Enter' || e.code === 'Space') {
                 if (this.currentDialogue) {
                     this.advanceDialogue();
+                    this.clearActionKeys();
                     e.preventDefault();
                     return;
                 }
@@ -352,6 +368,7 @@ class Game {
                     e.preventDefault();
                 } else if (e.key === 'Enter' || e.key === 'e' || e.key === 'E' || e.code === 'Space') {
                     this.confirmChoice();
+                    this.clearActionKeys();
                     e.preventDefault();
                 }
                 return;
@@ -558,7 +575,7 @@ class Game {
                 { speaker: 'ROCKY', text: 'Question: Why is human five minutes always longer than Eridian five minutes? Human math is broken!' },
                 { speaker: 'RYAN', text: '(laughs) That\'s teacher time, Rocky. Come on, let\'s go teach them some science.' }
             ], () => {
-                this.showPrompt('[A/D] or [←/→] WALK TOWARDS THE CLASSROOM | OR CLICK "LAUNCH EARTH JUKEBOX" ABOVE');
+                this.showPrompt('[A/D] or [ARROWS] WALK TOWARDS THE CLASSROOM | OR CLICK "LAUNCH EARTH JUKEBOX" ABOVE');
             });
         }, 1800);
     }
@@ -639,6 +656,8 @@ class Game {
         this.eli.facing = 1;
         this.eli.state = 'walk';
         this.eli.isCarrying = false;
+        this.jukeboxDugUp = false;
+        this.jukeboxDroppedX = null;
 
         this.koru.x = 60;
         this.koru.facing = 1;
@@ -660,7 +679,7 @@ class Game {
                     }
                 }
             ], () => {
-                this.showPrompt('[WALK TO THE GOLDEN LIGHT AND PRESS E TO INSPECT]');
+                this.showPrompt('[WALK TO THE GOLDEN LIGHT AND PRESS ENTER TO EXAMINE]');
             });
         });
     }
@@ -718,7 +737,7 @@ class Game {
             { speaker: 'RYAN', text: 'Careful, Rocky... it\'s heavy. Solid Earth oak and brass.' },
             { speaker: 'ROCKY', text: 'Amaze! Very dense! Machine has made a long voyage across the stars!' }
         ], () => {
-            this.powerOnJukebox();
+            this.powerOnJukebox(true);
         });
     }
 
@@ -727,23 +746,33 @@ class Game {
             { speaker: 'ROCKY', text: 'Question: Why leave off? Aren\'t you curious, Grace? It came all the way from your world!' },
             { speaker: 'RYAN', text: 'You\'re right, Rocky. Let\'s see what Earth sent us.' }
         ], () => {
-            this.powerOnJukebox();
+            this.powerOnJukebox(true);
         });
     }
 
-    powerOnJukebox() {
+    powerOnJukebox(fromDialogue = false) {
+        this.sound.resume();
         this.sound.playRelayClickSfx();
         this.sound.playNeonHumSfx(3.0);
         this.jukeboxState.isPowered = true;
+        const pwrBtn = document.getElementById('btnPower');
+        if (pwrBtn) pwrBtn.classList.add('primary');
 
-        this.queueDialogues([
-            { speaker: 'SYSTEM', text: '*BZZT... CLUNK... WARM VACUUM TUBE HUM...*' },
-            { speaker: 'SYSTEM', text: 'DISPLAY: [ NASA EARTH INFORMATION CENTER — ARCHIVE 001 ]' },
-            { speaker: 'RYAN', text: 'NASA\'s Earth Information Center! Rocky... it translates Earth observation frames into real-time soundscapes!' },
-            { speaker: 'ROCKY', text: 'Amaze! It turns the sight of your planet into living music! Push button, Grace! Let us listen!' }
-        ], () => {
-            this.initScene('scene5');
-        });
+        if (fromDialogue) {
+            this.queueDialogues([
+                { speaker: 'SYSTEM', text: '*BZZT... CLUNK... WARM VACUUM TUBE HUM...*' },
+                { speaker: 'SYSTEM', text: 'DISPLAY: [ NASA EARTH INFORMATION CENTER — ARCHIVE 001 ]' },
+                { speaker: 'RYAN', text: 'NASA\'s Earth Information Center! Rocky... it translates Earth observation frames into real-time soundscapes!' },
+                { speaker: 'ROCKY', text: 'Amaze! It turns the sight of your planet into living music! Push button, Grace! Let us listen!' }
+            ], () => {
+                this.initScene('scene5');
+            });
+        } else {
+            this.showPrompt('[ JUKEBOX POWERED ON — READY FOR PLAYBACK ]');
+            if (this.jukeboxState.activeRecord) {
+                this.playJukebox();
+            }
+        }
     }
 
     // SCENE 5 — THE SOUND COLLECTION
@@ -762,7 +791,7 @@ class Game {
         this.jukeboxState.isPowered = true;
 
         this.setupJukeboxUI();
-        this.showPrompt('[ [ → / ← ] SWITCH RECORD  |  [ENTER] ZOOM INTO MEMORY BUBBLE ]');
+        this.showPrompt('[ [ < / > ] SWITCH RECORD  |  [ENTER] ZOOM INTO MEMORY BUBBLE ]');
 
         // Auto-select Forest record first
         this.selectJukeboxRecord('forest');
@@ -991,29 +1020,67 @@ class Game {
         const recordBtns = document.querySelectorAll('.record-btn');
         recordBtns.forEach(btn => {
             btn.onclick = () => {
+                this.sound.resume();
+                if (typeof Tone !== 'undefined' && Tone.context && Tone.context.state !== 'running') {
+                    Tone.start();
+                }
                 const rec = btn.getAttribute('data-record');
                 if (rec === 'earth' && !this.jukeboxState.unlockedRecords.earth) {
+                    this.showPrompt('[ 🔒 RECORD 004 IS LOCKED — LISTEN TO RECORDS 001, 002 & 003 FIRST ]');
                     return;
                 }
                 this.selectJukeboxRecord(rec);
             };
         });
 
-        document.getElementById('btnPower').onclick = () => this.toggleJukeboxPower();
-        document.getElementById('btnPlay').onclick = () => this.playJukebox();
-        document.getElementById('btnPause').onclick = () => this.pauseJukebox();
-        document.getElementById('btnStop').onclick = () => this.stopJukebox();
-        document.getElementById('btnReplay').onclick = () => this.replayJukebox();
-        document.getElementById('btnEject').onclick = () => this.ejectJukebox();
+        const btnPower = document.getElementById('btnPower');
+        if (btnPower) btnPower.onclick = () => this.toggleJukeboxPower();
+
+        const btnPlay = document.getElementById('btnPlay');
+        if (btnPlay) {
+            btnPlay.onclick = () => {
+                this.sound.resume();
+                if (typeof Tone !== 'undefined' && Tone.context && Tone.context.state !== 'running') {
+                    Tone.start();
+                }
+                if (!this.jukeboxState.isPowered) {
+                    this.powerOnJukebox(false);
+                }
+                this.playJukebox();
+            };
+        }
+
+        const btnPause = document.getElementById('btnPause');
+        if (btnPause) btnPause.onclick = () => this.pauseJukebox();
+
+        const btnStop = document.getElementById('btnStop');
+        if (btnStop) btnStop.onclick = () => this.stopJukebox();
+
+        const btnReplay = document.getElementById('btnReplay');
+        if (btnReplay) {
+            btnReplay.onclick = () => {
+                this.sound.resume();
+                if (typeof Tone !== 'undefined' && Tone.context && Tone.context.state !== 'running') {
+                    Tone.start();
+                }
+                this.replayJukebox();
+            };
+        }
+
+        const btnEject = document.getElementById('btnEject');
+        if (btnEject) btnEject.onclick = () => this.ejectJukebox();
 
         const btnMemory = document.getElementById('btnMemoryVision');
         if (btnMemory) {
             btnMemory.onclick = () => this.openMemoryVision();
         }
 
-        document.getElementById('btnProceed').onclick = () => {
-            this.initScene('scene6');
-        };
+        const btnProceed = document.getElementById('btnProceed');
+        if (btnProceed) {
+            btnProceed.onclick = () => {
+                this.initScene('scene6');
+            };
+        }
 
         // Volume control slider (Requirement 6)
         const volSlider = document.getElementById('volSlider');
@@ -1031,10 +1098,24 @@ class Game {
                     window.forestSonification.setVolume(val);
                 }
                 if (window.atmosphereSonification) {
-                    window.atmosphereSonification.volumeLevel = val;
+                    if (typeof window.atmosphereSonification.setVolume === 'function') {
+                        window.atmosphereSonification.setVolume(val);
+                    } else {
+                        window.atmosphereSonification.volumeLevel = val;
+                        if (window.atmosphereSonification.masterVolume && typeof Tone !== 'undefined') {
+                            window.atmosphereSonification.masterVolume.volume.value = Tone.gainToDb(Math.max(val, 0.0001));
+                        }
+                    }
                 }
                 if (window.earthSonification) {
-                    window.earthSonification.volumeLevel = val;
+                    if (typeof window.earthSonification.setVolume === 'function') {
+                        window.earthSonification.setVolume(val);
+                    } else {
+                        window.earthSonification.volumeLevel = val;
+                        if (window.earthSonification.masterVolume && typeof Tone !== 'undefined') {
+                            window.earthSonification.masterVolume.volume.value = Tone.gainToDb(Math.max(val, 0.0001));
+                        }
+                    }
                 }
                 if (this.sound && this.sound.masterGain) {
                     const t = this.sound.ctx ? this.sound.ctx.currentTime : 0;
@@ -1050,13 +1131,14 @@ class Game {
         const btnTransparency = document.getElementById('btnTransparency');
         if (btnTransparency) {
             btnTransparency.onclick = () => {
-                let targetId = 'oceanSciencePanel';
-                if (this.jukeboxState.activeRecord === 'forest') targetId = 'forestSciencePanel';
+                let targetId = 'forestSciencePanel';
+                if (this.jukeboxState.activeRecord === 'ocean') targetId = 'oceanSciencePanel';
                 else if (this.jukeboxState.activeRecord === 'atmosphere') targetId = 'atmosphereSciencePanel';
                 else if (this.jukeboxState.activeRecord === 'earth') targetId = 'earthSciencePanel';
                 const pnl = document.getElementById(targetId);
                 if (pnl) {
                     pnl.style.display = (pnl.style.display === 'none' || pnl.style.display === '') ? 'block' : 'none';
+                    this.showPrompt(`[ SCIENTIFIC TRANSPARENCY: ${pnl.style.display === 'block' ? 'DISPLAYED' : 'COLLAPSED'} ]`);
                 }
             };
         }
@@ -1099,8 +1181,11 @@ class Game {
                 if (btn) {
                     btn.onclick = () => {
                         window.forestSonification.soundscape.setMode(modeKey);
-                        Object.values(modeBtns).forEach(b => b.classList.remove('active'));
+                        Object.values(modeBtns).forEach(b => {
+                            if (b) b.classList.remove('active');
+                        });
                         btn.classList.add('active');
+                        this.showPrompt(`[ TIME OF DAY SET TO ${modeKey.toUpperCase()} ]`);
                     };
                 }
             });
@@ -1111,6 +1196,7 @@ class Game {
                 btnMuteMusic.onclick = () => {
                     const isMuted = window.forestSonification.soundscape.toggleMusicMute();
                     btnMuteMusic.classList.toggle('muted', isMuted);
+                    this.showPrompt(`[ MUSIC LAYER ${isMuted ? 'MUTED' : 'UNMUTED'} ]`);
                 };
             }
             const btnMuteCanopy = document.getElementById('btnMuteCanopy');
@@ -1118,6 +1204,7 @@ class Game {
                 btnMuteCanopy.onclick = () => {
                     const isMuted = window.forestSonification.soundscape.toggleCanopyMute();
                     btnMuteCanopy.classList.toggle('muted', isMuted);
+                    this.showPrompt(`[ CANOPY & WIND LAYER ${isMuted ? 'MUTED' : 'UNMUTED'} ]`);
                 };
             }
             const btnMuteWildlife = document.getElementById('btnMuteWildlife');
@@ -1125,6 +1212,7 @@ class Game {
                 btnMuteWildlife.onclick = () => {
                     const isMuted = window.forestSonification.soundscape.toggleWildlifeMute();
                     btnMuteWildlife.classList.toggle('muted', isMuted);
+                    this.showPrompt(`[ WILDLIFE & BIRDS LAYER ${isMuted ? 'MUTED' : 'UNMUTED'} ]`);
                 };
             }
             const btnMuteWater = document.getElementById('btnMuteWater');
@@ -1132,17 +1220,34 @@ class Game {
                 btnMuteWater.onclick = () => {
                     const isMuted = window.forestSonification.soundscape.toggleWaterMute();
                     btnMuteWater.classList.toggle('muted', isMuted);
+                    this.showPrompt(`[ MOUNTAIN STREAM LAYER ${isMuted ? 'MUTED' : 'UNMUTED'} ]`);
                 };
             }
 
             // Wire Call Bird Button
             const btnCallBird = document.getElementById('btnCallBird');
             if (btnCallBird) {
-                btnCallBird.onclick = () => {
-                    if (window.forestSonification && window.forestSonification.soundscape) {
-                        const res = window.forestSonification.soundscape.callBird('random');
-                        if (res) {
-                            this.showPrompt(`[ 🐦 BIRD CALLED: ${res.species.toUpperCase()} SINGING IN CANOPY ]`);
+                btnCallBird.onclick = async () => {
+                    this.sound.resume();
+                    if (typeof Tone !== 'undefined' && Tone.context && Tone.context.state !== 'running') {
+                        await Tone.start();
+                    }
+                    if (window.forestSonification) {
+                        if (!window.forestSonification.isInitialized) {
+                            await window.forestSonification.initAudio();
+                        }
+                        if (window.forestSonification.masterVolume) {
+                            window.forestSonification.masterVolume.mute = false;
+                        }
+                        if (window.forestSonification.soundscape) {
+                            if (window.forestSonification.soundscape.wildlifeMuted) {
+                                window.forestSonification.soundscape.toggleWildlifeMute();
+                                if (btnMuteWildlife) btnMuteWildlife.classList.remove('muted');
+                            }
+                            const res = window.forestSonification.soundscape.callBird('random');
+                            if (res) {
+                                this.showPrompt(`[ 🐦 BIRD CALLED: ${res.species.toUpperCase()} SINGING IN CANOPY ]`);
+                            }
                         }
                     }
                 };
@@ -1150,52 +1255,92 @@ class Game {
 
             const btnStreamGurgle = document.getElementById('btnStreamGurgle');
             if (btnStreamGurgle) {
-                btnStreamGurgle.onclick = () => {
-                    if (window.forestSonification && window.forestSonification.soundscape) {
-                        window.forestSonification.soundscape.playStreamGurgle();
-                        this.showPrompt('[ 💧 MOUNTAIN STREAM: WATER GURGLING OVER MOSSY STONES ]');
+                btnStreamGurgle.onclick = async () => {
+                    this.sound.resume();
+                    if (typeof Tone !== 'undefined' && Tone.context && Tone.context.state !== 'running') {
+                        await Tone.start();
+                    }
+                    if (window.forestSonification) {
+                        if (!window.forestSonification.isInitialized) await window.forestSonification.initAudio();
+                        if (window.forestSonification.masterVolume) window.forestSonification.masterVolume.mute = false;
+                        if (window.forestSonification.soundscape) {
+                            window.forestSonification.soundscape.playStreamGurgle();
+                            this.showPrompt('[ 💧 MOUNTAIN STREAM: WATER GURGLING OVER MOSSY STONES ]');
+                        }
                     }
                 };
             }
 
             const btnWoodpecker = document.getElementById('btnWoodpecker');
             if (btnWoodpecker) {
-                btnWoodpecker.onclick = () => {
-                    if (window.forestSonification && window.forestSonification.soundscape) {
-                        window.forestSonification.soundscape.playWoodpeckerTaps();
-                        this.showPrompt('[ 🪵 WOODPECKER DRUMMING ON TREE TRUNK ]');
+                btnWoodpecker.onclick = async () => {
+                    this.sound.resume();
+                    if (typeof Tone !== 'undefined' && Tone.context && Tone.context.state !== 'running') {
+                        await Tone.start();
+                    }
+                    if (window.forestSonification) {
+                        if (!window.forestSonification.isInitialized) await window.forestSonification.initAudio();
+                        if (window.forestSonification.masterVolume) window.forestSonification.masterVolume.mute = false;
+                        if (window.forestSonification.soundscape) {
+                            window.forestSonification.soundscape.playWoodpeckerTaps();
+                            this.showPrompt('[ 🪵 WOODPECKER DRUMMING ON TREE TRUNK ]');
+                        }
                     }
                 };
             }
 
             const btnFrog = document.getElementById('btnFrog');
             if (btnFrog) {
-                btnFrog.onclick = () => {
-                    if (window.forestSonification && window.forestSonification.soundscape) {
-                        window.forestSonification.soundscape.playFrogCroak();
-                        this.showPrompt('[ 🐸 TREEFROG & BULLFROG CROAKING NEAR BROOK ]');
+                btnFrog.onclick = async () => {
+                    this.sound.resume();
+                    if (typeof Tone !== 'undefined' && Tone.context && Tone.context.state !== 'running') {
+                        await Tone.start();
+                    }
+                    if (window.forestSonification) {
+                        if (!window.forestSonification.isInitialized) await window.forestSonification.initAudio();
+                        if (window.forestSonification.masterVolume) window.forestSonification.masterVolume.mute = false;
+                        if (window.forestSonification.soundscape) {
+                            window.forestSonification.soundscape.playFrogCroak();
+                            this.showPrompt('[ 🐸 TREEFROG & BULLFROG CROAKING NEAR BROOK ]');
+                        }
                     }
                 };
             }
 
             const btnRainDrop = document.getElementById('btnRainDrop');
             if (btnRainDrop) {
-                btnRainDrop.onclick = () => {
-                    if (window.forestSonification && window.forestSonification.soundscape) {
-                        window.forestSonification.soundscape.setRainGain(0.35);
-                        window.forestSonification.soundscape.playCanopyLeafDrip();
-                        this.showPrompt('[ 🌧️ CANOPY RAINFALL & LEAF DRIP PITTER-PATTER ]');
+                btnRainDrop.onclick = async () => {
+                    this.sound.resume();
+                    if (typeof Tone !== 'undefined' && Tone.context && Tone.context.state !== 'running') {
+                        await Tone.start();
+                    }
+                    if (window.forestSonification) {
+                        if (!window.forestSonification.isInitialized) await window.forestSonification.initAudio();
+                        if (window.forestSonification.masterVolume) window.forestSonification.masterVolume.mute = false;
+                        if (window.forestSonification.soundscape) {
+                            window.forestSonification.soundscape.setRainGain(0.35);
+                            window.forestSonification.soundscape.playCanopyLeafDrip();
+                            this.showPrompt('[ 🌧️ CANOPY RAINFALL & LEAF DRIP PITTER-PATTER ]');
+                        }
                     }
                 };
             }
 
             const btnThunder = document.getElementById('btnThunder');
             if (btnThunder) {
-                btnThunder.onclick = () => {
-                    if (window.forestSonification && window.forestSonification.soundscape) {
-                        window.forestSonification.soundscape.playThunderRumble();
-                        this.renderer.triggerFlash();
-                        this.showPrompt('[ ⚡ DISTANT ROLLING ATMOSPHERIC THUNDER ]');
+                btnThunder.onclick = async () => {
+                    this.sound.resume();
+                    if (typeof Tone !== 'undefined' && Tone.context && Tone.context.state !== 'running') {
+                        await Tone.start();
+                    }
+                    if (window.forestSonification) {
+                        if (!window.forestSonification.isInitialized) await window.forestSonification.initAudio();
+                        if (window.forestSonification.masterVolume) window.forestSonification.masterVolume.mute = false;
+                        if (window.forestSonification.soundscape) {
+                            window.forestSonification.soundscape.playThunderRumble();
+                            this.renderer.triggerFlash();
+                            this.showPrompt('[ ⚡ DISTANT ROLLING ATMOSPHERIC THUNDER ]');
+                        }
                     }
                 };
             }
@@ -1207,9 +1352,11 @@ class Game {
                 ambSlider.oninput = (e) => {
                     const val = parseFloat(e.target.value) / 100;
                     if (ambLabel) ambLabel.innerText = `${Math.round(val * 100)}%`;
-                    window.forestSonification.soundscape.setCanopyVolume(val);
-                    window.forestSonification.soundscape.setWildlifeVolume(val * 0.95);
-                    window.forestSonification.soundscape.setWaterVolume(val * 0.85);
+                    if (window.forestSonification && window.forestSonification.soundscape) {
+                        window.forestSonification.soundscape.setCanopyVolume(val);
+                        window.forestSonification.soundscape.setWildlifeVolume(val * 0.95);
+                        window.forestSonification.soundscape.setWaterVolume(val * 0.85);
+                    }
                 };
             }
         }
@@ -1601,7 +1748,8 @@ class Game {
     showNextDialogue() {
         if (this.dialogueQueue.length === 0) {
             this.currentDialogue = null;
-            this.ui.dialogueBox.style.display = 'none';
+            if (this.ui && this.ui.dialogueBox) this.ui.dialogueBox.style.display = 'none';
+            this.clearActionKeys();
             if (this.dialogueOnComplete) {
                 const cb = this.dialogueOnComplete;
                 this.dialogueOnComplete = null;
@@ -1723,8 +1871,15 @@ class Game {
 
     showPrompt(text) {
         if (this.ui && this.ui.screenPrompt) {
-            this.ui.screenPrompt.innerText = text;
-            this.ui.screenPrompt.textContent = text;
+            const formatted = text
+                .replace(/←\s*\/\s*→/g, 'ARROWS')
+                .replace(/→\s*\/\s*←/g, 'ARROWS')
+                .replace(/←/g, '<')
+                .replace(/→/g, '>')
+                .replace(/↑/g, '^')
+                .replace(/↓/g, 'v');
+            this.ui.screenPrompt.innerText = formatted;
+            this.ui.screenPrompt.textContent = formatted;
             this.ui.screenPrompt.style.display = 'block';
         }
     }
@@ -1821,9 +1976,9 @@ class Game {
         // Update interaction prompt based on position
         const distToJukebox = Math.abs(this.eli.x - 320);
         if (distToJukebox < 65) {
-            this.showPrompt('[ENTER] ZOOM INTO MEMORY  |  [ → / ← ] WALK');
+            this.showPrompt('[ENTER] ZOOM INTO MEMORY  |  [ < / > ] WALK');
         } else {
-            this.showPrompt('[ → / ← ] WALK IN HABITAT  |  [ENTER] ZOOM INTO MEMORY');
+            this.showPrompt('[ < / > ] WALK IN HABITAT  |  [ENTER] ZOOM INTO MEMORY');
         }
     }
 
@@ -1857,7 +2012,7 @@ class Game {
                     this.koru.state = 'idle';
                     this.showPrompt('[ENTER] STAND UP  |  [R] REPLAY THE JOURNEY');
                 } else {
-                    this.showPrompt('[A/D] or [←/→] WALK BY WATER  |  [ENTER] SIT ON PEBBLES');
+                    this.showPrompt('[A/D] or [ARROWS] WALK BY WATER  |  [ENTER] SIT ON PEBBLES');
                 }
             }
         }
@@ -1968,57 +2123,26 @@ class Game {
 
             // Case A: Carrying the jukebox
             if (this.eli.isCarrying) {
-                this.showPrompt('[ → ] CARRY JUKEBOX FORWARD (RIGHT) TO HABITAT | [ENTER] SET DOWN');
+                this.showPrompt('[ > / D ] CARRY JUKEBOX FORWARD TO HABITAT | [ENTER] ENTER HABITAT');
 
-                // Drop/set down with Enter or Q
-                if (this.keys['enter'] || this.keys['Enter'] || this.keys['q'] || this.keys['Q']) {
-                    this.keys['enter'] = false;
-                    this.keys['Enter'] = false;
-                    this.keys['q'] = false;
-                    this.keys['Q'] = false;
-                    this.eli.isCarrying = false;
-                    this.jukeboxDroppedX = this.eli.x + 18;
-                    this.sound.playRelayClickSfx();
-                    this.showPrompt('[ENTER] PICK UP JUKEBOX | [ → / ← ] WALK');
-                }
-
-                // Reached right edge to enter habitat
-                if (this.eli.x > this.width - 50) {
+                // Enter habitat with Enter or walking to right edge
+                const enterPressed = (this.keys['enter'] || this.keys['Enter']);
+                if (enterPressed || this.eli.x > this.width - 50) {
+                    this.clearActionKeys();
                     this.initScene('scene4');
                 }
             }
-            // Case B: Jukebox was set down on ground
-            else if (this.jukeboxDugUp) {
-                const targetX = this.jukeboxDroppedX || 410;
-                const dist = Math.abs(this.eli.x - targetX);
-                if (dist < 40) {
-                    this.showPrompt('[ENTER] PICK UP JUKEBOX');
-                    if (this.keys['e'] || this.keys['E'] || this.keys['Enter'] || this.keys['enter']) {
-                        this.keys['e'] = false;
-                        this.keys['E'] = false;
-                        this.keys['enter'] = false;
-                        this.keys['Enter'] = false;
-                        this.eli.isCarrying = true;
-                        this.sound.playRelayClickSfx();
-                    }
-                } else {
-                    this.showPrompt('[ → / ← ] WALK NEAR JUKEBOX TO PICK UP');
-                }
-            }
-            // Case C: Jukebox still buried at x = 422
+            // Case B: Jukebox still buried at x = 410
             else {
                 const distToJukebox = Math.abs(this.eli.x - 410);
                 if (distToJukebox < 40) {
-                    this.showPrompt('[ENTER] PICK UP JUKEBOX');
+                    this.showPrompt('[ENTER] EXAMINE JUKEBOX');
                     if (this.keys['e'] || this.keys['E'] || this.keys['Enter'] || this.keys['enter']) {
-                        this.keys['e'] = false;
-                        this.keys['E'] = false;
-                        this.keys['enter'] = false;
-                        this.keys['Enter'] = false;
+                        this.clearActionKeys();
                         this.inspectJukeboxScene3();
                     }
                 } else {
-                    this.showPrompt('[ → ] WALK FORWARD TOWARDS THE GOLDEN LIGHT');
+                    this.showPrompt('[ > / D ] WALK FORWARD TOWARDS THE GOLDEN LIGHT');
                 }
             }
         }
@@ -2045,7 +2169,8 @@ class Game {
                             { speaker: 'RYAN', text: 'I don\'t know how it crossed interstellar space, but we have to find out.' },
                             { speaker: 'ROCKY', text: 'Good! Let us take it back to habitat and clean it up!' }
                         ], () => {
-                            this.showPrompt('[ → ] CARRY JUKEBOX FORWARD (RIGHT) TO HABITAT | [ENTER] SET DOWN');
+                            this.clearActionKeys();
+                            this.showPrompt('[ > / D ] CARRY JUKEBOX FORWARD TO HABITAT | [ENTER] ENTER HABITAT');
                         });
                     }
                 },
@@ -2069,7 +2194,8 @@ class Game {
                                             { speaker: 'RYAN', text: 'We have to know what music it holds.' },
                                             { speaker: 'ROCKY', text: 'Amaze! I help carry! We learn together!' }
                                         ], () => {
-                                            this.showPrompt('[ → ] CARRY JUKEBOX FORWARD (RIGHT) TO HABITAT | [ENTER] SET DOWN');
+                                            this.clearActionKeys();
+                                            this.showPrompt('[ > / D ] CARRY JUKEBOX FORWARD TO HABITAT | [ENTER] ENTER HABITAT');
                                         });
                                     }
                                 }
@@ -2108,13 +2234,6 @@ class Game {
 
             case 'scene3':
                 r.drawRockyPathway(!this.jukeboxDugUp, this.cameraX);
-                if (this.jukeboxDugUp && !this.eli.isCarrying) {
-                    const dropX = this.jukeboxDroppedX || 410;
-                    r.drawJukebox(dropX, this.height * 0.74, {
-                        isPowered: false,
-                        isPlaying: false
-                    });
-                }
                 r.drawKoru(this.koru.x, this.koru.y, this.koru.state, this.koru.facing, isKoruSpeaking);
                 r.drawEli(this.eli.x, this.eli.y, this.eli.state, this.eli.facing, this.eli.isCarrying, isRyanSpeaking);
                 break;
@@ -2245,6 +2364,11 @@ class Game {
             ctx.stroke();
         }
     }
+}
+
+window.Game = Game;
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { Game };
 }
 
 window.addEventListener('DOMContentLoaded', () => {

@@ -1963,12 +1963,27 @@ class PixelRenderer {
                     ctx.save();
                     const jx = 10;
                     const jy = -48 - bob;
-                    ctx.fillStyle = '#663b14';
-                    ctx.fillRect(jx, jy, 26, 30);
-                    ctx.fillStyle = '#ffd15c';
-                    ctx.fillRect(jx + 3, jy + 3, 20, 8);
+                    // Jukebox wooden cabinet
+                    ctx.fillStyle = '#3a1a0c';
+                    ctx.beginPath();
+                    ctx.roundRect(jx, jy, 24, 28, [5, 5, 2, 2]);
+                    ctx.fill();
+                    // Gold trim
+                    ctx.strokeStyle = '#ffd15c';
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+                    // Arched neon grill
+                    ctx.fillStyle = '#0f081d';
+                    ctx.fillRect(jx + 3, jy + 4, 18, 12);
                     ctx.fillStyle = '#47d8f2';
-                    ctx.fillRect(jx + 6, jy + 14, 14, 6);
+                    ctx.fillRect(jx + 5, jy + 6, 14, 2);
+                    ctx.fillStyle = '#f28bbd';
+                    ctx.fillRect(jx + 5, jy + 10, 14, 2);
+                    // Turntable center
+                    ctx.fillStyle = '#ffd15c';
+                    ctx.beginPath();
+                    ctx.arc(jx + 12, jy + 22, 3, 0, Math.PI * 2);
+                    ctx.fill();
                     ctx.restore();
                 }
 

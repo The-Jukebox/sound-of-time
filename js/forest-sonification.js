@@ -1,4 +1,4 @@
-﻿/**
+/**
  * SOUND OF TIMES — Earth Archive Record 003: The Forest
  * ForestSonificationEngine & ForestSoundscapeManager
  * 
@@ -189,6 +189,7 @@
             if (this.isPaused) {
                 this.isPaused = false;
                 this.isPlaying = true;
+                if (this.masterVolume) this.masterVolume.mute = false;
                 this.soundscape.resume();
                 this.scheduleNextStep();
                 if (this.onStateChangeCallback) this.onStateChangeCallback('playing');
@@ -201,6 +202,8 @@
             if (!this.isInitialized) {
                 await this.initAudio();
             }
+
+            if (this.masterVolume) this.masterVolume.mute = false;
 
             if (this.measurements.length === 0) {
                 await this.loadDataset();
@@ -340,7 +343,11 @@
                 this.forestFilter.frequency.rampTo(targetCutoff, 0.4);
             }
             if (this.chorus && this.chorus.wet) {
-                this.chorus.wet.rampTo(0.2 + coverNorm * 0.45, 0.4);
+                if (typeof this.chorus.wet.rampTo === 'function') {
+                    this.chorus.wet.rampTo(0.2 + coverNorm * 0.45, 0.4);
+                } else if ('value' in this.chorus.wet) {
+                    this.chorus.wet.value = 0.2 + coverNorm * 0.45;
+                }
             }
 
             // 3. Biomass -> Sub-Bass Tone
@@ -1190,20 +1197,20 @@
         }
         setCanopyVolume(val) {
             this.canopyVolume = Math.max(0, Math.min(1, val));
-            if (this.canopyBus) {
-                this.canopyBus.volume.rampTo(Tone.gainToDb(this.canopyMuted ? 0 : this.canopyVolume), 0.1);
+            if (this.canopyBus && typeof Tone !== 'undefined') {
+                this.canopyBus.volume.rampTo(Tone.gainToDb(Math.max(0.0001, this.canopyVolume)), 0.1);
             }
         }
         setWildlifeVolume(val) {
             this.wildlifeVolume = Math.max(0, Math.min(1, val));
-            if (this.wildlifeBus) {
-                this.wildlifeBus.volume.rampTo(Tone.gainToDb(this.wildlifeMuted ? 0 : this.wildlifeVolume), 0.1);
+            if (this.wildlifeBus && typeof Tone !== 'undefined') {
+                this.wildlifeBus.volume.rampTo(Tone.gainToDb(Math.max(0.0001, this.wildlifeVolume)), 0.1);
             }
         }
         setWaterVolume(val) {
             this.waterVolume = Math.max(0, Math.min(1, val));
-            if (this.waterBus) {
-                this.waterBus.volume.rampTo(Tone.gainToDb(this.waterMuted ? 0 : this.waterVolume), 0.1);
+            if (this.waterBus && typeof Tone !== 'undefined') {
+                this.waterBus.volume.rampTo(Tone.gainToDb(Math.max(0.0001, this.waterVolume)), 0.1);
             }
         }
 
@@ -1215,21 +1222,21 @@
         toggleCanopyMute() {
             this.canopyMuted = !this.canopyMuted;
             if (this.canopyBus) {
-                this.canopyBus.volume.rampTo(Tone.gainToDb(this.canopyMuted ? 0 : this.canopyVolume), 0.1);
+                this.canopyBus.mute = this.canopyMuted;
             }
             return this.canopyMuted;
         }
         toggleWildlifeMute() {
             this.wildlifeMuted = !this.wildlifeMuted;
             if (this.wildlifeBus) {
-                this.wildlifeBus.volume.rampTo(Tone.gainToDb(this.wildlifeMuted ? 0 : this.wildlifeVolume), 0.1);
+                this.wildlifeBus.mute = this.wildlifeMuted;
             }
             return this.wildlifeMuted;
         }
         toggleWaterMute() {
             this.waterMuted = !this.waterMuted;
             if (this.waterBus) {
-                this.waterBus.volume.rampTo(Tone.gainToDb(this.waterMuted ? 0 : this.waterVolume), 0.1);
+                this.waterBus.mute = this.waterMuted;
             }
             return this.waterMuted;
         }

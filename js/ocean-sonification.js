@@ -244,6 +244,7 @@ class OceanSonificationEngine {
         if (this.isPaused) {
             this.isPaused = false;
             this.isPlaying = true;
+            if (this.masterVolume) this.masterVolume.mute = false;
             if (this.ambientGain) this.ambientGain.gain.rampTo(0.12, 0.2);
             this.scheduleNextStep();
             if (this.onStateChangeCallback) this.onStateChangeCallback('playing');
