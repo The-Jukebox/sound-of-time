@@ -1,0 +1,388 @@
+[16208:20604:1115/174001.714:ERROR:chrome\installer\util\google_update_settings_win.cc:270] Failed opening key Software\Google\Update\ClientStateMedium\{8A69D345-D564-463c-AFF1-A69D9E530F96} to set usagestats; result: 5
+<!DOCTYPE html>
+<html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOUND OF TIMES — A Little Piece of Earth, Far Away from Home</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <header class="game-header">
+        <h1 class="game-title">SOUND OF TIMES</h1>
+        <p class="game-subtitle">A little piece of Earth, far away from home.</p>
+    </header>
+
+    <!-- Responsive Game Container -->
+    <div class="game-container" id="gameContainer">
+        <!-- Main Game Viewport -->
+        <main class="game-viewport">
+            <!-- Fullscreen Toggle Button -->
+            <button id="btnFullscreen" class="fullscreen-btn" title="Toggle Fullscreen (F)" aria-label="Toggle Fullscreen">
+                <span class="fs-icon">⛶</span> <span class="fs-text">FULLSCREEN</span>
+            </button>
+
+            <!-- Pixel Canvas -->
+            <canvas id="gameCanvas" width="640" height="360"></canvas>
+
+        <!-- Subtle CRT Scanlines -->
+        <div class="crt-overlay"></div>
+
+        <!-- On-Screen Action Prompt -->
+        <div id="screenPrompt" style="display: none;"></div>
+
+        <!-- Dialogue Box -->
+        <div id="dialogueBox">
+            <div id="speakerName">ELI</div>
+            <div id="dialogueText">...</div>
+            <div id="continuePrompt">PRESS [E] / [ENTER] TO CONTINUE ▶</div>
+        </div>
+
+        <!-- Narrative Choice Dialog -->
+        <div id="choiceBox" style="display: none;">
+            <div id="choiceTitle">MAKE A CHOICE</div>
+            <div id="choiceOptions">
+                <!-- Injected via JavaScript -->
+            </div>
+        </div>
+
+        <!-- Cinematic Title & Transition Overlay -->
+        <div id="sceneOverlay" style="opacity: 1; pointer-events: auto;">
+            <h2 id="overlayTitle">SOUND OF TIMES</h2>
+            <p id="overlaySubtitle">ERID — SOME TIME AFTER THE JOURNEY</p>
+        </div>
+    </main>
+
+    <!-- Interactive Jukebox Control Dashboard (Scene 4 & 5) -->
+    <section id="jukeboxPanel" style="display: none;">
+        <div class="jukebox-header">
+            <span class="jukebox-title">RETRO EARTH ARCHIVE JUKEBOX</span>
+            <span class="jukebox-emblem">🌍 SOL-3 REPOSITORY</span>
+        </div>
+
+        <!-- 4 Jukebox Records -->
+        <div class="record-shelf">
+            <button class="record-btn active" data-record="forest" id="btnRecForest">
+                <span class="rec-icon">🌲</span>
+                <span>003 FOREST</span>
+            </button>
+            <button class="record-btn" data-record="ocean" id="btnRecOcean">
+                <span class="rec-icon">🌊</span>
+                <span>002 OCEAN</span>
+            </button>
+            <button class="record-btn" data-record="atmosphere" id="btnRecAtmosphere">
+                <span class="rec-icon">🌧️</span>
+                <span>001 ATMOSPHERE</span>
+            </button>
+            <button class="record-btn locked" data-record="earth" id="btnRecEarth">
+                <span class="rec-icon">🔒</span>
+                <span>004 EARTH [LOCKED]</span>
+            </button>
+        </div>
+
+        <!-- Playback Transport Bar -->
+        <div class="control-deck">
+            <button class="deck-btn" id="btnPower" title="Power On/Off (P)">⚡ POWER</button>
+            <button class="deck-btn primary" id="btnPlay" title="Play (Space)">▶ PLAY</button>
+            <button class="deck-btn" id="btnPause" title="Pause (Space)">⏸ PAUSE</button>
+            <button class="deck-btn" id="btnStop" title="Stop (S)">⏹ STOP</button>
+            <button class="deck-btn" id="btnReplay" title="Replay (R)">🔄 REPLAY</button>
+            <button class="deck-btn" id="btnEject" title="Eject (E)">⏏ EJECT</button>
+            
+            <!-- Volume Slider -->
+            <div class="volume-container" title="Master Audio Volume">
+                <span id="volIcon">🔊</span>
+                <input type="range" id="volSlider" min="0" max="100" value="80" class="vol-slider">
+                <span id="volLabel">80%</span>
+            </div>
+
+            <button class="deck-btn memory-btn" id="btnMemoryVision" title="Zoom into Eli's Memory (ENTER or Click)">💭 ZOOM INTO MEMORY [ENTER]</button>
+            <button class="deck-btn" id="btnTransparency" title="Scientific Transparency &amp; Mapping Details">🔬 HOW WAS THIS MADE?</button>
+            <button class="deck-btn" id="btnProceed">🚀 PROCEED TO DEPARTURE ▶</button>
+        </div>
+
+        <!-- Forest Soundscape & Environmental Toolbar (Record 003) -->
+        <div class="forest-controls-bar" id="forestToolbar" style="display: none;">
+            <span class="sub-toolbar-title">TIME OF DAY:</span>
+            <div class="mode-btn-group">
+                <button class="sub-btn active" id="btnModeMorning" title="Morning: Avian dawn chorus &amp; light breeze">🌅 DAWN</button>
+                <button class="sub-btn" id="btnModeAfternoon" title="Afternoon: Warm canopy &amp; cicadas">☀️ DAY</button>
+                <button class="sub-btn" id="btnModeEvening" title="Evening: Twilight wind &amp; crickets">🌇 DUSK</button>
+                <button class="sub-btn" id="btnModeNight" title="Night: Frogs, crickets, owls &amp; fireflies">🌙 NIGHT</button>
+            </div>
+
+            <span class="sub-toolbar-title" style="margin-left: 10px;">LAYERS:</span>
+            <div class="layer-btn-group">
+                <button class="sub-btn" id="btnMuteMusic" title="Toggle Music Synthesis">🎵 MUSIC</button>
+                <button class="sub-btn" id="btnMuteCanopy" title="Toggle Wind &amp; Leaves Rustling">🍃 CANOPY</button>
+                <button class="sub-btn" id="btnMuteWildlife" title="Toggle Birds &amp; Wildlife">🐦 BIRDS</button>
+                <button class="sub-btn" id="btnMuteWater" title="Toggle Forest Stream">💧 STREAM</button>
+                <button class="sub-btn" id="btnCallBird" title="Call Forest Bird: Sing authentic songbird melody" style="border-color: #62c98a; color: #62c98a; font-weight: bold;">🐦 CALL BIRD</button>
+            </div>
+
+            <div class="volume-container" title="Natural Ambience Volume" style="margin-left: 10px;">
+                <span>🍃</span>
+                <input type="range" id="ambienceSlider" min="0" max="100" value="75" class="vol-slider" style="width: 70px;">
+                <span id="ambLabel">75%</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- NASA Science Sonification Live HUD -->
+    <aside id="nasaHud" style="display: none;">
+        <div class="hud-title-bar">
+            <span id="hudMetric">NASA OBSERVATION PIPELINE</span>
+            <span id="hudValue">INITIALIZING DATA...</span>
+        </div>
+        <canvas id="nasaWaveform" width="612" height="36"></canvas>
+        <p id="hudDesc">Connecting real NASA satellite observations to procedural Web Audio sonification engine...</p>
+
+        <!-- Forest Scientific Transparency Panel (Record 003) -->
+        <div id="forestSciencePanel" class="science-panel" style="display: none;">
+            <div class="science-header">
+                <h3>EARTH ARCHIVE — RECORD 003: THE FOREST</h3>
+                <span class="nasa-badge" style="border-color: #62c98a; color: #62c98a;">NASA GEDI L4B/L3 &amp; MODIS NDVI</span>
+            </div>
+            
+            <div class="science-grid">
+                <div class="science-item">
+                    <span class="sci-label">DATASET:</span>
+                    <span class="sci-val">Gridded GEDI Vegetation Structure Metrics &amp; Biomass Density (L4B &amp; L3)</span>
+                </div>
+                <div class="science-item">
+                    <span class="sci-label">NASA SOURCE:</span>
+                    <span class="sci-val">NASA Goddard Space Flight Center / LP DAAC (DOI: 10.5067/GEDI/GEDI04_B.002)</span>
+                </div>
+                <div class="science-item">
+                    <span class="sci-label">INSTRUMENT:</span>
+                    <span class="sci-val">Global Ecosystem Dynamics Investigation (GEDI) 1064nm Lidar on the ISS</span>
+                </div>
+                <div class="science-item">
+                    <span class="sci-label">VARIABLES:</span>
+                    <span class="sci-val">Canopy Height (rh100, m), Canopy Cover, PAI (m²/m²), FHD Diversity, Biomass (Mg/ha)</span>
+                </div>
+                <div class="science-item">
+                    <span class="sci-label">TIME PERIOD:</span>
+                    <span class="sci-val">2019-04-18 to 2023-03-16 (Calibrated orbital laser reanalysis; not a live sensor link)</span>
+                </div>
+                <div class="science-item">
+                    <span class="sci-label">GEOGRAPHIC AREA:</span>
+                    <span class="sci-val">Global Forest Transects: Hoh Rainforest, Amazon Basin, Smoky Mtns, Black Forest, Redwoods</span>
+                </div>
+            </div>
+
+            <div class="transparency-section" style="border-left-color: #62c98a;">
+                <h4 style="color: #62c98a;">HOW DOES THE FOREST BECOME MUSIC?</h4>
+                <ul>
+                    <li><strong>Real Numerical Data:</strong> Every musical parameter is mathematically generated from authentic NASA GEDI satellite laser altimeter waveforms measuring 3D canopy profiles.</li>
+                    <li><strong>Canopy Height (rh100) → Musical Pitch:</strong> Height of the tree crowns (8m to 68m) maps to notes across a multi-octave Earth Lydian scale. Massive old-growth redwoods sing in bright, ringing bell tones; pioneer saplings resonate in grounding mid-register notes.</li>
+                    <li><strong>Canopy Cover → Harmonic Richness &amp; Filter Cutoff:</strong> Denser canopy closure (0.85 to 0.95) opens resonant lowpass filter cutoffs (600Hz to 2800Hz) and introduces warm spatial chorus overtones.</li>
+                    <li><strong>Foliage Height Diversity (FHD) → Melodic Complexity:</strong> Vertical multi-tier structural complexity controls the density of secondary arpeggios, generating delicate counterpoint patterns.</li>
+                    <li><strong>Aboveground Biomass (AGBD) → Sub-Bass Foundation:</strong> High carbon biomass density (&gt;350 Mg/ha) triggers deep fundamental sub-bass resonance anchoring the forest floor.</li>
+                    <li><strong>Scientific &amp; Acoustic Disclosure:</strong> Scientific laser data mathematically drives the musical composition; natural acoustic layers (wind, leaves, birds, stream, cicadas) are procedurally modeled and synthesized inspired by National Park Service Natural Sounds ecological surveys.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Scientific Transparency Panel (Section 5 & 7) -->
+        <div id="oceanSciencePanel" class="science-panel" style="display: none;">
+            <div class="science-header">
+                <h3>EARTH ARCHIVE — RECORD 002: THE OCEAN</h3>
+                <span class="nasa-badge">NASA ECCO V4r4 &amp; SVS 3912</span>
+            </div>
+            
+            <div class="science-grid">
+                <div class="science-item">
+                    <span class="sci-label">DATASET:</span>
+                    <span class="sci-val">ECCO Ocean Temperature &amp; Salinity Daily Mean 0.5° (V4 Release 4)</span>
+                </div>
+                <div class="science-item">
+                    <span class="sci-label">NASA SOURCE:</span>
+                    <span class="sci-val">NASA JPL / PO.DAAC (DOI: 10.5067/ECG5D-OTS44)</span>
+                </div>
+                <div class="science-item">
+                    <span class="sci-label">VARIABLES:</span>
+                    <span class="sci-val">Potential Temp (THETA, °C) &amp; Practical Salinity (SALT, PSU)</span>
+                </div>
+                <div class="science-item">
+                    <span class="sci-label">TIME PERIOD:</span>
+                    <span class="sci-val">1992-01-01 to 1992-01-31 (Historical Reanalysis, not live telemetry)</span>
+                </div>
+                <div class="science-item">
+                    <span class="sci-label">GEOGRAPHIC AREA:</span>
+                    <span class="sci-val">North Atlantic Gulf Stream &amp; Subtropical Gyre Transect (30°N–41.5°N, 76.5°W–42°W)</span>
+                </div>
+                <div class="science-item">
+                    <span class="sci-label">DEPTH:</span>
+                    <span class="sci-val">Z = -5.0 meters (Surface Ocean Layer)</span>
+                </div>
+            </div>
+
+            <div class="transparency-section">
+                <h4>HOW WAS THIS SOUND MADE?</h4>
+                <ul>
+                    <li><strong>Real Numerical Data:</strong> Sound is mathematically driven by real daily mean measurements from NASA's ECCO state estimate (combining satellite altimetry, Argo floats, and MITgcm physics).</li>
+                    <li><strong>Temperature → Pitch:</strong> Ocean temperatures (4°C to 28°C) map to notes across an oceanic Dorian scale. Subpolar waters sing in resonant low bass; warm Gulf Stream waters sing in high melodic pitches.</li>
+                    <li><strong>Thermal Delta → Duration &amp; Melody:</strong> Sharp thermal fronts produce faster note cadences and harmonic shimmer; stable waters produce long, calming ambient pads.</li>
+                    <li><strong>Salinity → Timbre:</strong> Higher salinity (36.5+ PSU) expands FM modulation depth and opens lowpass filter cutoff frequencies, creating a brighter, crystalline texture.</li>
+                    <li><strong>Current Speed → Rhythm &amp; Stereo Panning:</strong> Flow velocity controls stereo panning oscillations and dynamic swell intensity.</li>
+                    <li><strong>Scientific Disclosure:</strong> This generated music is a structured data sonification, not an underwater microphone (hydrophone) recording.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Atmosphere Scientific Transparency Panel (Record 001) -->
+        <div id="atmosphereSciencePanel" class="science-panel" style="display: none;">
+            <div class="science-header">
+                <h3>EARTH ARCHIVE — RECORD 001: THE ATMOSPHERE</h3>
+                <span class="nasa-badge" style="border-color: #68d8d6; color: #68d8d6;">NASA MERRA-2 &amp; GPM IMERG (SVS 4252)</span>
+            </div>
+            
+            <div class="science-grid">
+                <div class="science-item">
+                    <span class="sci-label">DATASET:</span>
+                    <span class="sci-val">MERRA-2 3D Meteorological Assimilation &amp; GPM IMERG Precipitation</span>
+                </div>
+                <div class="science-item">
+                    <span class="sci-label">NASA SOURCE:</span>
+                    <span class="sci-val">NASA Goddard Space Flight Center / GES DISC (DOI: 10.5067/95140KBM4KUS)</span>
+                </div>
+                <div class="science-item">
+                    <span class="sci-label">INSTRUMENTS:</span>
+                    <span class="sci-val">GPM Microwave Imager (GMI), Dual-frequency Radar (DPR) &amp; Atmospheric Sounders</span>
+                </div>
+                <div class="science-item">
+                    <span class="sci-label">VARIABLES:</span>
+                    <span class="sci-val">Precipitation Rate (mm/hr), Wind Speed (m/s), Pressure (hPa), AOD 550nm, Lightning</span>
+                </div>
+                <div class="science-item">
+                    <span class="sci-label">TIME PERIOD:</span>
+                    <span class="sci-val">2023 Synoptic Meteorological Cycle (Scientific historical reanalysis)</span>
+                </div>
+                <div class="science-item">
+                    <span class="sci-label">GEOGRAPHIC COVERAGE:</span>
+                    <span class="sci-val">Global Storm Tracks: Olympic Coast, ITCZ, Iceland Low, Monsoon Belt, Drake Passage</span>
+                </div>
+            </div>
+
+            <div class="transparency-section" style="border-left-color: #68d8d6;">
+                <h4 style="color: #68d8d6;">HOW DOES THE ATMOSPHERE BECOME SOUND?</h4>
+                <ul>
+                    <li><strong>Real Numerical Data:</strong> Sound is driven by real NASA MERRA-2 and GPM satellite observations of global storm fronts and air pressure.</li>
+                    <li><strong>Precipitation Rate → Rain Density:</strong> Total surface rain flux (0.0 to 30.0 mm/hr) dynamically controls procedural water droplet impact velocity, density, and throughfall timbre.</li>
+                    <li><strong>Surface Wind Speed → Wind Filter &amp; Pitch:</strong> 10-meter wind velocity (0 to 35 m/s) modulates lowpass filter cutoffs (300Hz to 1800Hz) and generates aerodynamic shear whistle overtones.</li>
+                    <li><strong>Barometric Pressure → Fundamental Harmonics:</strong> Surface pressure (970 to 1035 hPa) maps to notes across the atmospheric Dorian scale. High pressure anticyclones resonate in crystalline highs; deep gale lows sing in ominous sub-bass.</li>
+                    <li><strong>Lightning &amp; Convective Instability → Thunder:</strong> High convective lightning flash density (&gt;12 flashes/km²/yr) triggers rolling sub-bass thunder discharges and stereo reverberation.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Complete Earth Archive Scientific Transparency Panel (Record 004) -->
+        <div id="earthSciencePanel" class="science-panel" style="display: none;">
+            <div class="science-header">
+                <h3>EARTH ARCHIVE — RECORD 004: COMPLETE EARTH ARCHIVE</h3>
+                <span class="nasa-badge" style="border-color: #f7d794; color: #f7d794;">NASA VOYAGER GOLDEN RECORD (1977)</span>
+            </div>
+            
+            <div class="science-grid">
+                <div class="science-item">
+                    <span class="sci-label">MISSION:</span>
+                    <span class="sci-val">NASA Voyager 1 &amp; 2 Interstellar Time Capsule ('The Sounds of Earth')</span>
+                </div>
+                <div class="science-item">
+                    <span class="sci-label">NASA SOURCE:</span>
+                    <span class="sci-val">NASA Jet Propulsion Laboratory (JPL) &amp; NASA History (DOI: 10.5067/VOYAGER-GOLDEN-RECORD-SOUNDS-1977)</span>
+                </div>
+                <div class="science-item">
+                    <span class="sci-label">ACOUSTIC TRACKS:</span>
+                    <span class="sci-val">Songbirds, Humpback Whales, Coastal Surf, Wind, Rain, Thunder &amp; Human Piano</span>
+                </div>
+                <div class="science-item">
+                    <span class="sci-label">INTEGRATED DATA:</span>
+                    <span class="sci-val">Multi-Sphere Matrix uniting Biosphere (GEDI), Hydrosphere (ECCO), Atmosphere (MERRA-2)</span>
+                </div>
+            </div>
+
+            <div class="transparency-section" style="border-left-color: #f7d794;">
+                <h4 style="color: #f7d794;">THE PLANETARY SYMPHONY OF HOME</h4>
+                <ul>
+                    <li><strong>The Sounds of Earth:</strong> Faithful procedural modeling of the authentic natural acoustic tracks curated by Carl Sagan and NASA for the Voyager Golden Record.</li>
+                    <li><strong>Avian Biosphere:</strong> Forest songbirds, including Wood Thrush, American Robin, and dawn chorus warblers.</li>
+                    <li><strong>Marine Mammal Cantos:</strong> Roger Payne's famous humpback whale vocalizations echoing in the oceanic SOFAR channel.</li>
+                    <li><strong>Planetary Elements:</strong> Coastal surf breakers, soft rain, and distant lightning thunder.</li>
+                    <li><strong>Eli's Piano Memory:</strong> The nostalgic piano melody symbolizing human connection and friendship across the stars.</li>
+                </ul>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Full HD Slow-Mo Memory Cinema Overlay -->
+    <div id="memoryCinemaOverlay" class="memory-cinema" style="display: none;">
+        <div class="memory-viewport">
+            <!-- High Definition Slow-Mo Canvas -->
+            <canvas id="memoryCanvas"></canvas>
+            
+            <!-- Vignette / Dream Bloom Overlay -->
+            <div class="memory-dream-vignette"></div>
+
+            <!-- Memory Header & Context -->
+            <div class="memory-header">
+                <div class="memory-badge-row">
+                    <span class="memory-tag">💭 ELI'S MEMORY OF EARTH</span>
+                    <span class="memory-speed-tag" id="memorySpeedTag">⏱️ SLOW MOTION 0.35x</span>
+                    <span class="memory-nasa-tag" id="memoryNasaTag">NASA EARTH OBSERVATION</span>
+                </div>
+                <h2 class="memory-title" id="memoryTitle">CANOPY LEAVES SWAYING IN THE SUNLIGHT</h2>
+                <p class="memory-quote" id="memoryQuote">"I remember how the sun felt filtering through the leaves... moving so gently in the wind."</p>
+            </div>
+
+            <!-- Memory Vision Selector Dock -->
+            <div class="memory-dock">
+                <div class="memory-btn-group">
+                    <button class="mem-select-btn active" data-vision="leaves">🍃 LEAVES IN BREEZE</button>
+                    <button class="mem-select-btn" data-vision="ocean">🌊 OCEAN SURF &amp; WAVES</button>
+                    <button class="mem-select-btn" data-vision="birds">🐦 HUMMINGBIRDS &amp; CHIRP</button>
+                    <button class="mem-select-btn" data-vision="stream">💧 MOUNTAIN STREAM</button>
+                    <button class="mem-select-btn" data-vision="rain">🌧️ CANOPY RAIN</button>
+                </div>
+
+                <div class="memory-speed-group">
+                    <span class="dock-label">SPEED:</span>
+                    <button class="speed-btn" data-speed="0.2">0.2x ULTRA SLOW</button>
+                    <button class="speed-btn active" data-speed="0.35">0.35x SLOW-MO</button>
+                    <button class="speed-btn" data-speed="1.0">1.0x NORMAL</button>
+                </div>
+
+                <button class="memory-close-btn" id="btnCloseMemory" title="Return to Habitat (Press ENTER or Click)">🔍 ZOOM OUT TO HABITAT [ENTER]</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Player Controls Reference Guide -->
+    <footer class="controls-guide">
+        <div style="font-size: 11px; letter-spacing: 0.5px;">
+            <span class="key-badge">→</span> (Front Arrow) Walk Forward &nbsp;|&nbsp;
+            <span class="key-badge">←</span> Walk Back &nbsp;|&nbsp;
+            <span class="key-badge">↑</span> / <span class="key-badge">↓</span> Navigate &nbsp;|&nbsp;
+            <span class="key-badge">ENTER</span> Pick Up / Interact / Zoom
+        </div>
+    </footer>
+    </div><!-- /.game-container -->
+
+    <!-- Game Scripts -->
+    <script src="js/forest-data-source.js"></script>
+    <script src="js/ocean-data-source.js"></script>
+    <script src="js/atmosphere-data-source.js"></script>
+    <script src="js/earth-data-source.js"></script>
+    <script src="js/tone.js"></script>
+    <script src="js/forest-sonification.js"></script>
+    <script src="js/ocean-sonification.js"></script>
+    <script src="js/atmosphere-sonification.js"></script>
+    <script src="js/earth-sonification.js"></script>
+    <script src="js/memory-cinema.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/pixelart.js"></script>
+    <script src="js/game.js"></script>
+
+
+</body></html>
