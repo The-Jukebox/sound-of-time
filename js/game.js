@@ -155,9 +155,17 @@ class Game {
                 }
             }
 
-            // Jukebox Shortcuts (When in scene 5)
+            // Jukebox & Habitat Shortcuts (When in scene 5)
             if (this.currentScene === 'scene5') {
-                if (e.code === 'Space') {
+                if (e.key === 'Enter') {
+                    if (window.memoryCinema && window.memoryCinema.isOpen) {
+                        window.memoryCinema.close();
+                    } else {
+                        this.openMemoryVision();
+                    }
+                    e.preventDefault();
+                    return;
+                } else if (e.code === 'Space') {
                     this.toggleJukeboxPlayPause();
                     e.preventDefault();
                 } else if (e.key === 's' || e.key === 'S') {
@@ -179,10 +187,6 @@ class Game {
                     if (this.jukeboxState.unlockedRecords.earth) {
                         this.selectJukeboxRecord('earth');
                     }
-                } else if (e.key === 'ArrowLeft') {
-                    this.cycleRecord(-1);
-                } else if (e.key === 'ArrowRight') {
-                    this.cycleRecord(1);
                 } else if (e.key === 'b' || e.key === 'B') {
                     if (window.forestSonification && window.forestSonification.soundscape) {
                         const res = window.forestSonification.soundscape.callBird('random');
@@ -199,11 +203,24 @@ class Game {
             this.keys[e.code] = false;
         });
 
-        // Click on canvas to resume sound or advance dialogue
-        this.canvas.addEventListener('click', () => {
+        // Click on canvas to resume sound, advance dialogue, or click thought bubble
+        this.canvas.addEventListener('click', (e) => {
             this.sound.resume();
             if (this.currentDialogue) {
                 this.advanceDialogue();
+                return;
+            }
+            if (this.currentScene === 'scene5') {
+                const rect = this.canvas.getBoundingClientRect();
+                const scaleX = this.canvas.width / rect.width;
+                const scaleY = this.canvas.height / rect.height;
+                const clickX = (e.clientX - rect.left) * scaleX;
+                const clickY = (e.clientY - rect.top) * scaleY;
+                const bx = this.eli.x + 35;
+                const by = this.eli.y - 105;
+                if (Math.abs(clickX - bx) < 75 && Math.abs(clickY - by) < 55) {
+                    this.openMemoryVision();
+                }
             }
         });
 
@@ -335,13 +352,13 @@ class Game {
         this.koru.y = this.height * 0.74;
         this.koru.facing = -1;
 
-        // Opening dialogue
+        // Opening dialogue (Project Hail Mary tone)
         setTimeout(() => {
             this.queueDialogues([
-                { speaker: 'KORU', text: 'Eli! Your students are waiting.' },
-                { speaker: 'ELI', text: 'Already? I thought I had another five minutes.' },
-                { speaker: 'KORU', text: 'Your five minutes are always longer than our five minutes.' },
-                { speaker: 'ELI', text: '(laughs) Come on, let\'s go teach them something.' }
+                { speaker: 'ROCKY', text: 'Grace! Your students are waiting! Little ones vibrate with anticipation.' },
+                { speaker: 'RYAN', text: 'Already? I thought I had another five minutes.' },
+                { speaker: 'ROCKY', text: 'Question: Why is human five minutes always longer than Eridian five minutes? Human math is broken!' },
+                { speaker: 'RYAN', text: '(laughs) That\'s teacher time, Rocky. Come on, let\'s go teach them some science.' }
             ], () => {
                 this.showPrompt('[A/D] or [←/→] WALK TOWARDS THE CLASSROOM');
             });
@@ -360,54 +377,54 @@ class Game {
 
         this.queueDialogues([
             {
-                speaker: 'ELI',
-                text: 'Okay, everyone. Today we\'re going to talk about something very special. A planet called Earth.'
+                speaker: 'RYAN',
+                text: 'All right, everyone! Today we\'re going to talk about something very special: planetary atmospheres and oceans.'
             },
             {
                 speaker: 'LITTLE ROCK 1',
-                text: 'Is Earth made of rocks?'
+                text: 'Question: Is Earth made of rocks like Erid?'
             },
             {
-                speaker: 'ELI',
-                text: 'Well... partly! But it also has forests, oceans, mountains and so many living things.'
+                speaker: 'RYAN',
+                text: 'Partly! But on Earth, nitrogen and oxygen scatter sunlight to turn the whole sky brilliant blue. And seventy percent is liquid water!'
             },
             {
                 speaker: 'LITTLE ROCK 2',
-                text: 'What is a forest?'
+                text: 'Question: What is a forest?'
             },
             {
-                speaker: 'ELI',
-                text: 'A place filled with trees. Imagine thousands of them, all moving gently in the wind.',
+                speaker: 'RYAN',
+                text: 'Vast living canopies of trees. Millions of them swaying in the wind, hosting singing organisms in the branches.',
                 onShow: () => { this.classroomBoard = 'forest'; }
             },
             {
                 speaker: 'LITTLE ROCK 3',
-                text: 'What is rain?'
+                text: '*Soft snoring whistles... Zzz*'
             },
             {
-                speaker: 'ELI',
-                text: 'Water falling from the sky.',
+                speaker: 'RYAN',
+                text: 'Haha, wake up back there! Science waits for no one!'
+            },
+            {
+                speaker: 'RYAN',
+                text: 'And rain: fresh liquid water falling gently from clouds in the sky.',
                 onShow: () => { this.classroomBoard = 'rain'; }
             },
             {
                 speaker: 'LITTLE ROCK 1',
-                text: 'And what does it sound like?'
+                text: 'Question: What does falling water sound like?'
             },
             {
-                speaker: 'ELI',
-                text: '...'
+                speaker: 'RYAN',
+                text: 'It sounds... like peace. Like home.'
             },
             {
-                speaker: 'ELI',
-                text: 'It sounds... beautiful.'
+                speaker: 'ROCKY',
+                text: 'Question: Does your world truly have acoustic harmonies everywhere in nature?'
             },
             {
-                speaker: 'KORU',
-                text: 'You talk about Earth quite often.'
-            },
-            {
-                speaker: 'ELI',
-                text: 'I suppose I do.'
+                speaker: 'RYAN',
+                text: 'Everywhere, Rocky. Wind, water, birds... nature\'s own living synthesizer.'
             }
         ], () => {
             this.showPrompt('CLASS DISMISSED. WALKING HOME TOGETHER...');
@@ -430,15 +447,15 @@ class Game {
         this.koru.state = 'walk';
 
         this.queueDialogues([
-            { speaker: 'KORU', text: 'Your students seem to like Earth.' },
-            { speaker: 'ELI', text: 'I think they like the idea of somewhere different.' },
-            { speaker: 'KORU', text: 'Is Earth really as beautiful as you say?' },
-            { speaker: 'ELI', text: 'More beautiful.' }
+            { speaker: 'ROCKY', text: 'Question: Did the little ones understand the concept of singing trees?' },
+            { speaker: 'RYAN', text: 'I think they loved it, Rocky. Kids love imagining worlds different from their own.' },
+            { speaker: 'ROCKY', text: 'Good. Proud. I like to hear you speak of your world.' },
+            { speaker: 'RYAN', text: 'More than anything, Rocky.' }
         ], () => {
             this.queueDialogues([
                 {
-                    speaker: 'ELI',
-                    text: 'Wait. What\'s that?',
+                    speaker: 'RYAN',
+                    text: 'Wait... Rocky, look down there. In the regolith!',
                     onShow: () => {
                         this.eli.state = 'idle';
                         this.koru.state = 'idle';
@@ -465,7 +482,7 @@ class Game {
         this.koru.state = 'idle';
 
         this.queueDialogues([
-            { speaker: 'ELI', text: 'Let\'s see what you\'ve got.' }
+            { speaker: 'RYAN', text: 'Let\'s see what you\'ve got.' }
         ], () => {
             this.showChoiceMenu('CHOICE 2 — What should we do with the jukebox?', [
                 {
@@ -490,9 +507,9 @@ class Game {
 
     inspectRecordsDialogue() {
         this.queueDialogues([
-            { speaker: 'ELI', text: 'There are four distinct slots. Etched with intricate magnetic grooves.' },
-            { speaker: 'KORU', text: 'Does it play music?' },
-            { speaker: 'ELI', text: 'Let\'s turn it on to find out.' }
+            { speaker: 'RYAN', text: 'Look at this, Rocky. Four distinct archive cylinders. Etched with intricate magnetic grooves.' },
+            { speaker: 'ROCKY', text: 'Question: Does the machine produce audio waves? Does it sing?' },
+            { speaker: 'RYAN', text: 'Let\'s turn it on to find out!' }
         ], () => {
             this.powerOnJukebox();
         });
@@ -500,8 +517,8 @@ class Game {
 
     moveJukeboxDialogue() {
         this.queueDialogues([
-            { speaker: 'ELI', text: 'Careful... it\'s heavier than it looks. Brass and solid Earth oak.' },
-            { speaker: 'KORU', text: 'It has made a long voyage across the stars.' }
+            { speaker: 'RYAN', text: 'Careful, Rocky... it\'s heavy. Solid Earth oak and brass.' },
+            { speaker: 'ROCKY', text: 'Amaze! Very dense! Machine has made a long voyage across the stars!' }
         ], () => {
             this.powerOnJukebox();
         });
@@ -509,8 +526,8 @@ class Game {
 
     leaveOffDialogue() {
         this.queueDialogues([
-            { speaker: 'KORU', text: 'Aren\'t you curious, Eli? It came all the way from your world.' },
-            { speaker: 'ELI', text: 'You\'re right, Koru. Let\'s see what it has.' }
+            { speaker: 'ROCKY', text: 'Question: Why leave off? Aren\'t you curious, Grace? It came all the way from your world!' },
+            { speaker: 'RYAN', text: 'You\'re right, Rocky. Let\'s see what Earth sent us.' }
         ], () => {
             this.powerOnJukebox();
         });
@@ -522,11 +539,10 @@ class Game {
         this.jukeboxState.isPowered = true;
 
         this.queueDialogues([
-            { speaker: 'SYSTEM', text: '*BZZT... CLICK... HUM...*' },
+            { speaker: 'SYSTEM', text: '*BZZT... CLUNK... WARM VACUUM TUBE HUM...*' },
             { speaker: 'SYSTEM', text: 'DISPLAY: [ EARTH ARCHIVE — 001 ]' },
-            { speaker: 'ELI', text: 'Earth archive? Wait... these are sounds from Earth.' },
-            { speaker: 'KORU', text: 'It remembers your planet?' },
-            { speaker: 'ELI', text: 'I think it does.' }
+            { speaker: 'RYAN', text: 'Earth Archive! Rocky... these are actual soundscapes and NASA data from Earth!' },
+            { speaker: 'ROCKY', text: 'Amaze! It stores the voice of your world! Push button, Grace! Let us listen!' }
         ], () => {
             this.initScene('scene5');
         });
@@ -558,35 +574,35 @@ class Game {
         this.koru.facing = -1;
 
         this.queueDialogues([
-            { speaker: 'KORU', text: 'You miss it.' },
-            { speaker: 'ELI', text: 'Every day.' },
-            { speaker: 'KORU', text: 'Then why didn\'t you tell me?' },
-            { speaker: 'ELI', text: 'I didn\'t realise how much I missed it until I heard it again.' },
-            { speaker: 'KORU', text: 'Could we go there?' },
-            { speaker: 'ELI', text: 'You mean... Earth?' },
-            { speaker: 'KORU', text: 'You showed me its forests. Its oceans. Its rain. I want to hear them for real.' },
-            { speaker: 'ELI', text: 'Then what are we waiting for?' }
+            { speaker: 'ROCKY', text: 'You miss it, Grace.' },
+            { speaker: 'RYAN', text: 'Every day, Rocky. Every single day.' },
+            { speaker: 'ROCKY', text: 'Question: Why stay on Erid when your heart wants Earth?' },
+            { speaker: 'RYAN', text: 'I thought my journey was over. But hearing these sounds again... I know where I belong.' },
+            { speaker: 'ROCKY', text: 'Then we go! I build xenonite life-support sphere for spacecraft! I install atmospheric regulators! We fly to Earth together!' },
+            { speaker: 'RYAN', text: 'Rocky... you\'d really cross the galaxy to come to Earth with me?' },
+            { speaker: 'ROCKY', text: 'Amaze! Yes! You saved my entire species, Grace! I will not let you travel alone! We go together!' },
+            { speaker: 'RYAN', text: 'Then let\'s prep the ship!' }
         ], () => {
             this.showChoiceMenu('CHOICE 3 — What do we do with the jukebox?', [
                 {
-                    text: 'A. TAKE IT WITH US',
+                    text: 'A. TAKE IT TO THE SPACECRAFT',
                     action: () => {
                         this.jukeboxState.takenToShip = true;
                         this.queueDialogues([
-                            { speaker: 'ELI', text: 'We can\'t leave our memories behind.' },
-                            { speaker: 'KORU', text: 'We\'ll listen to it while we fly across the stars.' }
+                            { speaker: 'RYAN', text: 'We\'re taking the jukebox with us. It brought us together.' },
+                            { speaker: 'ROCKY', text: 'Good! We play Earth songs while our spin drives roar across the stars!' }
                         ], () => {
                             this.initScene('scene7');
                         });
                     }
                 },
                 {
-                    text: 'B. LEAVE IT AT HOME',
+                    text: 'B. LEAVE IT IN HABITAT',
                     action: () => {
                         this.jukeboxState.takenToShip = false;
                         this.queueDialogues([
-                            { speaker: 'ELI', text: 'We\'ll make new memories when we get there.' },
-                            { speaker: 'KORU', text: 'Then let\'s make some.' }
+                            { speaker: 'RYAN', text: 'We\'ll hear the real sounds when we get there.' },
+                            { speaker: 'ROCKY', text: 'Amaze! Then let us fly to the real sounds!' }
                         ], () => {
                             this.initScene('scene7');
                         });
@@ -596,62 +612,85 @@ class Game {
         });
     }
 
-    // SCENE 7 — THE JOURNEY & SPACESHIP DEPARTURE
+    // SCENE 7 — THE GRAND FINALE: IN THE SPACECRAFT HEADING TO EARTH
     initScene7() {
         this.sound.stopSceneAmbience();
         this.sound.startSceneAmbience('spaceship_flight');
 
         this.flightProgress = 0;
         this.arrivalPhase = false;
+        this.fistBumping = false;
+        this.headingIntoAtmosphere = false;
+        this.arrivalComplete = false;
 
         this.queueDialogues([
-            { speaker: 'ROCKY', text: 'Ryan?' },
-            { speaker: 'RYAN', text: 'Yes, Rocky?' },
-            { speaker: 'ROCKY', text: 'What does Earth smell like?' },
-            { speaker: 'RYAN', text: 'Cold pine trees and snow, Rocky. You\'ll see in just a moment.' }
-        ], () => {
-            // Start flight progress animation
-            const flightInterval = setInterval(() => {
-                this.flightProgress += 0.007;
-                if (this.flightProgress >= 1.0) {
-                    clearInterval(flightInterval);
-                    setTimeout(() => {
-                        this.initEarthArrival();
-                    }, 1000);
+            {
+                speaker: 'ROCKY',
+                text: 'Grace! Grace! Look at viewport! Look ahead!'
+            },
+            {
+                speaker: 'RYAN',
+                text: 'I see it, Rocky... look at that.'
+            },
+            {
+                speaker: 'ROCKY',
+                text: 'Amaze! Amaze! Amaze! The blue marble! It is truly blue! Liquid water everywhere!'
+            },
+            {
+                speaker: 'RYAN',
+                text: 'That\'s Earth, buddy. Oceans, forests, atmosphere... all the music we listened to.'
+            },
+            {
+                speaker: 'ROCKY',
+                text: 'Question: Can we hear the birds and the waves when we enter the atmosphere?'
+            },
+            {
+                speaker: 'RYAN',
+                text: 'Very soon, Rocky. We\'re on final orbital approach right now.'
+            },
+            {
+                speaker: 'ROCKY',
+                text: 'We saved my world. We saved your world. Now we go home together. Good. Proud.'
+            },
+            {
+                speaker: 'RYAN',
+                text: 'I couldn\'t have done any of this without you, Rocky. You\'re the best friend I ever had.'
+            },
+            {
+                speaker: 'RYAN',
+                text: 'Fist-bump, Rocky!',
+                onShow: () => {
+                    this.fistBumping = true;
                 }
-            }, 30);
-        });
-    }
-
-    // FINAL ARRIVAL: EARTH & THE GEODESIC XENONITE DOME (Project Hail Mary Arrival)
-    initEarthArrival() {
-        this.arrivalPhase = true;
-        this.sound.stopSceneAmbience();
-        this.sound.startEarthSoundscape();
-
-        // Ryan in astronaut suit standing in the snow beside the geodesic dome
-        this.eli.x = 345;
-        this.eli.y = this.height * 0.72 + 8;
-        this.eli.facing = -1; // looking at Rocky inside the dome
-        this.eli.state = 'idle';
-
-        this.rockyInsideState = 'hands';
-
-        this.queueDialogues([
-            { speaker: 'ROCKY', text: 'Ryan! Look! Cold white crystals falling from the sky! Is this... snow?' },
-            { speaker: 'RYAN', text: 'Yes, Rocky. This is Earth. This is snow.' },
-            { speaker: 'ROCKY', text: 'Amaze! Amaze! Amaze! The air inside my xenonite ball is warm, but outside looks just like the record!' },
-            { speaker: 'RYAN', text: 'We made it, buddy. You\'re finally hearing Earth for real.' },
-            { speaker: 'ROCKY', text: 'I am glad I came with you, Ryan.' },
-            { speaker: 'RYAN', text: 'Me too, Rocky. Me too.' }
+            },
+            {
+                speaker: 'ROCKY',
+                text: 'Fist my bump!',
+                onShow: () => {
+                    this.fistBumping = true;
+                    if (this.sound) this.sound.playRelayClickSfx();
+                }
+            },
+            {
+                speaker: 'RYAN',
+                text: 'Attitude thrusters firing! Heading into Earth\'s atmosphere in three... two... one... Hold on, Rocky!'
+            },
+            {
+                speaker: 'ROCKY',
+                text: 'Amaze! Hang on, Grace! We go home!',
+                onShow: () => {
+                    this.headingIntoAtmosphere = true;
+                }
+            }
         ], () => {
-            this.showPrompt('[A/D] WALK IN SNOW | [PRESS R TO RESTART THE GAME]');
+            this.arrivalComplete = true;
+            this.showPrompt('[HEADING INTO EARTH] — [PRESS R TO REPLAY THE JOURNEY]');
         });
     }
 
     // CREDITS & ENDING SCREEN
     initCredits() {
-        this.initEarthArrival();
+        this.initScene7();
     }
 
     // ----------------------------------------------------
@@ -994,7 +1033,7 @@ class Game {
             setTimeout(() => {
                 this.queueDialogues([
                     { speaker: 'SYSTEM', text: '[EARTH ARCHIVE — COMPLETE RECORD UNLOCKED]' },
-                    { speaker: 'ELI', text: 'This one... this must be everything together.' }
+                    { speaker: 'RYAN', text: 'This one... this must be everything together.' }
                 ]);
             }, 8000);
         }
@@ -1134,34 +1173,35 @@ class Game {
     triggerRecordDialogue(recordKey) {
         if (recordKey === 'forest') {
             this.queueDialogues([
-                { speaker: 'RYLAND', text: 'Record 003: The Forest... NASA GEDI lidar structure and biomass archive.' },
-                { speaker: 'KORU', text: 'Listen... are those living leaves moving in the air?' },
-                { speaker: 'RYLAND', text: 'Yes, Koru. Earth has vast living canopies rising sixty meters high. This laser sensor mapped their height, density, and biomass from orbit.' },
-                { speaker: 'KORU', text: 'And those little voices calling from the branches?' },
-                { speaker: 'RYLAND', text: 'Those are birds welcoming the morning sun.' },
-                { speaker: 'KORU', text: 'It feels like we are standing right inside a forest.' }
+                { speaker: 'RYAN', text: 'Record 003: The Forest. NASA GEDI lidar structure and biomass archive.' },
+                { speaker: 'ROCKY', text: 'Listen! High-frequency melodic vibrations! Organisms are in the gas!' },
+                { speaker: 'RYAN', text: 'Those are birds welcoming the dawn sun, Rocky. And wind moving through living trees sixty meters tall.' },
+                { speaker: 'ROCKY', text: 'Amaze! Amaze! Amaze! Giant carbon towers filled with singing creatures!' },
+                { speaker: 'ROCKY', text: 'Question: Can humans climb to the top of these trees?' },
+                { speaker: 'RYAN', text: 'Kids do it all the time. I loved climbing them when I was young.' },
+                { speaker: 'ROCKY', text: 'Good. Tree climbing is practical. You are good climber, Grace.' }
             ], null, true);
         } else if (recordKey === 'ocean') {
             this.queueDialogues([
-                { speaker: 'RYLAND', text: 'Record 002: The Ocean... NASA ECCO daily temperature and salinity archive.' },
-                { speaker: 'KORU', text: 'Those deep, singing chords... what are they?' },
-                { speaker: 'RYLAND', text: 'Those are real ocean temperatures recorded by Earth satellites. Cold subpolar waters sing low and deep, and the warm Gulf Stream sings high.' },
-                { speaker: 'KORU', text: 'The water has its own voice. Can we visit it one day?' },
-                { speaker: 'RYLAND', text: 'Maybe one day, Koru.' },
-                { speaker: 'KORU', text: 'I would like that.' }
+                { speaker: 'RYAN', text: 'Record 002: The Ocean. NASA ECCO daily temperature and salinity measurements.' },
+                { speaker: 'ROCKY', text: 'Deep resonant frequencies! Chords changing pitch! Why does the fluid sing?' },
+                { speaker: 'RYAN', text: 'Those are ocean currents, Rocky. Cold subpolar waters hum low and deep, while the warm Gulf Stream sings high.' },
+                { speaker: 'ROCKY', text: 'Question: Water that covers seventy percent of a world has its own voice? Can we visit this water?' },
+                { speaker: 'RYAN', text: 'I would love to show you, Rocky. Stand on the shore and watch the tides.' },
+                { speaker: 'ROCKY', text: 'Good. Proud. We will visit the big singing water.' }
             ], null, true);
         } else if (recordKey === 'atmosphere') {
             this.queueDialogues([
-                { speaker: 'KORU', text: 'Your planet makes all these sounds?' },
-                { speaker: 'ELI', text: 'Every day. Sometimes we don\'t even notice them.' },
-                { speaker: 'KORU', text: 'How can you forget something so beautiful?' },
-                { speaker: 'ELI', text: '...' }
+                { speaker: 'ROCKY', text: 'Tapping on glass! Fluid falling from the sky!' },
+                { speaker: 'RYAN', text: 'That\'s rain, Rocky. Fresh water falling from clouds in the sky.' },
+                { speaker: 'ROCKY', text: 'Liquid falls from sky? Scary. Scary. Scary. But... sounds very peaceful.' },
+                { speaker: 'RYAN', text: 'It is. It\'s the sound of life.' }
             ], null, true);
         } else if (recordKey === 'earth') {
             this.queueDialogues([
-                { speaker: 'ELI', text: 'I remember now.' },
-                { speaker: 'KORU', text: 'Remember what?' },
-                { speaker: 'ELI', text: 'Home.' }
+                { speaker: 'ROCKY', text: 'Question: Why does human face leak fluid from eyes? Are you damaged, Grace?' },
+                { speaker: 'RYAN', text: 'No, Rocky... I\'m not damaged. I just... I miss it. I miss home.' },
+                { speaker: 'ROCKY', text: 'Understand. Earth has beautiful sounds. How could anyone forget something so wonderful?' }
             ], null, true);
         }
     }
@@ -1228,13 +1268,14 @@ class Game {
         if (this.ui && this.ui.dialogueBox) this.ui.dialogueBox.style.display = 'block';
         let speakerDisplay = this.currentDialogue.speaker;
         if (speakerDisplay === 'KORU') speakerDisplay = 'ROCKY';
+        if (speakerDisplay === 'ELI' || speakerDisplay === 'RYLAND') speakerDisplay = 'RYAN';
         if (this.ui && this.ui.speakerName) this.ui.speakerName.innerText = speakerDisplay;
         if (this.ui && this.ui.dialogueText) this.ui.dialogueText.innerText = '';
         if (this.ui && this.ui.continuePrompt) this.ui.continuePrompt.style.display = 'none';
 
         // Speaker color styling
         if (this.ui && this.ui.speakerName) {
-            if (this.currentDialogue.speaker === 'ELI') {
+            if (this.currentDialogue.speaker === 'ELI' || this.currentDialogue.speaker === 'RYAN' || this.currentDialogue.speaker === 'RYLAND') {
                 this.ui.speakerName.style.color = '#ffca72';
             } else if (this.currentDialogue.speaker === 'KORU' || this.currentDialogue.speaker === 'ROCKY') {
                 this.ui.speakerName.style.color = '#47d8f2';
@@ -1377,6 +1418,9 @@ class Game {
             case 'scene3':
                 this.updateScene3(dt);
                 break;
+            case 'scene5':
+                this.updateScene5(dt);
+                break;
             case 'scene7':
                 this.updateScene7(dt);
                 break;
@@ -1388,28 +1432,47 @@ class Game {
         }
     }
 
+    updateScene5(dt) {
+        if (window.memoryCinema && window.memoryCinema.isOpen) return;
+        if (this.currentDialogue || this.activeChoice) return;
+
+        let moving = false;
+        if (this.keys['arrowright'] || this.keys['d']) {
+            this.eli.x += this.eli.speed * dt;
+            this.eli.facing = 1;
+            this.eli.state = 'walk';
+            moving = true;
+        } else if (this.keys['arrowleft'] || this.keys['a']) {
+            this.eli.x -= this.eli.speed * dt;
+            this.eli.facing = -1;
+            this.eli.state = 'walk';
+            moving = true;
+        }
+
+        if (!moving) {
+            this.eli.state = 'idle';
+        }
+
+        // Clamp Eli inside habitat room
+        this.eli.x = Math.max(90, Math.min(480, this.eli.x));
+
+        // Update interaction prompt based on position
+        const distToJukebox = Math.abs(this.eli.x - 320);
+        if (distToJukebox < 65) {
+            this.showPrompt('[ENTER] ZOOM INTO MEMORY  |  [ → / ← ] WALK');
+        } else {
+            this.showPrompt('[ → / ← ] WALK IN HABITAT  |  [ENTER] ZOOM INTO MEMORY');
+        }
+    }
+
     updateScene7(dt) {
         if (this.keys['r'] || this.keys['R']) {
             this.initScene('scene1');
+            return;
         }
-        if (this.arrivalPhase && !this.currentDialogue && !this.activeChoice) {
-            let moving = false;
-            if (this.keys['arrowright'] || this.keys['d']) {
-                this.eli.x += this.eli.speed * dt;
-                this.eli.facing = 1;
-                this.eli.state = 'walk';
-                moving = true;
-            } else if (this.keys['arrowleft'] || this.keys['a']) {
-                this.eli.x -= this.eli.speed * dt;
-                this.eli.facing = -1;
-                this.eli.state = 'walk';
-                moving = true;
-            }
-            if (!moving) {
-                this.eli.state = 'idle';
-            }
-            // Clamp on screen in snow
-            this.eli.x = Math.max(285, Math.min(610, this.eli.x));
+        // Smoothly advance orbital flight progress as the ship approaches Earth
+        if (this.flightProgress < 1.0) {
+            this.flightProgress = Math.min(1.0, this.flightProgress + dt * 0.04);
         }
     }
 
@@ -1539,10 +1602,10 @@ class Game {
         this.clearPrompt();
 
         this.queueDialogues([
-            { speaker: 'ELI', text: 'That definitely wasn\'t here yesterday.' },
-            { speaker: 'ELI', text: 'A music player? Out here?' },
-            { speaker: 'KORU', text: 'It looks old.' },
-            { speaker: 'ELI', text: 'Very old.' }
+            { speaker: 'RYAN', text: 'That definitely wasn\'t here yesterday.' },
+            { speaker: 'ROCKY', text: 'Question: What is that object? Smells like petroleum polymer and brass!' },
+            { speaker: 'RYAN', text: 'It\'s... an Earth jukebox! A vintage analog music player!' },
+            { speaker: 'ROCKY', text: 'Amaze! Heavy sound apparatus from your world! Let us carry it to habitat!' }
         ], () => {
             this.showChoiceMenu('CHOICE 1 — What should we do?', [
                 {
@@ -1552,8 +1615,8 @@ class Game {
                         this.eli.isCarrying = true;
                         this.jukeboxDugUp = true;
                         this.queueDialogues([
-                            { speaker: 'ELI', text: 'I don\'t know what this is, but I want to find out.' },
-                            { speaker: 'KORU', text: 'Let\'s take it back to your habitat and clean it up.' }
+                            { speaker: 'RYAN', text: 'I don\'t know how it crossed interstellar space, but we have to find out.' },
+                            { speaker: 'ROCKY', text: 'Good! Let us take it back to habitat and clean it up!' }
                         ], () => {
                             this.showPrompt('[A/D] CARRY JUKEBOX TO HABITAT (RIGHT) | [Q] SET DOWN');
                         });
@@ -1564,10 +1627,10 @@ class Game {
                     action: () => {
                         this.eli.state = 'idle';
                         this.queueDialogues([
-                            { speaker: 'ELI', text: 'Maybe it\'s better left alone.' },
-                            { speaker: 'SYSTEM', text: '*Click... crackle...*' },
-                            { speaker: 'KORU', text: 'Eli. Did you hear that? It\'s making sounds!' },
-                            { speaker: 'ELI', text: 'Wait... that crackle... that sounds like Earth.' }
+                            { speaker: 'RYAN', text: 'Maybe it\'s better left alone...' },
+                            { speaker: 'SYSTEM', text: '*Click... warm vinyl crackle...*' },
+                            { speaker: 'ROCKY', text: 'Grace! Listen! Apparatus makes sound! It hums!' },
+                            { speaker: 'RYAN', text: 'Wait... that crackle... that\'s an Earth record!' }
                         ], () => {
                             this.showChoiceMenu('Go back and pick it up?', [
                                 {
@@ -1576,7 +1639,8 @@ class Game {
                                         this.eli.isCarrying = true;
                                         this.jukeboxDugUp = true;
                                         this.queueDialogues([
-                                            { speaker: 'ELI', text: 'We have to know where it came from.' }
+                                            { speaker: 'RYAN', text: 'We have to know what music it holds.' },
+                                            { speaker: 'ROCKY', text: 'Amaze! I help carry! We learn together!' }
                                         ], () => {
                                             this.showPrompt('[A/D] CARRY JUKEBOX TO HABITAT (RIGHT) | [Q] SET DOWN');
                                         });
@@ -1643,19 +1707,22 @@ class Game {
                 r.drawKoru(this.koru.x, this.koru.y, this.koru.state, this.koru.facing, isKoruSpeaking);
                 if (this.currentScene === 'scene5') {
                     this.drawNasaWaveform();
+                    if (this.jukeboxState.activeRecord && !(window.memoryCinema && window.memoryCinema.isOpen)) {
+                        r.drawThoughtBubble(this.eli.x, this.eli.y, this.jukeboxState.activeRecord, this.jukeboxState.isPlaying);
+                    }
                 }
                 break;
 
             case 'scene7':
-                if (this.arrivalPhase) {
-                    r.drawGeodesicDomeScene(this.eli.x, this.eli.y, this.eli.facing, this.eli.state, isRyanSpeaking, isKoruSpeaking, this.rockyInsideState || 'hands');
-                } else {
-                    r.drawSpaceDeparture(this.flightProgress);
-                }
-                break;
-
             case 'credits':
-                r.drawGeodesicDomeScene(this.eli.x, this.eli.y, this.eli.facing, this.eli.state, isRyanSpeaking, isKoruSpeaking, 'hands');
+                r.drawSpacecraftHeadingToEarth(
+                    this.flightProgress,
+                    isRyanSpeaking,
+                    isKoruSpeaking,
+                    this.fistBumping,
+                    this.headingIntoAtmosphere,
+                    this.arrivalComplete
+                );
                 break;
         }
 

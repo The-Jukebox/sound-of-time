@@ -466,7 +466,7 @@ body {
     height: 100%;
     z-index: 999;
     background: rgba(4, 2, 10, 0.92);
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(10px);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -490,10 +490,24 @@ body {
     background: #000;
     border: 3px solid #7a42b8;
     border-radius: 8px;
-    box-shadow: 0 0 35px rgba(122, 66, 184, 0.6), inset 0 0 20px rgba(170, 110, 255, 0.2);
+    box-shadow: 0 0 40px rgba(122, 66, 184, 0.7), inset 0 0 25px rgba(170, 110, 255, 0.25);
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    transform: scale(0.2) translateY(60px);
+    opacity: 0;
+    transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease-out;
+}
+
+.memory-cinema.active .memory-viewport {
+    transform: scale(1.0) translateY(0);
+    opacity: 1;
+}
+
+.memory-cinema.zooming-out .memory-viewport {
+    transform: scale(0.18) translateY(80px);
+    opacity: 0;
+    transition: transform 0.32s cubic-bezier(0.55, 0.055, 0.675, 0.19), opacity 0.28s ease-in;
 }
 
 #memoryCanvas {
@@ -657,22 +671,32 @@ body {
 }
 
 .memory-close-btn {
-    background: #471a2a;
-    color: #ffd6df;
-    border: 1px solid #9e3352;
-    font-size: 8px;
-    padding: 6px 12px;
+    background: linear-gradient(135deg, #5c1833, #8a2444);
+    color: #fff;
+    border: 2px solid #ff7b9f;
+    font-size: 9px;
+    padding: 7px 14px;
     border-radius: 4px;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all 0.2s;
     font-family: inherit;
+    letter-spacing: 0.5px;
+    font-weight: bold;
+    box-shadow: 0 0 12px rgba(255, 123, 159, 0.5);
+    animation: pulseCloseBtn 2.2s infinite ease-in-out;
 }
 
 .memory-close-btn:hover {
-    background: #7a2641;
+    background: linear-gradient(135deg, #8a2444, #bf2656);
     color: #fff;
-    border-color: #ff6e94;
-    box-shadow: 0 0 10px rgba(255, 110, 148, 0.6);
+    border-color: #ffffff;
+    box-shadow: 0 0 18px rgba(255, 123, 159, 0.9);
+    transform: translateY(-1px);
+}
+
+@keyframes pulseCloseBtn {
+    0%, 100% { box-shadow: 0 0 8px rgba(255, 123, 159, 0.4); }
+    50% { box-shadow: 0 0 16px rgba(255, 123, 159, 0.85); }
 }
 
 #btnProceed {

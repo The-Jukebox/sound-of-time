@@ -2331,6 +2331,231 @@ class PixelRenderer {
     }
 
     // ----------------------------------------------------
+    // SCENE 7 & FINALE: INSIDE THE SPACECRAFT HEADING TO EARTH (PROJECT HAIL MARY FINALE)
+    // ----------------------------------------------------
+
+    drawSpacecraftHeadingToEarth(flightProgress = 0, isRyanSpeaking = false, isRockySpeaking = false, isFistBumping = false, isAtmosphereEntry = false, isComplete = false) {
+        const ctx = this.ctx;
+        const w = this.width;
+        const h = this.height;
+        const t = this.animTime;
+
+        // 1. Deep Space & Starfield through the panoramic cockpit viewport
+        ctx.fillStyle = '#030108';
+        ctx.fillRect(0, 0, w, h);
+
+        // High-speed warp stars streaking towards the viewer/sides
+        ctx.fillStyle = '#ffffff';
+        for (let i = 0; i < 85; i++) {
+            const sx = (i * 73 + t * 160) % w;
+            const sy = (i * 41) % (h * 0.72);
+            const len = 4 + (i % 5) * 6;
+            ctx.globalAlpha = 0.5 + (i % 3) * 0.25;
+            ctx.fillRect(sx, sy, len, 1.5);
+        }
+        ctx.globalAlpha = 1.0;
+
+        // 2. The Majestic Blue Planet Earth looming directly ahead!
+        // As flight progresses, Earth grows from r=50 to r=115, filling the forward view
+        const prog = Math.min(1.0, Math.max(0, flightProgress));
+        const earthR = 50 + prog * 62;
+        const earthX = w * 0.5;
+        const earthY = h * 0.38 - prog * 10;
+
+        // Earth atmospheric re-entry glow / ionization halo
+        if (isAtmosphereEntry || prog > 0.8) {
+            const entryGlow = ctx.createRadialGradient(earthX, earthY, earthR * 0.8, earthX, earthY, earthR * 1.6);
+            entryGlow.addColorStop(0, 'rgba(255, 170, 60, 0.55)');
+            entryGlow.addColorStop(0.4, 'rgba(71, 216, 242, 0.45)');
+            entryGlow.addColorStop(1, 'rgba(30, 15, 60, 0)');
+            ctx.fillStyle = entryGlow;
+            ctx.beginPath();
+            ctx.arc(earthX, earthY, earthR * 1.6, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Ionization plasma sparks rushing past viewport
+            for (let s = 0; s < 18; s++) {
+                const px = (s * 43 + t * 240) % w;
+                const py = (s * 31 + t * 80) % (h * 0.75);
+                ctx.fillStyle = (s % 2 === 0) ? '#ffb85c' : '#47d8f2';
+                ctx.fillRect(px, py, 6 + (s % 4) * 3, 2);
+            }
+        }
+
+        // Animated Rotating Earth with oceans, continents and cloud swirls
+        this.drawPixelEarthHologram(earthX, earthY, earthR);
+
+        // 3. Spacecraft Cockpit Interior Frame & Bulkheads
+        // Panoramic Viewport Outer Arch
+        ctx.fillStyle = '#140e24';
+        ctx.fillRect(0, 0, 80, h);
+        ctx.fillRect(w - 80, 0, 80, h);
+
+        // Cockpit ceiling beam
+        ctx.fillRect(0, 0, w, 28);
+        ctx.fillStyle = '#221838';
+        ctx.fillRect(0, 24, w, 6);
+
+        // Angled side pillars (cockpit window struts)
+        ctx.fillStyle = '#1e1432';
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(95, 0);
+        ctx.lineTo(70, h * 0.72);
+        ctx.lineTo(0, h * 0.72);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(w, 0);
+        ctx.lineTo(w - 95, 0);
+        ctx.lineTo(w - 70, h * 0.72);
+        ctx.lineTo(w, h * 0.72);
+        ctx.closePath();
+        ctx.fill();
+
+        // Metallic strut borders
+        ctx.strokeStyle = '#4a3766';
+        ctx.lineWidth = 2.5;
+        ctx.strokeRect(70, 28, w - 140, h * 0.72 - 28);
+
+        // Glass reflection sheen
+        const sheen = ctx.createLinearGradient(70, 28, w - 70, h * 0.72);
+        sheen.addColorStop(0, 'rgba(255, 255, 255, 0.12)');
+        sheen.addColorStop(0.3, 'rgba(255, 255, 255, 0.02)');
+        sheen.addColorStop(0.7, 'rgba(71, 216, 242, 0.05)');
+        sheen.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        ctx.fillStyle = sheen;
+        ctx.fillRect(70, 28, w - 140, h * 0.72 - 28);
+
+        // 4. Cockpit Flight Deck Floor
+        const floorY = h * 0.74;
+        ctx.fillStyle = '#161022';
+        ctx.fillRect(0, floorY, w, h - floorY);
+        // Floor deck grid lines
+        ctx.strokeStyle = '#2d1e44';
+        ctx.lineWidth = 1.5;
+        for (let fx = 0; fx < w; fx += 32) {
+            ctx.beginPath();
+            ctx.moveTo(fx, floorY);
+            ctx.lineTo(fx + (fx - w * 0.5) * 0.3, h);
+            ctx.stroke();
+        }
+
+        // Pilot console table / flight computer panel
+        ctx.fillStyle = '#241b36';
+        ctx.fillRect(110, floorY - 24, w - 220, 26);
+        ctx.fillStyle = '#392a54';
+        ctx.fillRect(112, floorY - 24, w - 224, 4);
+
+        // Glowing instruments & radar readouts on console
+        ctx.fillStyle = '#47d8f2';
+        ctx.fillRect(130, floorY - 18, 32, 14);
+        ctx.fillStyle = '#061324';
+        ctx.fillRect(132, floorY - 16, 28, 10);
+        // Radar blip
+        ctx.fillStyle = '#62c98a';
+        ctx.fillRect(144, floorY - 12, 3, 3);
+
+        ctx.fillStyle = '#ffca72';
+        ctx.font = '6px "Courier New", monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText('SOL-3 / ORBIT LOCKED', 170, floorY - 13);
+        ctx.fillStyle = '#62c98a';
+        ctx.fillText('ATMOSPHERE: APPROACHING', 170, floorY - 6);
+
+        // 5. Retro Jukebox safely mounted in left cockpit bay
+        this.drawJukebox(105, floorY, { isPowered: true, isPlaying: true, activeRecord: 'earth' });
+
+        // 6. Rocky's Xenonite Bridge Environment Dome / Enclosure on the right
+        const rockX = 400;
+        const rockY = floorY;
+        const habitatR = 48;
+        const rockEnvGrad = ctx.createRadialGradient(rockX, rockY - 30, 8, rockX, rockY - 30, habitatR);
+        rockEnvGrad.addColorStop(0, 'rgba(255, 185, 90, 0.42)');
+        rockEnvGrad.addColorStop(0.7, 'rgba(240, 130, 40, 0.20)');
+        rockEnvGrad.addColorStop(1, 'rgba(120, 40, 10, 0)');
+        ctx.fillStyle = rockEnvGrad;
+        ctx.beginPath();
+        ctx.arc(rockX, rockY - 30, habitatR, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Xenonite chamber outline (transparent warm bubble on bridge)
+        ctx.strokeStyle = 'rgba(255, 220, 150, 0.65)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(rockX, rockY - 30, habitatR, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // 7. CHARACTERS: RYAN (LEFT) & ROCKY (RIGHT)
+        const ryanX = 220;
+        const ryanY = floorY;
+        const ryanState = isFistBumping ? 'hands' : (isRyanSpeaking ? 'talk' : 'idle');
+        const rockyState = isFistBumping ? 'hands' : (isRockySpeaking ? 'talk' : 'idle');
+
+        // Draw Ryan facing right towards Rocky and Earth
+        this.drawEli(ryanX, ryanY, ryanState, 1, false, isRyanSpeaking, false /* custom clothes */);
+
+        // Draw Rocky facing left towards Ryan
+        this.drawKoru(rockX, rockY, rockyState, -1, isRockySpeaking);
+
+        // 8. THE FIST BUMP MOMENT! (When isFistBumping is active)
+        if (isFistBumping) {
+            const bumpX = (ryanX + rockX) * 0.5 - 15;
+            const bumpY = floorY - 42;
+
+            // Golden starburst shockwave
+            const shockR = 14 + Math.sin(t * 12) * 5;
+            const shockGrad = ctx.createRadialGradient(bumpX, bumpY, 2, bumpX, bumpY, shockR);
+            shockGrad.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
+            shockGrad.addColorStop(0.4, 'rgba(255, 209, 92, 0.85)');
+            shockGrad.addColorStop(0.8, 'rgba(71, 216, 242, 0.45)');
+            shockGrad.addColorStop(1, 'rgba(255, 209, 92, 0)');
+            ctx.fillStyle = shockGrad;
+            ctx.beginPath();
+            ctx.arc(bumpX, bumpY, shockR, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Radiating golden spark rays
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.5;
+            for (let a = 0; a < 8; a++) {
+                const ang = a * Math.PI / 4 + t * 4;
+                ctx.beginPath();
+                ctx.moveTo(bumpX + Math.cos(ang) * 4, bumpY + Math.sin(ang) * 4);
+                ctx.lineTo(bumpX + Math.cos(ang) * (shockR + 4), bumpY + Math.sin(ang) * (shockR + 4));
+                ctx.stroke();
+            }
+
+            // "FIST MY BUMP!" Banner above fists
+            ctx.fillStyle = '#ffca72';
+            ctx.font = 'bold 9px "Courier New", monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('FIST MY BUMP! 🤜🤛', bumpX, bumpY - 18);
+        }
+
+        // 9. Grand Finale Title Banner when entering Earth atmosphere
+        if (isComplete || isAtmosphereEntry) {
+            ctx.save();
+            ctx.fillStyle = 'rgba(10, 5, 22, 0.65)';
+            ctx.fillRect(w * 0.5 - 180, 40, 360, 48);
+            ctx.strokeStyle = '#ffd15c';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(w * 0.5 - 180, 40, 360, 48);
+
+            ctx.fillStyle = '#ffd15c';
+            ctx.font = 'bold 12px "Courier New", monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('HEADING HOME TO EARTH', w * 0.5, 58);
+
+            ctx.fillStyle = '#47d8f2';
+            ctx.font = '9px "Courier New", monospace';
+            ctx.fillText('“Amaze! Amaze! Amaze!” — Fist my bump!', w * 0.5, 74);
+            ctx.restore();
+        }
+    }
+
+    // ----------------------------------------------------
     // FINAL ARRIVAL: RYAN & ROCKY AT EARTH (GEODESIC XENONITE DOME)
     // ----------------------------------------------------
 
