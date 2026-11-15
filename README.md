@@ -138,7 +138,12 @@ The jukebox contains 4 records with full interactive playback (Play, Pause, Stop
    - **Visual Frame Synchronization:** The habitat panoramic bay window transforms with audio-reactive parallax visuals (surging wave crests, swaying trees, rain streaking down glass, lightning flashes, day/night cycles).
    - **Full HD Slow-Mo Memory Cinema:** Curated photographic visual frames with interactive slow-motion rates (0.2×, 0.35×, 1.0×) paired with real-time acoustic soundscapes.
 
-3. **Inclusivity & Accessibility:**
+3. **AI Computer Vision "NASA Visual Scanner" Engine:**
+   - **Direct Pixel Sonification:** Uses computer-vision pixel sampling (ITU-R BT.709 perceived luminance, edge gradient Sobel kernels, and RGB spectral warmth) to translate visual frames into multi-octave musical notes, filter cutoffs, and rhythmic percussion in real time.
+   - **Interactive SVS Presets & Drag-and-Drop Upload:** Features preloaded high-contrast visual models from NASA SVS (*Night Lights SVS 5313*, *Perpetual Ocean SVS 3912*, *GEOS Aerosols SVS 5669*, *ISS Lightning SVS 5011*) plus custom drag-and-drop file uploading for any NASA satellite photo or imagery.
+   - **Live Scanner Laser Beam & AI Telemetry HUD:** Displays real-time scanhead position, luminance %, edge complexity, musical note readout, and live oscilloscope waveform analysis.
+
+4. **Inclusivity & Accessibility:**
    - **Dual Sensory Redundancy:** Translates visual data into acoustic music and soundscapes for blind and low-vision audiences, while providing real-time waveform oscilloscopes, numeric telemetry HUDs, and on-screen captions for deaf and hard-of-hearing audiences.
    - **Full Keyboard & Click Accessibility:** Playable via keyboard shortcuts or mouse clicks.
 

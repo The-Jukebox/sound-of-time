@@ -581,6 +581,16 @@ class Game {
             }
         }
 
+        // Controls guide visibility: Hide in Jukebox and Non-walking scenes
+        const guide = document.querySelector('.controls-guide');
+        if (guide) {
+            if (sceneName === 'scene5' || sceneName === 'scene7' || sceneName === 'credits') {
+                guide.style.display = 'none';
+            } else {
+                guide.style.display = 'flex';
+            }
+        }
+
         switch (sceneName) {
             case 'scene1':
                 this.initScene1();
