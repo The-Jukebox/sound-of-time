@@ -2022,7 +2022,7 @@ class PixelRenderer {
         ctx.textAlign = 'center';
         ctx.fillText('💭 MEMORY OF EARTH', bx, by + 19);
         ctx.fillStyle = '#78f0ff';
-        ctx.fillText('[ZOOM: CLICK / Z]', bx, by + 28);
+        ctx.fillText('[ENTER / CLICK TO ZOOM]', bx, by + 28);
 
         ctx.restore();
     }

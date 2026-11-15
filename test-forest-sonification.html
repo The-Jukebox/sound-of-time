@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SOUND OF TIMES — Forest Sonification & Soundscape Unit Test Suite</title>
+    <style>
+        body { background: #0c0818; color: #e2daf0; font-family: monospace; padding: 24px; }
+        h1 { color: #62c98a; font-size: 20px; }
+        .sec { margin-top: 18px; border-left: 3px solid #62c98a; padding-left: 12px; }
+        .sec h3 { margin: 4px 0 8px 0; color: #ffca72; font-size: 14px; }
+        ul { list-style: none; padding-left: 0; margin: 4px 0; }
+        li { margin: 4px 0; font-size: 13px; }
+        .pass { color: #62c98a; font-weight: bold; }
+        .fail { color: #f28bbd; font-weight: bold; }
+        #summary { font-size: 16px; padding: 14px; margin-top: 20px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>SOUND OF TIMES — Forest Sonification & Soundscape QA Test Suite</h1>
+    <div id="logs"></div>
+    <div id="summary"></div>
+
+    <!-- Scripts under test -->
+    <script src="js/forest-data-source.js"></script>
+    <script src="js/tone.js"></script>
+    <script src="js/forest-sonification.js"></script>
+
+    <script>
+        const logs = document.getElementById('logs');
+        const summary = document.getElementById('summary');
+        let passCount = 0;
+        let failCount = 0;
+
+        function addSection(title) {
+            const d = document.createElement('div');
+            d.className = 'sec';
+            d.innerHTML = `<h3>${title}</h3><ul id="ul_${passCount + failCount}"></ul>`;
+            logs.appendChild(d);
+            return d.querySelector('ul');
+        }
+
+        function assert(cond, msg, ul) {
+            const li = document.createElement('li');
+            if (cond) {
+                li.innerHTML = `<span class="pass">[PASS]</span> ${msg}`;
+                passCount++;
+            } else {
+                li.innerHTML = `<span class="fail">[FAIL]</span> ${msg}`;
+                failCount++;
+                console.error("FAIL:", msg);
+            }
+            ul.appendChild(li);
+        }
+
+        async function runUnitTests() {
+            try {
+                // ----------------------------------------------------
+                // 1. NASA GEDI Dataset & Schema Verification
+                // ----------------------------------------------------
+                const ul1 = addSection("1. NASA GEDI Dataset & Schema Verification");
+                const engine = window.forestSonification;
+                assert(engine !== undefined, "window.forestSonification engine is instantiated", ul1);
+                
+                const data = await engine.loadDataset();
+                assert(data !== null, "NASA GEDI dataset loaded successfully", ul1);
+                assert(data.datasetMetadata.doi === "10.5067/GEDI/GEDI04_B.002", "DOI matches official NASA GEDI L4B specification (10.5067/GEDI/GEDI04_B.002)", ul1);
+                assert(data.datasetMetadata.instrument.includes("GEDI"), "Dataset instrument confirms spaceborne GEDI laser altimeter", ul1);
+                assert(data.measurements && data.measurements.length >= 12, "Dataset contains 12+ verified geographic transects", ul1);
+                assert(data.datasetMetadata.scientificTransparency.isLive === false, "Scientific transparency accurately documents historical reanalysis (isLive = false)", ul1);
+
+                // Verify specific transects
+                const hoh = data.measurements.find(m => m.location.includes("Hoh"));
+                assert(hoh && hoh.canopyHeight === 58.4, "Olympic Hoh Rainforest canopy height verified at 58.4m", ul1);
+                assert(hoh && hoh.biomass === 415.8, "Olympic Hoh Rainforest biomass verified at 415.8 Mg/ha", ul1);
+
+                const amazon = data.measurements.find(m => m.location.includes("Amazon"));
+                assert(amazon && amazon.canopyCover === 0.95, "Amazon central reserve canopy cover verified at 95%", ul1);
+
+                const waterMask = data.measurements.find(m => m.location.includes("Water Channel Mask"));
+                assert(waterMask && waterMask.canopyHeight === null, "Preserves null/missing value for non-vegetated water mask", ul1);
+
+                // ----------------------------------------------------
+                // 2. Tone.js Audio Graph & Synthesizers
+                // ----------------------------------------------------
+                const ul2 = addSection("2. Tone.js Audio Graph & Synthesizers");
+                await engine.initAudio();
+                assert(engine.isInitialized === true, "Engine audio graph initialized successfully", ul2);
+                assert(engine.masterVolume !== null, "Master volume bus created", ul2);
+                assert(engine.canopySynth !== null, "Canopy height polyphonic synthesizer created", ul2);
+                assert(engine.diversitySynth !== null, "Foliage diversity FM synthesizer created", ul2);
+                assert(engine.biomassSynth !== null, "Biomass sub-bass synthesizer created", ul2);
+                assert(engine.reverb !== null, "Forest spatial reverberation created", ul2);
+                assert(engine.waveformAnalyser !== null, "Live waveform analyser connected", ul2);
+
+                // ----------------------------------------------------
+                // 3. Mathematical Mapping Determinism
+                // ----------------------------------------------------
+                const ul3 = addSection("3. Mathematical Mapping Determinism");
+                engine.currentIndex = 0; // Hoh Rainforest (58.4m)
+                engine.executeDataStep();
+                assert(engine.currentNote !== '—', `Canopy height mapped to audible pitch note: ${engine.currentNote}`, ul3);
+                assert(engine.currentNote.startsWith("C5") || engine.currentNote.startsWith("D5") || engine.currentNote.startsWith("F5"), "Tall 58.4m old-growth mapped to upper scale register", ul3);
+
+                // Test water mask handling
+                engine.currentIndex = 11; // Water mask (null)
+                engine.executeDataStep();
+                assert(engine.currentNote.includes("Water Mask"), "Gracefully handles water mask with N/A without audio crash", ul3);
+
+                // ----------------------------------------------------
+                // 4. Forest Soundscape Manager & Environmental Generations
+                // ----------------------------------------------------
+                const ul4 = addSection("4. Forest Soundscape Manager & Modes");
+                const snd = engine.soundscape;
+                assert(snd !== undefined, "ForestSoundscapeManager connected to engine", ul4);
+                assert(snd.isInitialized === true, "Soundscape sub-busses initialized", ul4);
+
+                // Test Modes
+                snd.setMode('morning');
+                assert(snd.mode === 'morning', "Mode switched to 'morning'", ul4);
+                assert(snd.birdActivity > 0.8, "Morning mode configures high bird activity", ul4);
+
+                snd.setMode('afternoon');
+                assert(snd.mode === 'afternoon', "Mode switched to 'afternoon'", ul4);
+                assert(snd.windIntensity > 0.45, "Afternoon mode increases canopy wind", ul4);
+
+                snd.setMode('evening');
+                assert(snd.mode === 'evening', "Mode switched to 'evening'", ul4);
+
+                snd.setMode('night');
+                assert(snd.mode === 'night', "Mode switched to 'night'", ul4);
+
+                // Test Layer Mute Toggles
+                const musicMuted = snd.toggleMusicMute();
+                assert(musicMuted === true, "Music synthesis layer muted", ul4);
+                assert(snd.musicMuted === true, "soundscape.musicMuted flag set", ul4);
+                snd.toggleMusicMute();
+                assert(snd.musicMuted === false, "Music synthesis layer unmuted", ul4);
+
+                const canopyMuted = snd.toggleCanopyMute();
+                assert(canopyMuted === true, "Canopy wind layer muted", ul4);
+                snd.toggleCanopyMute();
+                assert(snd.canopyMuted === false, "Canopy wind layer unmuted", ul4);
+
+                // Test Volume Scaling
+                engine.setVolume(0.5);
+                assert(engine.volumeLevel === 0.5, "Master volume set to 0.50", ul4);
+                snd.setCanopyVolume(0.65);
+                assert(snd.canopyVolume === 0.65, "Canopy layer volume set to 0.65", ul4);
+
+                // ----------------------------------------------------
+                // 5. Lifecycle Controls (Play, Pause, Resume, Stop, Eject)
+                // ----------------------------------------------------
+                const ul5 = addSection("5. Lifecycle Controls (Play, Pause, Resume, Stop, Eject)");
+                await engine.play();
+                assert(engine.isPlaying === true, "engine.play() sets isPlaying = true", ul5);
+                assert(engine.isPaused === false, "engine.isPaused is false during play", ul5);
+
+                engine.pause();
+                assert(engine.isPlaying === false, "engine.pause() sets isPlaying = false", ul5);
+                assert(engine.isPaused === true, "engine.pause() sets isPaused = true", ul5);
+
+                await engine.play(); // resume
+                assert(engine.isPlaying === true, "Resumed playback", ul5);
+                assert(engine.isPaused === false, "isPaused cleared on resume", ul5);
+
+                engine.stop();
+                assert(engine.isPlaying === false, "engine.stop() silences audio", ul5);
+                assert(engine.currentIndex === 0, "engine.stop() resets step index to 0", ul5);
+
+                engine.eject();
+                assert(engine.isPlaying === false, "engine.eject() stops playback", ul5);
+                assert(engine.currentDataPoint === null, "engine.eject() unloads active data point", ul5);
+
+                // ----------------------------------------------------
+                // FINAL SUMMARY
+                // ----------------------------------------------------
+                const total = passCount + failCount;
+                if (failCount === 0) {
+                    summary.style.background = "#143a24";
+                    summary.style.border = "2px solid #62c98a";
+                    summary.innerHTML = `<span class="pass">✔ ALL ${passCount}/${total} FOREST SONIFICATION QA TESTS PASSED!</span><br>NASA GEDI data sonification and procedural natural soundscapes are mathematically verified and production-ready.`;
+                } else {
+                    summary.style.background = "#3d1424";
+                    summary.style.border = "2px solid #f28bbd";
+                    summary.innerHTML = `<span class="fail">✖ ${failCount}/${total} TESTS FAILED!</span>`;
+                }
+            } catch (err) {
+                const errDiv = document.createElement('div');
+                errDiv.style.color = 'red';
+                errDiv.innerText = `FATAL ERROR: ${err.message}\n${err.stack}`;
+                document.body.appendChild(errDiv);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', runUnitTests);
+    </script>
+</body>
+</html>

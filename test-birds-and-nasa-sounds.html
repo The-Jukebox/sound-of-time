@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NASA Sounds & Avian Chorus QA Automated Tests</title>
+    <style>
+        body { background: #0b0618; color: #f0e6ff; font-family: monospace; padding: 20px; line-height: 1.5; }
+        h1, h2, h3 { color: #f7d794; }
+        .pass { color: #62c98a; font-weight: bold; }
+        .fail { color: #f28bbd; font-weight: bold; }
+        .sec { background: #1c1038; border: 1px solid #4a2c7a; margin-bottom: 12px; padding: 12px; border-radius: 4px; }
+        #summary { font-size: 16px; padding: 12px; margin-top: 15px; border-radius: 4px; }
+        ul { list-style: none; padding-left: 0; }
+        li { margin-bottom: 4px; }
+    </style>
+</head>
+<body>
+    <h1>SOUND OF TIMES — NASA SOUNDS & AVIAN CHORUS QA SUITE</h1>
+    <div id="logs"></div>
+    <div id="summary">Running tests...</div>
+
+    <!-- Hidden Fixture Elements -->
+    <div id="fixture" style="display: none;">
+        <canvas id="gameCanvas" width="800" height="450"></canvas>
+        <div id="screenPrompt"></div>
+        <div id="dialogueBox">
+            <span id="speakerName"></span>
+            <p id="dialogueText"></p>
+            <div id="choiceContainer"></div>
+            <div id="choiceBox"></div>
+        </div>
+        <div id="sceneOverlay">
+            <h2 id="overlayTitle"></h2>
+            <p id="overlaySubtitle"></p>
+        </div>
+        <div id="jukeboxPanel" style="display: flex;">
+            <div class="record-shelf">
+                <button class="record-btn" data-record="forest" id="btnRecForest"></button>
+                <button class="record-btn" data-record="ocean" id="btnRecOcean"></button>
+                <button class="record-btn" data-record="atmosphere" id="btnRecAtmosphere"></button>
+                <button class="record-btn" data-record="earth" id="btnRecEarth"></button>
+            </div>
+            <div class="control-deck">
+                <button id="btnPower"></button>
+                <button id="btnPlay"></button>
+                <button id="btnPause"></button>
+                <button id="btnStop"></button>
+                <button id="btnReplay"></button>
+                <button id="btnEject"></button>
+                <button id="btnMemoryVision"></button>
+                <button id="btnProceed"></button>
+                <button id="btnTransparency"></button>
+                <input type="range" id="volSlider" value="80">
+                <span id="volLabel">80%</span>
+            </div>
+            <div id="forestToolbar">
+                <button id="btnModeMorning"></button>
+                <button id="btnModeAfternoon"></button>
+                <button id="btnModeEvening"></button>
+                <button id="btnModeNight"></button>
+                <button id="btnMuteMusic"></button>
+                <button id="btnMuteCanopy"></button>
+                <button id="btnMuteWildlife"></button>
+                <button id="btnMuteWater"></button>
+                <button id="btnCallBird">🐦 CALL BIRD</button>
+                <input type="range" id="ambienceSlider" value="75">
+                <span id="ambLabel">75%</span>
+            </div>
+        </div>
+        <div id="oceanSciencePanel" class="science-panel">NASA ECCO DOI: 10.5067/ECG5D-OTS44</div>
+        <div id="forestSciencePanel" class="science-panel">NASA GEDI DOI: 10.5067/GEDI/GEDI04_B.002</div>
+        <div id="atmosphereSciencePanel" class="science-panel">NASA MERRA-2 DOI: 10.5067/95140KBM4KUS</div>
+        <div id="earthSciencePanel" class="science-panel">NASA VOYAGER GOLDEN RECORD SOUNDS OF EARTH 1977</div>
+        <div id="nasaHud">
+            <span id="hudMetric"></span>
+            <span id="hudValue"></span>
+            <canvas id="nasaWaveform" width="600" height="30"></canvas>
+            <p id="hudDesc"></p>
+        </div>
+        <div id="memoryCinemaOverlay" class="memory-cinema" style="display: none;">
+            <canvas id="memoryCanvas" width="800" height="450"></canvas>
+            <span id="memoryTitle"></span>
+            <span id="memoryQuote"></span>
+            <span id="memoryNasaTag"></span>
+            <span id="memorySpeedTag"></span>
+            <button class="speed-btn" data-speed="0.2">0.2x</button>
+            <button class="speed-btn" data-speed="0.35">0.35x</button>
+            <button class="speed-btn" data-speed="1.0">1.0x</button>
+            <button class="mem-select-btn" data-vision="leaves"></button>
+            <button class="mem-select-btn" data-vision="ocean"></button>
+            <button class="mem-select-btn" data-vision="birds"></button>
+            <button class="mem-select-btn" data-vision="stream"></button>
+            <button class="mem-select-btn" data-vision="rain"></button>
+            <button id="btnCloseMemory"></button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/forest-data-source.js"></script>
+    <script src="js/ocean-data-source.js"></script>
+    <script src="js/atmosphere-data-source.js"></script>
+    <script src="js/earth-data-source.js"></script>
+    <script src="js/tone.js"></script>
+    <script src="js/forest-sonification.js"></script>
+    <script src="js/ocean-sonification.js"></script>
+    <script src="js/atmosphere-sonification.js"></script>
+    <script src="js/earth-sonification.js"></script>
+    <script src="js/memory-cinema.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/pixelart.js"></script>
+    <script src="js/game.js"></script>
+
+    <script>
+        let passCount = 0;
+        let failCount = 0;
+        const logs = document.getElementById('logs');
+        const summary = document.getElementById('summary');
+
+        function addSection(title) {
+            const d = document.createElement('div');
+            d.className = 'sec';
+            d.innerHTML = `<h3>${title}</h3><ul id="ul_${passCount + failCount}"></ul>`;
+            logs.appendChild(d);
+            return d.querySelector('ul');
+        }
+
+        function assert(condition, msg, ul) {
+            const li = document.createElement('li');
+            if (condition) {
+                li.innerHTML = `<span class="pass">[PASS]</span> ${msg}`;
+                passCount++;
+            } else {
+                li.innerHTML = `<span class="fail">[FAIL]</span> ${msg}`;
+                failCount++;
+                console.error("FAIL:", msg);
+            }
+            ul.appendChild(li);
+        }
+
+        async function runTests() {
+            try {
+                // ----------------------------------------------------
+                // SUITE 1: NASA ATMOSPHERE DATA & METADATA (RECORD 001)
+                // ----------------------------------------------------
+                const ul1 = addSection("1. NASA MERRA-2 & GPM Atmospheric Data Source");
+                assert(typeof window.NASA_MERRA2_ATMOSPHERE_DATA !== 'undefined', "window.NASA_MERRA2_ATMOSPHERE_DATA is loaded", ul1);
+                const atmData = window.NASA_MERRA2_ATMOSPHERE_DATA;
+                assert(atmData.datasetMetadata != null, "Atmosphere dataset contains datasetMetadata", ul1);
+                assert(atmData.datasetMetadata.doi === "10.5067/95140KBM4KUS", "Atmosphere DOI matches official NASA MERRA-2 DOI", ul1);
+                assert(atmData.datasetMetadata.visualizationReference.entryId === "4252", "Atmosphere visualization references NASA SVS 4252", ul1);
+                assert(Array.isArray(atmData.measurements) && atmData.measurements.length === 12, "Atmosphere dataset contains 12 verified synoptic stations", ul1);
+                
+                const sampleAtm = atmData.measurements[0];
+                assert(typeof sampleAtm.precipitationRate === 'number' && sampleAtm.precipitationRate > 0, "Precipitation rate is valid numeric (mm/hr)", ul1);
+                assert(typeof sampleAtm.windSpeed === 'number' && sampleAtm.windSpeed > 0, "Wind speed is valid numeric (m/s)", ul1);
+                assert(typeof sampleAtm.barometricPressure === 'number' && sampleAtm.barometricPressure > 960, "Barometric pressure is valid numeric (hPa)", ul1);
+                assert(typeof sampleAtm.lightningDensity === 'number', "Lightning flash density is present", ul1);
+
+                // ----------------------------------------------------
+                // SUITE 2: NASA VOYAGER GOLDEN RECORD DATA (RECORD 004)
+                // ----------------------------------------------------
+                const ul2 = addSection("2. NASA Voyager Golden Record 'Sounds of Earth' Archive");
+                assert(typeof window.NASA_VOYAGER_EARTH_DATA !== 'undefined', "window.NASA_VOYAGER_EARTH_DATA is loaded", ul2);
+                const earthData = window.NASA_VOYAGER_EARTH_DATA;
+                assert(earthData.datasetMetadata != null, "Earth archive contains datasetMetadata", ul2);
+                assert(earthData.datasetMetadata.doi === "10.5067/VOYAGER-GOLDEN-RECORD-SOUNDS-1977", "Voyager Record DOI matches 1977 time capsule DOI", ul2);
+                assert(Array.isArray(earthData.datasetMetadata.archivalTracks) && earthData.datasetMetadata.archivalTracks.length === 5, "Contains 5 official NASA Voyager audio tracks", ul2);
+                
+                const track1 = earthData.datasetMetadata.archivalTracks[0];
+                assert(track1.trackName.includes("Birds"), "Track 1 is Birds of Earth & Morning Dawn Chorus", ul2);
+                const track2 = earthData.datasetMetadata.archivalTracks[1];
+                assert(track2.trackName.includes("Whale"), "Track 2 is Humpback Whale Acoustic Cantos", ul2);
+                assert(Array.isArray(earthData.measurements) && earthData.measurements.length === 4, "Contains 4 seasonal progression steps", ul2);
+
+                // ----------------------------------------------------
+                // SUITE 3: ENHANCED BIRD SOUNDS & AVIAN CHORUS ENGINE
+                // ----------------------------------------------------
+                const ul3 = addSection("3. Enhanced Avian Chorus & Multi-Species Bird Engine");
+                const forestEngine = new ForestSonificationEngine();
+                window.forestSonification = forestEngine;
+                await forestEngine.initAudio();
+                const soundscape = forestEngine.soundscape;
+
+                assert(soundscape.isInitialized === true, "ForestSoundscapeManager is initialized", ul3);
+                assert(soundscape.wildlifeVolume >= 0.85, "Wildlife bus volume is boosted (>= 0.85) for vivid presence", ul3);
+                assert(soundscape.birdSynth != null, "birdSynth is instantiated", ul3);
+                assert(soundscape.birdSynth.volume.value >= 0, "birdSynth volume is amplified (>= 0 dB)", ul3);
+
+                // Test callBird with distinct species
+                const thrushCall = soundscape.callBird('thrush');
+                assert(thrushCall != null && thrushCall.species === 'thrush', "callBird('thrush') triggers Wood Thrush flute bell notes", ul3);
+                assert(thrushCall.motif.length === 5, "Wood Thrush motif contains 5 harmonic flute intervals", ul3);
+
+                const robinCall = soundscape.callBird('robin');
+                assert(robinCall != null && robinCall.species === 'robin', "callBird('robin') triggers American Robin whistling couplets", ul3);
+                assert(robinCall.motif.length === 4, "Robin motif contains 4 whistled notes", ul3);
+
+                const warblerCall = soundscape.callBird('warbler');
+                assert(warblerCall != null && warblerCall.species === 'warbler', "callBird('warbler') triggers Yellow Warbler cascading trills", ul3);
+                assert(warblerCall.motif.length === 6, "Warbler motif contains 6 high-speed cascading notes", ul3);
+
+                const humCall = soundscape.callBird('hummingbird');
+                assert(humCall != null && humCall.species === 'hummingbird', "callBird('hummingbird') triggers Hummingbird micro-squeaks & wing hum", ul3);
+
+                let birdChirpCallbackFired = false;
+                let lastCallbackSpecies = null;
+                forestEngine.onBirdChirpCallback = (pan, species) => {
+                    birdChirpCallbackFired = true;
+                    lastCallbackSpecies = species;
+                };
+
+                const randomCall = soundscape.callBird('random');
+                assert(randomCall != null && ['thrush', 'robin', 'warbler', 'hummingbird'].includes(randomCall.species), "callBird('random') selects a valid avian species", ul3);
+                assert(birdChirpCallbackFired === true, "callBird invokes engine.onBirdChirpCallback", ul3);
+
+                // Test legacy playBirdChirp compatibility
+                const legacyCall = soundscape.playBirdChirp();
+                assert(legacyCall != null && legacyCall.species != null, "playBirdChirp() seamlessly delegates to callBird('random')", ul3);
+
+                // Test wildlife muting
+                soundscape.wildlifeMuted = true;
+                const mutedCall = soundscape.callBird('robin');
+                assert(mutedCall === null, "callBird returns null when wildlifeMuted is true", ul3);
+                soundscape.wildlifeMuted = false;
+
+                // Test Dawn Chorus Bed
+                assert(typeof soundscape.scheduleDawnChorus === 'function', "scheduleDawnChorus method exists", ul3);
+                soundscape.start();
+                assert(soundscape.dawnChorusTimer !== null, "Dawn chorus scheduler is running", ul3);
+                soundscape.stop();
+                assert(soundscape.dawnChorusTimer === null, "Dawn chorus scheduler cleared upon stop", ul3);
+
+                // ----------------------------------------------------
+                // SUITE 4: ATMOSPHERE SONIFICATION ENGINE (RECORD 001)
+                // ----------------------------------------------------
+                const ul4 = addSection("4. Atmosphere Sonification Engine (NASA MERRA-2 / GPM)");
+                const atmEngine = new AtmosphereSonificationEngine();
+                await atmEngine.initAudio();
+                assert(atmEngine.isInitialized === true, "AtmosphereSonificationEngine audio initialized", ul4);
+                assert(atmEngine.pressureSynth != null, "pressureSynth exists", ul4);
+                assert(atmEngine.rainNoise != null, "rainNoise generator exists", ul4);
+                assert(atmEngine.windNoise != null, "windNoise generator exists", ul4);
+                assert(atmEngine.thunderSynth != null, "thunderSynth exists", ul4);
+
+                await atmEngine.play();
+                assert(atmEngine.isPlaying === true && atmEngine.isPaused === false, "AtmosphereSonificationEngine starts playing", ul4);
+
+                let thunderFired = false;
+                atmEngine.onThunderCallback = () => { thunderFired = true; };
+                atmEngine.playThunderClap(30);
+                assert(thunderFired === true, "playThunderClap triggers rolling sub-bass thunder and invokes callback", ul4);
+
+                atmEngine.pause();
+                assert(atmEngine.isPaused === true, "Atmosphere engine pauses properly", ul4);
+
+                atmEngine.replay();
+                assert(atmEngine.isPlaying === true && atmEngine.currentIndex === 0, "Atmosphere replay restarts step from 0", ul4);
+
+                const atmMetrics = atmEngine.getMetrics();
+                assert(atmMetrics.precipitationRate != null, "Atmosphere getMetrics provides real precipitation rate", ul4);
+                assert(atmMetrics.windSpeed != null, "Atmosphere getMetrics provides real wind speed", ul4);
+                assert(atmMetrics.barometricPressure != null, "Atmosphere getMetrics provides real surface pressure", ul4);
+                atmEngine.stop();
+
+                // ----------------------------------------------------
+                // SUITE 5: EARTH SONIFICATION ENGINE (RECORD 004)
+                // ----------------------------------------------------
+                const ul5 = addSection("5. Earth Sonification Engine (NASA Voyager Sounds of Earth)");
+                const earthEngine = new EarthSonificationEngine();
+                await earthEngine.initAudio();
+                assert(earthEngine.isInitialized === true, "EarthSonificationEngine audio initialized", ul5);
+                assert(earthEngine.pianoSynth != null, "Human piano memory synth exists", ul5);
+                assert(earthEngine.whaleSynth != null, "Humpback whale SOFAR song synth exists", ul5);
+                assert(earthEngine.birdSynth != null, "Voyager birds of Earth synth exists", ul5);
+
+                await earthEngine.play();
+                assert(earthEngine.isPlaying === true, "EarthSonificationEngine starts playing", ul5);
+
+                let birdCalled = false;
+                earthEngine.onBirdCallback = () => { birdCalled = true; };
+                earthEngine.playAvianChorale();
+                assert(birdCalled === true, "playAvianChorale triggers birdsong and fires callback", ul5);
+
+                let whaleCalled = false;
+                earthEngine.onWhaleCallback = () => { whaleCalled = true; };
+                earthEngine.playWhaleCall();
+                assert(whaleCalled === true, "playWhaleCall triggers SOFAR whale cantos and fires callback", ul5);
+
+                const earthMetrics = earthEngine.getMetrics();
+                assert(earthMetrics.track != null, "Earth getMetrics returns active Voyager track", ul5);
+                assert(earthMetrics.chord != null, "Earth getMetrics returns active harmonic chord", ul5);
+                earthEngine.stop();
+
+                // ----------------------------------------------------
+                // SUITE 6: UI, TRANSPARENCY PANELS & CONTROLS INTEGRATION
+                // ----------------------------------------------------
+                const ul6 = addSection("6. UI Controls, Transparency Panels & Memory Cinema");
+                const game = new Game();
+                game.initScene('scene5');
+
+                // Panels
+                const atmPanel = document.getElementById('atmosphereSciencePanel');
+                assert(atmPanel != null, "#atmosphereSciencePanel exists in DOM", ul6);
+                assert(atmPanel.innerHTML.includes("10.5067/95140KBM4KUS"), "Atmosphere panel includes NASA MERRA-2 DOI", ul6);
+
+                const earthPanel = document.getElementById('earthSciencePanel');
+                assert(earthPanel != null, "#earthSciencePanel exists in DOM", ul6);
+                assert(earthPanel.innerHTML.includes("VOYAGER GOLDEN RECORD"), "Earth panel includes NASA Voyager Golden Record details", ul6);
+
+                // Call Bird Button
+                const btnCallBird = document.getElementById('btnCallBird');
+                assert(btnCallBird != null, "#btnCallBird exists in the forest controls bar", ul6);
+                btnCallBird.click();
+                const promptText = document.getElementById('screenPrompt').textContent || document.getElementById('screenPrompt').innerText || '';
+                assert(promptText.includes("BIRD CALLED"), "Clicking #btnCallBird calls forest birds and updates prompt: got [" + promptText + "]", ul6);
+
+                // Record Selection Routing
+                game.selectJukeboxRecord('atmosphere');
+                assert(atmPanel.style.display === 'block', "Selecting 'atmosphere' displays #atmosphereSciencePanel", ul6);
+                assert(game.jukeboxState.activeRecord === 'atmosphere', "activeRecord is 'atmosphere'", ul6);
+
+                game.selectJukeboxRecord('earth');
+                assert(earthPanel.style.display === 'block', "Selecting 'earth' displays #earthSciencePanel", ul6);
+                assert(game.jukeboxState.activeRecord === 'earth', "activeRecord is 'earth'", ul6);
+
+                // Memory Cinema Bird Sound Integration
+                const cinema = window.memoryCinema || new MemoryCinemaManager();
+                cinema.open('birds');
+                assert(cinema.currentVision === 'birds', "Memory cinema sets vision to 'birds'", ul6);
+                assert(cinema.visionMeta.birds.title.includes("HUMMINGBIRD"), "Birds vision metadata is accurate", ul6);
+                cinema.close();
+
+                // Clean up
+                game.stopJukebox();
+
+                // Summary
+                const total = passCount + failCount;
+                if (failCount === 0) {
+                    summary.style.background = "#143a24";
+                    summary.style.border = "2px solid #62c98a";
+                    summary.innerHTML = `<span class="pass">✔ ALL ${passCount}/${total} NASA SOUNDS & AVIAN CHORUS QA TESTS PASSED!</span><br>Multi-species bird calls, NASA MERRA-2 Atmosphere, and NASA Voyager Earth Archive sonification engines are 100% operational!`;
+                } else {
+                    summary.style.background = "#3a1414";
+                    summary.style.border = "2px solid #f28bbd";
+                    summary.innerHTML = `<span class="fail">✖ ${failCount}/${total} TESTS FAILED!</span>`;
+                }
+            } catch (err) {
+                console.error("Test execution failed:", err);
+                const ul = addSection("Fatal Test Error");
+                assert(false, `Fatal Exception: ${err.message} at ${err.stack}`, ul);
+            }
+        }
+
+        window.onload = runTests;
+    </script>
+</body>
+</html>

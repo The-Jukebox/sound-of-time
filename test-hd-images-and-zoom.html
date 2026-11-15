@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HD Images, Zoom In/Out & Arrow/Enter Controls QA Test</title>
+    <style>
+        body { background: #0c061a; color: #f2e9ff; font-family: monospace; padding: 20px; line-height: 1.5; }
+        h1, h2, h3 { color: #f7d794; }
+        .pass { color: #62c98a; font-weight: bold; }
+        .fail { color: #f28bbd; font-weight: bold; }
+        .sec { background: #1c1038; border: 1px solid #4a2c7a; margin-bottom: 12px; padding: 12px; border-radius: 4px; }
+        #summary { font-size: 16px; padding: 12px; margin-top: 15px; border-radius: 4px; }
+        ul { list-style: none; padding-left: 0; }
+        li { margin-bottom: 4px; }
+    </style>
+</head>
+<body>
+    <h1>SOUND OF TIMES — HD IMAGES, ZOOM IN/OUT & ARROW/ENTER CONTROLS QA SUITE</h1>
+    <div id="logs"></div>
+    <div id="summary">Running QA tests...</div>
+
+    <!-- Hidden Game DOM Fixture -->
+    <div id="fixture" style="display: none;">
+        <canvas id="gameCanvas" width="800" height="450"></canvas>
+        <div id="screenPrompt"></div>
+        <div id="dialogueBox">
+            <span id="speakerName"></span>
+            <p id="dialogueText"></p>
+            <div id="choiceContainer"></div>
+            <div id="choiceBox">
+                <h3 id="choiceTitle"></h3>
+                <div id="choiceOptions"></div>
+            </div>
+            <span id="continuePrompt"></span>
+        </div>
+        <div id="sceneOverlay">
+            <h2 id="overlayTitle"></h2>
+            <p id="overlaySubtitle"></p>
+        </div>
+        <div id="jukeboxPanel" style="display: flex;">
+            <div class="record-shelf">
+                <button class="record-btn" data-record="forest" id="btnRecForest"></button>
+                <button class="record-btn" data-record="ocean" id="btnRecOcean"></button>
+                <button class="record-btn" data-record="atmosphere" id="btnRecAtmosphere"></button>
+                <button class="record-btn" data-record="earth" id="btnRecEarth"></button>
+            </div>
+            <div class="control-deck">
+                <button id="btnPower"></button>
+                <button id="btnPlay"></button>
+                <button id="btnPause"></button>
+                <button id="btnStop"></button>
+                <button id="btnReplay"></button>
+                <button id="btnEject"></button>
+                <button id="btnMemoryVision">💭 ZOOM INTO MEMORY [ENTER]</button>
+                <button id="btnProceed"></button>
+                <button id="btnTransparency"></button>
+                <input type="range" id="volSlider" value="80">
+                <span id="volLabel">80%</span>
+            </div>
+            <div id="forestToolbar">
+                <button id="btnModeMorning"></button>
+                <button id="btnModeAfternoon"></button>
+                <button id="btnModeEvening"></button>
+                <button id="btnModeNight"></button>
+                <button id="btnMuteMusic"></button>
+                <button id="btnMuteCanopy"></button>
+                <button id="btnMuteWildlife"></button>
+                <button id="btnMuteWater"></button>
+                <button id="btnCallBird"></button>
+                <input type="range" id="ambienceSlider" value="75">
+                <span id="ambLabel">75%</span>
+            </div>
+        </div>
+        <div id="oceanSciencePanel" class="science-panel"></div>
+        <div id="forestSciencePanel" class="science-panel"></div>
+        <div id="atmosphereSciencePanel" class="science-panel"></div>
+        <div id="earthSciencePanel" class="science-panel"></div>
+        <div id="nasaHud">
+            <span id="hudMetric"></span>
+            <span id="hudValue"></span>
+            <canvas id="nasaWaveform" width="600" height="30"></canvas>
+            <p id="hudDesc"></p>
+        </div>
+        <div id="memoryCinemaOverlay" class="memory-cinema" style="display: none;">
+            <div class="memory-viewport">
+                <canvas id="memoryCanvas" width="960" height="540"></canvas>
+                <span id="memoryTitle"></span>
+                <span id="memoryQuote"></span>
+                <span id="memoryNasaTag"></span>
+                <span id="memorySpeedTag"></span>
+                <button class="speed-btn" data-speed="0.2">0.2x</button>
+                <button class="speed-btn" data-speed="0.35">0.35x</button>
+                <button class="speed-btn" data-speed="1.0">1.0x</button>
+                <button class="mem-select-btn" data-vision="leaves"></button>
+                <button class="mem-select-btn" data-vision="ocean"></button>
+                <button class="mem-select-btn" data-vision="birds"></button>
+                <button class="mem-select-btn" data-vision="stream"></button>
+                <button class="mem-select-btn" data-vision="rain"></button>
+                <button id="btnCloseMemory">🔍 ZOOM OUT TO HABITAT [ENTER]</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts under test -->
+    <script src="js/forest-data-source.js"></script>
+    <script src="js/ocean-data-source.js"></script>
+    <script src="js/atmosphere-data-source.js"></script>
+    <script src="js/earth-data-source.js"></script>
+    <script src="js/tone.js"></script>
+    <script src="js/forest-sonification.js"></script>
+    <script src="js/ocean-sonification.js"></script>
+    <script src="js/atmosphere-sonification.js"></script>
+    <script src="js/earth-sonification.js"></script>
+    <script src="js/memory-cinema.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/pixelart.js"></script>
+    <script src="js/game.js"></script>
+
+    <script>
+        let passCount = 0;
+        let failCount = 0;
+        const logs = document.getElementById('logs');
+        const summary = document.getElementById('summary');
+
+        function addSection(title) {
+            const d = document.createElement('div');
+            d.className = 'sec';
+            d.innerHTML = `<h3>${title}</h3><ul id="ul_${passCount + failCount}"></ul>`;
+            logs.appendChild(d);
+            return d.querySelector('ul');
+        }
+
+        function assert(condition, msg, ul) {
+            const li = document.createElement('li');
+            if (condition) {
+                li.innerHTML = `<span class="pass">[PASS]</span> ${msg}`;
+                passCount++;
+            } else {
+                li.innerHTML = `<span class="fail">[FAIL]</span> ${msg}`;
+                failCount++;
+                console.error("FAIL:", msg);
+            }
+            ul.appendChild(li);
+        }
+
+        function loadImagePromise(src) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = () => reject(new Error("Failed to load image: " + src));
+                img.src = src;
+            });
+        }
+
+        async function runTests() {
+            try {
+                // ----------------------------------------------------
+                // SUITE 1: TRUE FULL HD PHOTOGRAPHIC IMAGE ASSETS
+                // ----------------------------------------------------
+                const ul1 = addSection("1. True Full HD Photorealistic Image Assets & Quality Verification");
+                const cinema = window.memoryCinema || new MemoryCinemaManager();
+                assert(cinema.hdImages != null, "MemoryCinemaManager has hdImages registry", ul1);
+
+                const imagesToTest = [
+                    { key: 'leaves', src: 'assets/memories/leaves_hd.jpg', desc: 'Lush Forest Canopy Leaves' },
+                    { key: 'ocean', src: 'assets/memories/ocean_hd.jpg', desc: 'Majestic Turquoise Ocean Surf' },
+                    { key: 'birds', src: 'assets/memories/birds_hd.jpg', desc: 'Iridescent Hummingbird Macro' },
+                    { key: 'stream', src: 'assets/memories/stream_hd.jpg', desc: 'Pristine Mountain Stream' },
+                    { key: 'rain', src: 'assets/memories/rain_hd.jpg', desc: 'Atmospheric Raindrops on Leaves' }
+                ];
+
+                for (const it of imagesToTest) {
+                    const loadedImg = await loadImagePromise(it.src);
+                    assert(loadedImg != null, `Loaded HD image for ${it.desc} (${it.key})`, ul1);
+                    assert(loadedImg.naturalWidth >= 1024, `${it.key} has crisp high-definition resolution (${loadedImg.naturalWidth}x${loadedImg.naturalHeight})`, ul1);
+                }
+
+                // Verify drawHDImage rendering on canvas
+                const testCanvas = document.createElement('canvas');
+                testCanvas.width = 960;
+                testCanvas.height = 540;
+                const testCtx = testCanvas.getContext('2d');
+                const hdDrawSuccess = cinema.drawHDImage(testCtx, cinema.hdImages.leaves, 960, 540, 1.0);
+                assert(hdDrawSuccess === true, "drawHDImage executes with Ken Burns drift and high quality smoothing", ul1);
+
+                // ----------------------------------------------------
+                // SUITE 2: ZOOM IN / ZOOM OUT THOUGHT BUBBLE SYSTEM
+                // ----------------------------------------------------
+                const ul2 = addSection("2. Zoom In / Zoom Out Mechanics & Thought Bubble Portals");
+                const game = new Game();
+                game.initScene('scene5');
+
+                const overlay = document.getElementById('memoryCinemaOverlay');
+                assert(overlay != null, "#memoryCinemaOverlay element exists", ul2);
+
+                // Open (Zoom In)
+                game.openMemoryVision('leaves');
+                assert(cinema.isOpen === true, "game.openMemoryVision() sets cinema.isOpen = true", ul2);
+                assert(overlay.style.display === 'flex', "Zoom In sets overlay display = 'flex'", ul2);
+                assert(overlay.classList.contains('active'), "Overlay has .active CSS class for scale expansion", ul2);
+                assert(!overlay.classList.contains('zooming-out'), "Overlay is not marked zooming-out", ul2);
+
+                // Close (Zoom Out)
+                cinema.close();
+                assert(cinema.isOpen === false, "cinema.close() sets cinema.isOpen = false", ul2);
+                assert(overlay.classList.contains('zooming-out'), "Overlay gains .zooming-out class for scale contraction", ul2);
+
+                // Thought bubble canvas renderer verification
+                let thoughtBubbleDrawn = true;
+                try {
+                    game.renderer.drawThoughtBubble(game.eli.x, game.eli.y, 'forest', true);
+                    game.renderer.drawThoughtBubble(game.eli.x, game.eli.y, 'ocean', true);
+                    game.renderer.drawThoughtBubble(game.eli.x, game.eli.y, 'atmosphere', true);
+                    game.renderer.drawThoughtBubble(game.eli.x, game.eli.y, 'earth', true);
+                } catch (e) {
+                    thoughtBubbleDrawn = false;
+                    console.error(e);
+                }
+                assert(thoughtBubbleDrawn === true, "drawThoughtBubble renders for all 4 Earth Archive records without error", ul2);
+
+                // ----------------------------------------------------
+                // SUITE 3: ARROW KEYS & ENTER CONTROLS (NO EXTRA BUTTONS)
+                // ----------------------------------------------------
+                const ul3 = addSection("3. Strictly Front Arrow, Back Arrow, Up/Down and Enter Controls");
+
+                // Memory Cinema Arrow Cycling
+                cinema.open('leaves');
+                assert(cinema.currentVision === 'leaves', "Initial vision is leaves", ul3);
+
+                cinema.cycleVision(1); // Front arrow (Right Arrow)
+                assert(cinema.currentVision === 'ocean', "Front arrow (→) cycles forward to 'ocean'", ul3);
+
+                cinema.cycleVision(1);
+                assert(cinema.currentVision === 'birds', "Front arrow (→) cycles forward to 'birds'", ul3);
+
+                cinema.cycleVision(1);
+                assert(cinema.currentVision === 'stream', "Front arrow (→) cycles forward to 'stream'", ul3);
+
+                cinema.cycleVision(1);
+                assert(cinema.currentVision === 'rain', "Front arrow (→) cycles forward to 'rain'", ul3);
+
+                cinema.cycleVision(1);
+                assert(cinema.currentVision === 'leaves', "Front arrow (→) wraps back to 'leaves'", ul3);
+
+                cinema.cycleVision(-1); // Back arrow (Left Arrow)
+                assert(cinema.currentVision === 'rain', "Back arrow (←) cycles backward to 'rain'", ul3);
+
+                // Zoom Out with Enter
+                const enterEvent = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true });
+                window.dispatchEvent(enterEvent);
+                assert(cinema.isOpen === false, "Pressing [ENTER] inside Memory Cinema zooms out to habitat", ul3);
+
+                // Habitat Walking in Scene 5 (after completing dialogue)
+                game.currentDialogue = null;
+                game.dialogueQueue = [];
+                const startEliX = game.eli.x;
+                game.keys['arrowright'] = true;
+                game.updateScene5(0.2);
+                game.keys['arrowright'] = false;
+                assert(game.eli.x > startEliX, "Front Arrow (→) walks Eli forward/right in habitat (Scene 5)", ul3);
+
+                const walkedX = game.eli.x;
+                game.keys['arrowleft'] = true;
+                game.updateScene5(0.2);
+                game.keys['arrowleft'] = false;
+                assert(game.eli.x < walkedX, "Back Arrow (←) walks Eli back/left in habitat (Scene 5)", ul3);
+
+                // Scene 3 Pick Up with Enter
+                game.initScene('scene3');
+                game.eli.x = 410; // at jukebox
+                game.jukeboxDugUp = false;
+                game.keys['Enter'] = true;
+                game.updateScene3(0.016);
+                game.keys['Enter'] = false;
+                assert(game.activeChoice != null || game.currentDialogue != null || game.eli.state === 'kneel', "Pressing [ENTER] at golden light inspects/picks up jukebox", ul3);
+
+                // Summary
+                const total = passCount + failCount;
+                if (failCount === 0) {
+                    summary.style.background = "#143a24";
+                    summary.style.border = "2px solid #62c98a";
+                    summary.innerHTML = `<span class="pass">✔ ALL ${passCount}/${total} QA TESTS PASSED!</span><br>Full HD Photorealistic Imagery, Smooth Zoom In/Out Thought Bubble Transitions, and Arrow Keys + Enter Controls are 100% verified!`;
+                } else {
+                    summary.style.background = "#3d1420";
+                    summary.style.border = "2px solid #f28bbd";
+                    summary.innerHTML = `<span class="fail">✖ ${failCount}/${total} TESTS FAILED!</span>`;
+                }
+            } catch (err) {
+                console.error("Test execution error:", err);
+                summary.innerHTML = `<span class="fail">Test error: ${err.message}</span>`;
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', runTests);
+    </script>
+</body>
+</html>

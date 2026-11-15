@@ -1,0 +1,23 @@
+{
+  "name": "sound-of-times",
+  "version": "1.1.0",
+  "description": "2D pixel-art narrative exploration game with NASA scientific ocean data sonification",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve ."
+  },
+  "dependencies": {
+    "tone": "^14.8.49"
+  },
+  "keywords": [
+    "pixel-art",
+    "nasa",
+    "sonification",
+    "ocean",
+    "ecco",
+    "tonejs",
+    "web-audio"
+  ],
+  "author": "Sound of Times Team",
+  "license": "MIT"
+}

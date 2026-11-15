@@ -360,7 +360,7 @@ class Game {
                 { speaker: 'ROCKY', text: 'Question: Why is human five minutes always longer than Eridian five minutes? Human math is broken!' },
                 { speaker: 'RYAN', text: '(laughs) That\'s teacher time, Rocky. Come on, let\'s go teach them some science.' }
             ], () => {
-                this.showPrompt('[A/D] or [←/→] WALK TOWARDS THE CLASSROOM');
+                this.showPrompt('[ → ] (FRONT ARROW) WALK FORWARD TO THE CLASSROOM');
             });
         }, 1800);
     }
@@ -462,7 +462,7 @@ class Game {
                     }
                 }
             ], () => {
-                this.showPrompt('[WALK TO THE GOLDEN LIGHT AND PRESS E TO INSPECT]');
+                this.showPrompt('[ → ] WALK TO THE GOLDEN LIGHT AND PRESS [ENTER] TO PICK UP');
             });
         });
     }
@@ -555,7 +555,7 @@ class Game {
         this.ui.nasaHud.style.display = 'block';
 
         this.setupJukeboxUI();
-        this.showPrompt('[CLICK JUKEBOX CONTROLS OR USE KEYS: SPACE=PLAY/PAUSE | S=STOP | R=REPLAY | E=EJECT | 1-4=RECORDS]');
+        this.showPrompt('[ → / ← ] WALK IN HABITAT  |  [ENTER] ZOOM INTO MEMORY VISION');
 
         // Auto-select Forest record first
         this.selectJukeboxRecord('forest');
@@ -1547,16 +1547,18 @@ class Game {
 
             // Case A: Carrying the jukebox
             if (this.eli.isCarrying) {
-                this.showPrompt('[A/D] CARRY JUKEBOX TO HABITAT (RIGHT) | [Q] SET DOWN');
+                this.showPrompt('[ → ] CARRY JUKEBOX FORWARD (RIGHT) TO HABITAT | [ENTER] SET DOWN');
 
-                // Drop/set down with Q
-                if (this.keys['q'] || this.keys['Q']) {
+                // Drop/set down with Enter or Q
+                if (this.keys['enter'] || this.keys['Enter'] || this.keys['q'] || this.keys['Q']) {
+                    this.keys['enter'] = false;
+                    this.keys['Enter'] = false;
                     this.keys['q'] = false;
                     this.keys['Q'] = false;
                     this.eli.isCarrying = false;
                     this.jukeboxDroppedX = this.eli.x + 18;
                     this.sound.playRelayClickSfx();
-                    this.showPrompt('[E] PICK UP JUKEBOX | [A/D] WALK');
+                    this.showPrompt('[ENTER] PICK UP JUKEBOX | [ → / ← ] WALK');
                 }
 
                 // Reached right edge to enter habitat
@@ -1569,29 +1571,33 @@ class Game {
                 const targetX = this.jukeboxDroppedX || 410;
                 const dist = Math.abs(this.eli.x - targetX);
                 if (dist < 40) {
-                    this.showPrompt('[E] PICK UP JUKEBOX');
-                    if (this.keys['e'] || this.keys['E'] || this.keys['Enter']) {
+                    this.showPrompt('[ENTER] PICK UP JUKEBOX');
+                    if (this.keys['e'] || this.keys['E'] || this.keys['Enter'] || this.keys['enter']) {
                         this.keys['e'] = false;
                         this.keys['E'] = false;
+                        this.keys['enter'] = false;
+                        this.keys['Enter'] = false;
                         this.eli.isCarrying = true;
                         this.sound.playRelayClickSfx();
                     }
                 } else {
-                    this.showPrompt('[A/D] WALK NEAR JUKEBOX TO PICK UP');
+                    this.showPrompt('[ → / ← ] WALK NEAR JUKEBOX TO PICK UP');
                 }
             }
             // Case C: Jukebox still buried at x = 422
             else {
                 const distToJukebox = Math.abs(this.eli.x - 410);
                 if (distToJukebox < 40) {
-                    this.showPrompt('[E] INSPECT OBJECT');
-                    if (this.keys['e'] || this.keys['E'] || this.keys['Enter']) {
+                    this.showPrompt('[ENTER] PICK UP JUKEBOX');
+                    if (this.keys['e'] || this.keys['E'] || this.keys['Enter'] || this.keys['enter']) {
                         this.keys['e'] = false;
                         this.keys['E'] = false;
+                        this.keys['enter'] = false;
+                        this.keys['Enter'] = false;
                         this.inspectJukeboxScene3();
                     }
                 } else {
-                    this.showPrompt('[A/D] WALK TOWARDS THE GOLDEN LIGHT');
+                    this.showPrompt('[ → ] WALK FORWARD TOWARDS THE GOLDEN LIGHT');
                 }
             }
         }
@@ -1618,7 +1624,7 @@ class Game {
                             { speaker: 'RYAN', text: 'I don\'t know how it crossed interstellar space, but we have to find out.' },
                             { speaker: 'ROCKY', text: 'Good! Let us take it back to habitat and clean it up!' }
                         ], () => {
-                            this.showPrompt('[A/D] CARRY JUKEBOX TO HABITAT (RIGHT) | [Q] SET DOWN');
+                            this.showPrompt('[ → ] CARRY JUKEBOX FORWARD (RIGHT) TO HABITAT | [ENTER] SET DOWN');
                         });
                     }
                 },
@@ -1642,7 +1648,7 @@ class Game {
                                             { speaker: 'RYAN', text: 'We have to know what music it holds.' },
                                             { speaker: 'ROCKY', text: 'Amaze! I help carry! We learn together!' }
                                         ], () => {
-                                            this.showPrompt('[A/D] CARRY JUKEBOX TO HABITAT (RIGHT) | [Q] SET DOWN');
+                                            this.showPrompt('[ → ] CARRY JUKEBOX FORWARD (RIGHT) TO HABITAT | [ENTER] SET DOWN');
                                         });
                                     }
                                 }

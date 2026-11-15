@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Buttons & Memory Cinema Automated QA Test Suite</title>
+    <style>
+        body { font-family: monospace; background: #0c0a1a; color: #fff; padding: 20px; }
+        .pass { color: #62c98a; font-weight: bold; }
+        .fail { color: #f28bbd; font-weight: bold; }
+        .test-sec { background: #181230; border: 1px solid #3c246b; border-radius: 6px; padding: 12px; margin-bottom: 12px; }
+        h1, h2, h3 { margin: 0 0 8px 0; }
+        ul { margin: 0; padding-left: 20px; }
+        li { margin: 4px 0; }
+        #summary { padding: 14px; border-radius: 6px; margin-bottom: 16px; }
+    </style>
+</head>
+<body>
+    <h1>SOUND OF TIMES — BUTTONS & MEMORY CINEMA QA</h1>
+    <div id="summary">Running tests...</div>
+    <div id="results"></div>
+
+    <!-- Hidden Game Container to simulate real DOM -->
+    <div id="fixture" style="visibility: hidden; position: absolute; top: -9999px; left: -9999px;">
+        <div class="game-container">
+            <canvas id="gameCanvas" width="960" height="480"></canvas>
+            <div id="jukeboxPanel" style="display: flex;">
+                <div class="record-shelf">
+                    <button class="record-btn active" data-record="forest" id="btnRecForest">003 FOREST</button>
+                    <button class="record-btn" data-record="ocean" id="btnRecOcean">002 OCEAN</button>
+                    <button class="record-btn" data-record="atmosphere" id="btnRecAtmosphere">001 ATMOSPHERE</button>
+                    <button class="record-btn locked" data-record="earth" id="btnRecEarth">004 EARTH</button>
+                </div>
+                <div class="control-deck">
+                    <button class="deck-btn" id="btnPower">POWER</button>
+                    <button class="deck-btn primary" id="btnPlay">PLAY</button>
+                    <button class="deck-btn" id="btnPause">PAUSE</button>
+                    <button class="deck-btn" id="btnStop">STOP</button>
+                    <button class="deck-btn" id="btnReplay">REPLAY</button>
+                    <button class="deck-btn" id="btnEject">EJECT</button>
+                    <button class="deck-btn memory-btn" id="btnMemoryVision">MEMORY</button>
+                    <button class="deck-btn" id="btnTransparency">SCIENCE</button>
+                    <button class="deck-btn" id="btnProceed">PROCEED</button>
+                    <input type="range" id="volSlider" value="80">
+                    <span id="volLabel">80%</span>
+                    <span id="volIcon">🔊</span>
+                </div>
+                <div class="forest-controls-bar" id="forestToolbar" style="display: none;">
+                    <button class="sub-btn active" id="btnModeMorning">DAWN</button>
+                    <button class="sub-btn" id="btnModeAfternoon">DAY</button>
+                    <button class="sub-btn" id="btnModeEvening">DUSK</button>
+                    <button class="sub-btn" id="btnModeNight">NIGHT</button>
+                    <button class="sub-btn" id="btnMuteMusic">MUSIC</button>
+                    <button class="sub-btn" id="btnMuteCanopy">CANOPY</button>
+                    <button class="sub-btn" id="btnMuteWildlife">BIRDS</button>
+                    <button class="sub-btn" id="btnMuteWater">STREAM</button>
+                    <input type="range" id="ambienceSlider" value="75">
+                    <span id="ambLabel">75%</span>
+                </div>
+            </div>
+            <div id="oceanSciencePanel" style="display: none;"></div>
+            <div id="forestSciencePanel" style="display: none;"></div>
+            <div id="nasaHud">
+                <span id="hudMetric"></span>
+                <span id="hudValue"></span>
+                <canvas id="nasaWaveform" width="600" height="30"></canvas>
+                <p id="hudDesc"></p>
+            </div>
+            <div id="dialogueBox" style="display: none;">
+                <div id="speakerName"></div>
+                <div id="dialogueText"></div>
+                <div id="continuePrompt"></div>
+            </div>
+            <div id="choiceBox" style="display: none;">
+                <div id="choicePrompt"></div>
+                <div id="choiceOptions"></div>
+            </div>
+            <div id="screenPrompt"></div>
+            <div id="promptBar"></div>
+            <button id="btnFullscreen"></button>
+
+            <!-- Memory Cinema Overlay -->
+            <div id="memoryCinemaOverlay" class="memory-cinema" style="display: none;">
+                <div class="memory-viewport">
+                    <canvas id="memoryCanvas" width="960" height="540"></canvas>
+                    <div class="memory-header">
+                        <span class="memory-tag">TAG</span>
+                        <span class="memory-speed-tag" id="memorySpeedTag">SPEED</span>
+                        <span class="memory-nasa-tag" id="memoryNasaTag">NASA</span>
+                        <h2 class="memory-title" id="memoryTitle">TITLE</h2>
+                        <p class="memory-quote" id="memoryQuote">QUOTE</p>
+                    </div>
+                    <div class="memory-dock">
+                        <div class="memory-btn-group">
+                            <button class="mem-select-btn active" data-vision="leaves">LEAVES</button>
+                            <button class="mem-select-btn" data-vision="ocean">OCEAN</button>
+                            <button class="mem-select-btn" data-vision="birds">BIRDS</button>
+                            <button class="mem-select-btn" data-vision="stream">STREAM</button>
+                            <button class="mem-select-btn" data-vision="rain">RAIN</button>
+                        </div>
+                        <div class="memory-speed-group">
+                            <button class="speed-btn" data-speed="0.2">0.2x</button>
+                            <button class="speed-btn active" data-speed="0.35">0.35x</button>
+                            <button class="speed-btn" data-speed="1.0">1.0x</button>
+                        </div>
+                        <button class="memory-close-btn" id="btnCloseMemory">CLOSE</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts under test -->
+    <script src="js/forest-data-source.js"></script>
+    <script src="js/ocean-data-source.js"></script>
+    <script src="js/tone.js"></script>
+    <script src="js/forest-sonification.js"></script>
+    <script src="js/ocean-sonification.js"></script>
+    <script src="js/memory-cinema.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/pixelart.js"></script>
+    <script src="js/game.js"></script>
+
+    <script>
+        let passCount = 0;
+        let failCount = 0;
+        const results = document.getElementById('results');
+
+        function log(title) {
+            const d = document.createElement('div');
+            d.className = 'test-sec';
+            d.innerHTML = `<h3>${title}</h3><ul id="ul_${passCount + failCount}"></ul>`;
+            results.appendChild(d);
+            return d.querySelector('ul');
+        }
+
+        function assert(cond, msg, ul) {
+            const li = document.createElement('li');
+            if (cond) {
+                li.innerHTML = `<span class="pass">[PASS]</span> ${msg}`;
+                passCount++;
+            } else {
+                li.innerHTML = `<span class="fail">[FAIL]</span> ${msg}`;
+                failCount++;
+                console.error("FAIL:", msg);
+            }
+            ul.appendChild(li);
+        }
+
+        async function runTests() {
+            try {
+                // ----------------------------------------------------
+                // TEST SUITE 1: JUKEBOX BUTTONS FUNCTIONALITY & STATES
+                // ----------------------------------------------------
+                const ul1 = log("1. Jukebox Play, Pause, Stop, Replay, Eject Functionality & Visual States");
+                if (!window.game) {
+                    window.game = new Game();
+                }
+                const game = window.game;
+                assert(game !== undefined, "window.game initialized", ul1);
+
+            game.initScene('scene5');
+            game.selectJukeboxRecord('forest');
+            assert(game.jukeboxState.activeRecord === 'forest', "Record 003 Forest inserted", ul1);
+            assert(game.jukeboxState.isPlaying === true, "playJukebox() initiated playback", ul1);
+
+            const btnPlay = document.getElementById('btnPlay');
+            const btnPause = document.getElementById('btnPause');
+            const btnStop = document.getElementById('btnStop');
+            const btnReplay = document.getElementById('btnReplay');
+            const btnEject = document.getElementById('btnEject');
+
+            assert(btnPlay.classList.contains('btn-playing'), "Play button has 'btn-playing' active glow class", ul1);
+            assert(!btnPause.classList.contains('btn-paused'), "Pause button is not active while playing", ul1);
+
+            // Test Pause Button Click
+            btnPause.click();
+            assert(game.jukeboxState.isPlaying === false, "Clicking Pause sets isPlaying = false", ul1);
+            assert(game.jukeboxState.isPaused === true, "Clicking Pause sets isPaused = true", ul1);
+            assert(window.forestSonification.isPaused === true, "Forest Sonification engine is paused", ul1);
+            assert(btnPause.classList.contains('btn-paused'), "Pause button has 'btn-paused' amber glow class", ul1);
+            assert(!btnPlay.classList.contains('btn-playing'), "Play button no longer has playing glow", ul1);
+
+            // Test Resume via Play Button Click
+            const savedIdx = window.forestSonification.currentIndex;
+            btnPlay.click();
+            assert(game.jukeboxState.isPlaying === true, "Clicking Play resumes playback", ul1);
+            assert(game.jukeboxState.isPaused === false, "isPaused cleared on resume", ul1);
+            assert(window.forestSonification.currentIndex === savedIdx, "Preserved exact step index on resume: " + savedIdx, ul1);
+            assert(btnPlay.classList.contains('btn-playing'), "Play button re-activates 'btn-playing' glow", ul1);
+            assert(!btnPause.classList.contains('btn-paused'), "Pause glow cleared", ul1);
+
+            // Test Stop Button Click
+            btnStop.click();
+            assert(game.jukeboxState.isPlaying === false, "Clicking Stop sets isPlaying = false", ul1);
+            assert(game.jukeboxState.isPaused === false, "Clicking Stop sets isPaused = false", ul1);
+            assert(window.forestSonification.isPlaying === false, "Forest Sonification engine stopped", ul1);
+            assert(window.forestSonification.currentIndex === 0, "Stop resets currentIndex to 0", ul1);
+            assert(btnStop.classList.contains('btn-stopped'), "Stop button has 'btn-stopped' crimson glow", ul1);
+            assert(!btnPlay.classList.contains('btn-playing'), "Play button not active while stopped", ul1);
+
+            // Test Replay Button Click
+            window.forestSonification.currentIndex = 8;
+            btnReplay.click();
+            assert(game.jukeboxState.isPlaying === true, "Clicking Replay starts playback", ul1);
+            assert(window.forestSonification.currentIndex === 0, "Replay resets playback to step 0", ul1);
+            assert(btnPlay.classList.contains('btn-playing'), "Play button active on replay", ul1);
+            assert(!btnStop.classList.contains('btn-stopped'), "Stop glow cleared on replay", ul1);
+
+            // Test Eject Button Click
+            btnEject.click();
+            assert(game.jukeboxState.isPlaying === false, "Eject halts playback", ul1);
+            assert(game.jukeboxState.activeRecord === null, "Active record cleared on eject", ul1);
+            assert(!btnPlay.classList.contains('btn-playing'), "Play glow cleared on eject", ul1);
+
+            // ----------------------------------------------------
+            // TEST SUITE 2: OCEAN RECORD CONTROLS INTEGRATION
+            // ----------------------------------------------------
+            const ul2 = log("2. Ocean Record Controls Integration (Zero Exceptions / Clean Resume)");
+            game.selectJukeboxRecord('ocean');
+            assert(game.jukeboxState.activeRecord === 'ocean', "Switched to Ocean record", ul2);
+            assert(window.oceanSonification.isPlaying === true, "Ocean sonification is playing", ul2);
+            assert(btnPlay.classList.contains('btn-playing'), "Play button active for Ocean record", ul2);
+
+            btnPause.click();
+            assert(window.oceanSonification.isPaused === true, "Ocean sonification paused cleanly", ul2);
+            assert(btnPause.classList.contains('btn-paused'), "Pause button glowing amber", ul2);
+
+            btnPlay.click();
+            assert(window.oceanSonification.isPlaying === true, "Ocean sonification resumed cleanly", ul2);
+            assert(window.oceanSonification.isPaused === false, "Ocean isPaused is false", ul2);
+
+            btnStop.click();
+            assert(window.oceanSonification.isPlaying === false, "Ocean sonification stopped", ul2);
+            assert(window.oceanSonification.currentIndex === 0, "Ocean step reset to 0", ul2);
+
+            // ----------------------------------------------------
+            // TEST SUITE 3: MEMORY CINEMA SYSTEM & VISIONS
+            // ----------------------------------------------------
+            const ul3 = log("3. Full HD Slow-Mo Memory Cinema Architecture & Visions");
+            const mem = window.memoryCinema;
+            assert(mem !== undefined, "window.memoryCinema exists", ul3);
+
+            // Open Memory Cinema
+            mem.open('leaves');
+            assert(mem.isOpen === true, "Memory cinema is open", ul3);
+            assert(document.getElementById('memoryCinemaOverlay').style.display === 'flex', "Memory overlay displayed", ul3);
+            assert(mem.currentVision === 'leaves', "Initial vision is 'leaves'", ul3);
+            const getTxt = (id) => { const el = document.getElementById(id); return el ? (el.textContent || el.innerText) : ''; };
+            assert(getTxt('memoryTitle').includes("LEAVES"), "Title displays 'LEAVES'", ul3);
+            assert(getTxt('memoryQuote').includes("leaves move so gently"), "Quote contains Eli's memory of swaying leaves", ul3);
+            assert(getTxt('memoryNasaTag').includes("NASA GEDI"), "NASA tag references GEDI canopy architecture", ul3);
+
+            // Vision Switching: Ocean
+            mem.setVision('ocean');
+            assert(mem.currentVision === 'ocean', "Switched vision to 'ocean'", ul3);
+            assert(getTxt('memoryTitle').includes("OCEAN SURF"), "Title updated to 'MAJESTIC OCEAN SURF'", ul3);
+            assert(getTxt('memoryQuote').includes("tide rolling in"), "Quote contains Eli's ocean wave memory", ul3);
+            assert(getTxt('memoryNasaTag').includes("NASA ECCO"), "NASA tag references ECCO tropical gyre", ul3);
+
+            // Vision Switching: Birds
+            mem.setVision('birds');
+            assert(mem.currentVision === 'birds', "Switched vision to 'birds'", ul3);
+            assert(getTxt('memoryTitle').includes("HUMMINGBIRD"), "Title updated to 'IRIDESCENT HUMMINGBIRD'", ul3);
+            assert(getTxt('memoryQuote').includes("tiny hummingbird"), "Quote contains hummingbird memory", ul3);
+
+            // Vision Switching: Stream
+            mem.setVision('stream');
+            assert(mem.currentVision === 'stream', "Switched vision to 'stream'", ul3);
+            assert(getTxt('memoryTitle').includes("MOUNTAIN BROOK"), "Title updated to 'MOUNTAIN BROOK'", ul3);
+
+            // Vision Switching: Rain
+            mem.setVision('rain');
+            assert(mem.currentVision === 'rain', "Switched vision to 'rain'", ul3);
+            assert(getTxt('memoryTitle').includes("FOREST RAIN"), "Title updated to 'FOREST RAIN'", ul3);
+
+            // Slow Motion Speed Adjustment
+            mem.setSlowMoSpeed(0.2);
+            assert(mem.slowMoFactor === 0.2, "Slow-mo factor set to 0.20x", ul3);
+            assert(getTxt('memorySpeedTag').includes("ULTRA SLOW"), "Speed tag displays ULTRA SLOW", ul3);
+
+            mem.setSlowMoSpeed(0.35);
+            assert(mem.slowMoFactor === 0.35, "Slow-mo factor restored to 0.35x", ul3);
+
+            // Close Memory Cinema
+            mem.close();
+            assert(mem.isOpen === false, "Memory cinema closed cleanly", ul3);
+
+            // ----------------------------------------------------
+            // TEST SUITE 4: THOUGHT BUBBLE & INTERACTIVE SHORTCUTS
+            // ----------------------------------------------------
+            const ul4 = log("4. In-Game Thought Bubble Canvas & Keyboard Shortcuts");
+            const r = game.renderer;
+            assert(typeof r.drawThoughtBubble === 'function', "PixelRenderer.drawThoughtBubble() is implemented", ul4);
+
+            // Verify drawThoughtBubble executes without errors
+            let drawSuccess = true;
+            try {
+                r.drawThoughtBubble(220, 330, 'forest', true);
+                r.drawThoughtBubble(220, 330, 'ocean', true);
+                r.drawThoughtBubble(220, 330, 'atmosphere', false);
+            } catch (err) {
+                drawSuccess = false;
+                console.error(err);
+            }
+            assert(drawSuccess === true, "drawThoughtBubble renders Forest, Ocean, and Atmosphere previews without error", ul4);
+
+            // Test Game Memory Vision Methods
+            game.openMemoryVision('leaves');
+            assert(mem.isOpen === true, "game.openMemoryVision() opens memory overlay", ul4);
+            game.closeMemoryVision();
+            assert(mem.isOpen === false, "game.closeMemoryVision() closes memory overlay", ul4);
+
+            // ----------------------------------------------------
+            // SUMMARY
+            // ----------------------------------------------------
+            const total = passCount + failCount;
+            const summary = document.getElementById('summary');
+            if (failCount === 0) {
+                summary.style.background = "#143a24";
+                summary.style.border = "2px solid #62c98a";
+                summary.innerHTML = `<span class="pass">✔ ALL ${passCount}/${total} BUTTONS & MEMORY CINEMA QA TESTS PASSED!</span><br>All jukebox transport controls (Play, Pause, Stop, Replay, Eject) and the Full HD Slow-Mo Memory Cinema Thought Bubble system are completely verified and working!`;
+            } else {
+                summary.style.background = "#3d1420";
+                summary.style.border = "2px solid #f28bbd";
+                summary.innerHTML = `<span class="fail">✖ ${failCount}/${total} TESTS FAILED!</span>`;
+            }
+        } catch (err) {
+            const summary = document.getElementById('summary');
+            summary.style.background = "#3d1420";
+            summary.style.border = "2px solid #f28bbd";
+            summary.innerHTML = `<span class="fail">EXCEPTION in runTests: ${err.message}</span><pre>${err.stack}</pre>`;
+            console.error("EXCEPTION:", err);
+        }
+    }
+
+        window.addEventListener('load', () => {
+            setTimeout(runTests, 300);
+        });
+    </script>
+</body>
+</html>

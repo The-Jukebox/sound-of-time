@@ -1,0 +1,153 @@
+/**
+ * SOUND OF TIMES — Earth Archive Record 003: The Forest
+ * NASA GEDI Gridded Vegetation Structure Metrics & Biomass Density Source
+ * Embedded data source provider to support offline, file://, and sandbox execution.
+ */
+(function(window) {
+    'use strict';
+
+    window.NASA_GEDI_FOREST_DATA = {
+        "datasetMetadata": {
+            "datasetName": "Gridded GEDI Vegetation Structure Metrics and Biomass Density at Multiple Resolutions",
+            "shortName": "GEDI_L4B_L3_GRIDDED_V002",
+            "doi": "10.5067/GEDI/GEDI04_B.002",
+            "nasaSource": "NASA Goddard Space Flight Center / LP DAAC / PO.DAAC",
+            "instrument": "Global Ecosystem Dynamics Investigation (GEDI) High-Resolution Laser Altimeter on the ISS",
+            "complementaryDataset": "NASA Terra/Aqua MODIS 16-Day NDVI (MOD13A2 Version 6.1)",
+            "visualizationReference": {
+                "agency": "NASA Earth Observatory & SVS",
+                "entry": "GEDI Global Canopy Height & Aboveground Biomass Map",
+                "url": "https://catalog.data.gov/dataset/gridded-gedi-vegetation-structure-metrics-and-biomass-density-at-multiple-resolutions"
+            },
+            "variables": {
+                "rh100": { "description": "Canopy Height (100th relative height percentile of returned waveform)", "units": "meters (m)", "validRange": [0.0, 75.0] },
+                "canopyCover": { "description": "Canopy Cover (fractional ground surface covered by canopy vertical projection)", "units": "fraction (0.0 to 1.0)", "validRange": [0.0, 1.0] },
+                "pai": { "description": "Plant Area Index (total one-sided leaf and stem area per unit ground surface area)", "units": "m^2 / m^2", "validRange": [0.0, 10.0] },
+                "fhd": { "description": "Foliage Height Diversity (vertical Shannon entropy index of canopy profile distribution)", "units": "entropy index", "validRange": [0.0, 4.5] },
+                "agbd": { "description": "Aboveground Biomass Density (metric tons dry organic matter per hectare)", "units": "Mg / ha", "validRange": [0.0, 600.0] },
+                "ndvi": { "description": "Normalized Difference Vegetation Index (MODIS canopy greenness index)", "units": "normalized ratio (-1.0 to 1.0)", "validRange": [0.1, 0.95] }
+            },
+            "observationPeriod": {
+                "start": "2019-04-18",
+                "end": "2023-03-16",
+                "note": "Historical satellite laser altimetry reanalysis and composite gridded metrics. Not a live telemetry link."
+            },
+            "scientificTransparency": {
+                "isLive": false,
+                "dataIntegrity": "Authentic NASA GEDI Level 4B & Level 3 gridded calibration observations",
+                "sonificationMethod": "Deterministic parametric mapping of physical canopy structure into musical pitch, harmonic resonance, arpeggio complexity, and sub-bass resonance",
+                "fieldRecordingAttribution": "Natural environmental acoustic layers (wind, leaves, birds, water, insects) are procedurally modeled and synthesized inspired by National Park Service Natural Sounds archival surveys."
+            }
+        },
+        "measurements": [
+            {
+                "step": 1,
+                "location": "Olympic National Park — Hoh Rainforest",
+                "biome": "Temperate Coastal Rainforest",
+                "lat": 47.86, "lon": -123.93,
+                "canopyHeight": 58.4, "canopyCover": 0.88, "pai": 7.42, "fhd": 3.45, "biomass": 415.8, "ndvi": 0.84,
+                "season": "Mid-Summer Canopy Peak", "streamPresent": true,
+                "dominantSpecies": "Sitka Spruce (Picea sitchensis) & Western Hemlock (Tsuga heterophylla)"
+            },
+            {
+                "step": 2,
+                "location": "Amazon Basin — Central Terra Firme Reserve",
+                "biome": "Tropical Moist Broadleaf Rainforest",
+                "lat": -2.58, "lon": -60.12,
+                "canopyHeight": 44.2, "canopyCover": 0.95, "pai": 8.15, "fhd": 3.68, "biomass": 348.5, "ndvi": 0.89,
+                "season": "Equatorial Wet Season", "streamPresent": true,
+                "dominantSpecies": "Brazil Nut (Bertholletia excelsa) & Angelim Vermelho (Dinizia excelsa)"
+            },
+            {
+                "step": 3,
+                "location": "Great Smoky Mountains — Cataloochee Valley",
+                "biome": "Temperate Deciduous Cove Hardwood Forest",
+                "lat": 35.63, "lon": -83.08,
+                "canopyHeight": 36.8, "canopyCover": 0.86, "pai": 5.92, "fhd": 2.95, "biomass": 262.4, "ndvi": 0.82,
+                "season": "Late Spring Foliage Bloom", "streamPresent": true,
+                "dominantSpecies": "Yellow Buckeye (Aesculus flava) & Sugar Maple (Acer saccharum)"
+            },
+            {
+                "step": 4,
+                "location": "Black Forest (Schwarzwald) — Baiersbronn Valley",
+                "biome": "Montane Mixed Coniferous-Broadleaf Forest",
+                "lat": 48.51, "lon": 8.37,
+                "canopyHeight": 35.1, "canopyCover": 0.82, "pai": 5.64, "fhd": 2.84, "biomass": 284.1, "ndvi": 0.77,
+                "season": "Summer Peak Growth", "streamPresent": true,
+                "dominantSpecies": "Silver Fir (Abies alba) & European Beech (Fagus sylvatica)"
+            },
+            {
+                "step": 5,
+                "location": "Redwood National and State Parks — Prairie Creek",
+                "biome": "Old-Growth Temperate Coniferous Rainforest",
+                "lat": 41.37, "lon": -124.02,
+                "canopyHeight": 68.2, "canopyCover": 0.91, "pai": 8.78, "fhd": 3.82, "biomass": 520.4, "ndvi": 0.86,
+                "season": "Coastal Fog Inversion", "streamPresent": true,
+                "dominantSpecies": "Coast Redwood (Sequoia sempervirens) & Douglas-fir (Pseudotsuga menziesii)"
+            },
+            {
+                "step": 6,
+                "location": "Daintree Rainforest — Cooper Creek Basin",
+                "biome": "Ancient Tropical Lowland Rainforest",
+                "lat": -16.18, "lon": 145.42,
+                "canopyHeight": 41.5, "canopyCover": 0.92, "pai": 7.30, "fhd": 3.56, "biomass": 326.0, "ndvi": 0.85,
+                "season": "Tropical Monsoon Canopy", "streamPresent": true,
+                "dominantSpecies": "Idiot Fruit (Idiospermum australiense) & Fan Palms (Licuala ramsayi)"
+            },
+            {
+                "step": 7,
+                "location": "Tongass National Forest — Sitka Sound Shoreline",
+                "biome": "Perhumid Coastal Rainforest",
+                "lat": 57.08, "lon": -135.34,
+                "canopyHeight": 49.3, "canopyCover": 0.87, "pai": 6.85, "fhd": 3.28, "biomass": 375.2, "ndvi": 0.80,
+                "season": "Maritime Summer Solstice", "streamPresent": true,
+                "dominantSpecies": "Sitka Spruce (Picea sitchensis) & Western Redcedar (Thuja plicata)"
+            },
+            {
+                "step": 8,
+                "location": "Hubbard Brook Experimental Forest — Watershed 6",
+                "biome": "Northern Hardwood Experimental Forest",
+                "lat": 43.94, "lon": -71.74,
+                "canopyHeight": 28.6, "canopyCover": 0.79, "pai": 4.85, "fhd": 2.52, "biomass": 218.6, "ndvi": 0.74,
+                "season": "Early Autumn Pre-Senescence", "streamPresent": true,
+                "dominantSpecies": "Sugar Maple (Acer saccharum) & American Beech (Fagus grandifolia)"
+            },
+            {
+                "step": 9,
+                "location": "Białowieża Primeval Forest — Strict Protection Core",
+                "biome": "Lowland European Primeval Mixed Forest",
+                "lat": 52.73, "lon": 23.86,
+                "canopyHeight": 39.8, "canopyCover": 0.89, "pai": 6.45, "fhd": 3.32, "biomass": 310.8, "ndvi": 0.81,
+                "season": "Mid-Summer Canopy Fullness", "streamPresent": false,
+                "dominantSpecies": "Pedunculate Oak (Quercus robur) & Small-leaved Lime (Tilia cordata)"
+            },
+            {
+                "step": 10,
+                "location": "Monteverde Cloud Forest Reserve — Cordillera de Tilarán",
+                "biome": "Tropical Montane Cloud Forest",
+                "lat": 10.31, "lon": -84.79,
+                "canopyHeight": 31.4, "canopyCover": 0.93, "pai": 7.60, "fhd": 3.48, "biomass": 295.0, "ndvi": 0.87,
+                "season": "High Cloud Immersion", "streamPresent": true,
+                "dominantSpecies": "Strangler Fig (Ficus tuerckheimii) & Giant Tree Ferns (Cyathea)"
+            },
+            {
+                "step": 11,
+                "location": "Białowieża Forest Glade & Regeneration Gap",
+                "biome": "Canopy Gap & Pioneer Regeneration Transect",
+                "lat": 52.75, "lon": 23.89,
+                "canopyHeight": 7.8, "canopyCover": 0.28, "pai": 1.45, "fhd": 1.42, "biomass": 38.5, "ndvi": 0.54,
+                "season": "Open Meadow Understory Bloom", "streamPresent": false,
+                "dominantSpecies": "Silver Birch (Betula pendula) & Aspen (Populus tremula)"
+            },
+            {
+                "step": 12,
+                "location": "Hoh River Alluvial Gravel Bar & Water Channel Mask",
+                "biome": "Open Riparian Riverbed / Lidar Water Mask",
+                "lat": 47.88, "lon": -123.99,
+                "canopyHeight": null, "canopyCover": null, "pai": null, "fhd": null, "biomass": null, "ndvi": 0.12,
+                "season": "High Glacial Runoff Flow", "streamPresent": true,
+                "dominantSpecies": "Non-vegetated Water Channel / Land Surface Mask"
+            }
+        ]
+    };
+})(typeof window !== 'undefined' ? window : global);

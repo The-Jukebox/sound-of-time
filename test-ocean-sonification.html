@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SOUND OF TIMES — QA Automated Test Suite</title>
+    <style>
+        body {
+            background: #0d071a;
+            color: #e8e0f5;
+            font-family: monospace;
+            padding: 20px;
+        }
+        h1 { color: #ffca72; }
+        .pass { color: #62c98a; font-weight: bold; }
+        .fail { color: #f28bbd; font-weight: bold; }
+        .section {
+            background: #1c1038;
+            border: 1px solid #3c246b;
+            padding: 12px;
+            margin-bottom: 12px;
+            border-radius: 6px;
+        }
+        #resultsSummary {
+            font-size: 18px;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>SOUND OF TIMES — Automated QA Test Suite</h1>
+    <p>Testing NASA Ocean Data Sonification (Earth Archive Record 002), Tone.js Engine, and Jukebox Integration.</p>
+    <div id="testOutput"></div>
+    <div id="resultsSummary"></div>
+
+    <!-- Scripts under test -->
+    <script src="js/ocean-data-source.js"></script>
+    <script src="js/tone.js"></script>
+    <script src="js/ocean-sonification.js"></script>
+    <script>
+        const output = document.getElementById('testOutput');
+        const summary = document.getElementById('resultsSummary');
+        let passed = 0;
+        let failed = 0;
+
+        function log(sectionTitle) {
+            const sec = document.createElement('div');
+            sec.className = 'section';
+            sec.innerHTML = `<h3>${sectionTitle}</h3><ul id="sec_${passed + failed}"></ul>`;
+            output.appendChild(sec);
+            return sec.querySelector('ul');
+        }
+
+        function assert(condition, message, list) {
+            const li = document.createElement('li');
+            if (condition) {
+                li.innerHTML = `<span class="pass">[PASS]</span> ${message}`;
+                passed++;
+            } else {
+                li.innerHTML = `<span class="fail">[FAIL]</span> ${message}`;
+                failed++;
+                console.error("Test Assertion Failed:", message);
+            }
+            list.appendChild(li);
+        }
+
+        async function runTests() {
+            // ----------------------------------------------------
+            // TEST SUITE 1: NASA DATASET INTEGRATION & VERIFICATION
+            // ----------------------------------------------------
+            const list1 = log("1. NASA ECCO Dataset Schema & Numerical Integrity");
+            
+            const dataset = await window.oceanSonification.loadDataset();
+            assert(dataset !== null && typeof dataset === 'object', "Successfully loaded verified NASA ECCO Ocean dataset", list1);
+
+            const meta = dataset.datasetMetadata || {};
+            assert(meta.datasetName && meta.datasetName.includes("ECCO"), "Dataset Name correctly cites ECCO: " + meta.datasetName, list1);
+            assert(meta.doi === "10.5067/ECG5D-OTS44", "DOI correctly identifies canonical NASA record: " + meta.doi, list1);
+            assert(meta.nasaSource && meta.nasaSource.includes("JPL"), "Attribution cites NASA JPL / PO.DAAC: " + meta.nasaSource, list1);
+            assert(meta.visualizationReference && meta.visualizationReference.entryId === "3912", "Visualization correctly references NASA SVS 3912", list1);
+            assert(meta.scientificTransparency && meta.scientificTransparency.isLive === false, "Scientific disclaimer specifies historical reanalysis, not live ocean telemetry", list1);
+
+            const measurements = dataset.measurements || [];
+            assert(measurements.length === 16, `Contains expected sample step count (16 steps verified, got ${measurements.length})`, list1);
+
+            // Step 4: Gulf Stream core maxima
+            const step4 = measurements[3];
+            assert(step4.temperature === 24.68, "Step 4 has verified Gulf Stream potential temperature (24.68°C)", list1);
+            assert(step4.salinity === 36.58, "Step 4 has verified practical salinity (36.58 PSU)", list1);
+            assert(step4.currentSpeed === 1.62, "Step 4 has verified current speed (1.62 m/s)", list1);
+
+            // Step 10: Land / reef mask missing value test
+            const step10 = measurements[9];
+            assert(step10.valid === false, "Step 10 correctly flagged as invalid/mask observation", list1);
+            assert(step10.temperature === null, "Step 10 temperature is explicitly null (missing value)", list1);
+            assert(step10.flag === "LAND_REEF_MASK", "Step 10 flag indicates LAND_REEF_MASK", list1);
+
+            // ----------------------------------------------------
+            // TEST SUITE 2: TONE.JS OCEAN SONIFICATION ENGINE
+            // ----------------------------------------------------
+            const list2 = log("2. Tone.js Ocean Sonification Engine Lifecycle & Controls");
+            const engine = window.oceanSonification;
+            assert(engine !== undefined, "window.oceanSonification instance exists", list2);
+            assert(typeof Tone !== 'undefined', "Tone.js library loaded successfully", list2);
+
+            await engine.initAudio();
+            assert(engine.isInitialized === true, "Audio graph initialized (Tone.PolySynth, FMSynth, Reverb, Chorus, Filter, Panner)", list2);
+            assert(engine.tempSynth !== null, "Temperature polyphonic synthesizer created", list2);
+            assert(engine.salinitySynth !== null, "Salinity FM synthesizer created", list2);
+            assert(engine.ambientSurf !== null, "Ambient surf noise generator created", list2);
+
+            // Test Play
+            await engine.play();
+            assert(engine.isPlaying === true, "engine.play() sets isPlaying = true", list2);
+            assert(engine.isPaused === false, "engine.play() sets isPaused = false", list2);
+            assert(engine.currentNote !== '—', `Initial note generated: ${engine.currentNote}`, list2);
+
+            // Test Pause (position preservation)
+            engine.currentIndex = 5; // simulate advancing to step 6
+            engine.pause();
+            assert(engine.isPlaying === false, "engine.pause() sets isPlaying = false", list2);
+            assert(engine.isPaused === true, "engine.pause() sets isPaused = true", list2);
+            assert(engine.currentIndex === 5, "engine.pause() preserves exact currentIndex (Step 6)", list2);
+
+            // Test Resume
+            await engine.play();
+            assert(engine.isPlaying === true, "engine.play() (resume) sets isPlaying = true", list2);
+            assert(engine.isPaused === false, "engine.play() (resume) clears isPaused", list2);
+            assert(engine.currentIndex === 5, "engine.play() resumes from preserved currentIndex (Step 6)", list2);
+
+            // Test Stop (reset position)
+            engine.stop();
+            assert(engine.isPlaying === false, "engine.stop() sets isPlaying = false", list2);
+            assert(engine.isPaused === false, "engine.stop() clears isPaused", list2);
+            assert(engine.currentIndex === 0, "engine.stop() resets currentIndex to 0", list2);
+
+            // Test Replay
+            engine.replay();
+            assert(engine.isPlaying === true, "engine.replay() restarts playback", list2);
+            assert(engine.currentIndex === 0, "engine.replay() starts from step 0", list2);
+            engine.stop();
+
+            // Test Volume Control
+            engine.setVolume(0.5);
+            assert(engine.volumeLevel === 0.5, "engine.setVolume(0.5) updates volumeLevel to 0.5", list2);
+            engine.setVolume(0.0);
+            assert(engine.masterVolume.mute === true, "engine.setVolume(0.0) mutes master volume", list2);
+            engine.setVolume(0.8);
+            assert(engine.masterVolume.mute === false, "engine.setVolume(0.8) unmutes and sets level", list2);
+
+            // Test Eject
+            engine.eject();
+            assert(engine.isPlaying === false, "engine.eject() stops playback", list2);
+            assert(engine.currentDataPoint === null, "engine.eject() clears active data point", list2);
+
+            // ----------------------------------------------------
+            // TEST SUITE 3: AUDIO TELEMETRY & METRICS EXTRACTION
+            // ----------------------------------------------------
+            const list3 = log("3. Audio Telemetry & Live Metrics for Animations");
+            const metrics = engine.getMetrics();
+            assert(typeof metrics.energy === 'number' && !isNaN(metrics.energy), "metrics.energy is valid number: " + metrics.energy, list3);
+            assert(typeof metrics.tempNorm === 'number', "metrics.tempNorm is valid number: " + metrics.tempNorm, list3);
+            assert(typeof metrics.salinityNorm === 'number', "metrics.salinityNorm is valid number: " + metrics.salinityNorm, list3);
+            assert(typeof metrics.currentNorm === 'number', "metrics.currentNorm is valid number: " + metrics.currentNorm, list3);
+            assert(Array.isArray(metrics.waveform) || (metrics.waveform && typeof metrics.waveform.length === 'number'), "metrics.waveform provides time-domain data for visualizer", list3);
+
+            // ----------------------------------------------------
+            // SUMMARY
+            // ----------------------------------------------------
+            const total = passed + failed;
+            if (failed === 0) {
+                summary.style.background = "#143a24";
+                summary.style.border = "2px solid #62c98a";
+                summary.innerHTML = `<span class="pass">✔ ALL ${passed}/${total} AUTOMATED QA TESTS PASSED!</span><br>The NASA Ocean Data Sonification feature is mathematically verified, robust, and fully operational.`;
+            } else {
+                summary.style.background = "#3d1424";
+                summary.style.border = "2px solid #f28bbd";
+                summary.innerHTML = `<span class="fail">✖ ${failed}/${total} TESTS FAILED!</span> Please inspect failed assertions above.`;
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', runTests);
+    </script>
+</body>
+</html>

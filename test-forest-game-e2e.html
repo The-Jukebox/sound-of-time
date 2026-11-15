@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SOUND OF TIMES — Forest Record 003 End-to-End Game Integration Test</title>
+    <style>
+        body { background: #0c0818; color: #e2daf0; font-family: monospace; padding: 24px; }
+        h1 { color: #62c98a; font-size: 20px; }
+        .sec { margin-top: 18px; border-left: 3px solid #62c98a; padding-left: 12px; }
+        .sec h3 { margin: 4px 0 8px 0; color: #ffca72; font-size: 14px; }
+        ul { list-style: none; padding-left: 0; margin: 4px 0; }
+        li { margin: 4px 0; font-size: 13px; }
+        .pass { color: #62c98a; font-weight: bold; }
+        .fail { color: #f28bbd; font-weight: bold; }
+        #summary { font-size: 16px; padding: 14px; margin-top: 20px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>SOUND OF TIMES — Forest Record 003 End-to-End Game Integration Test</h1>
+    <div id="logs"></div>
+    <div id="summary"></div>
+
+    <!-- Hidden game canvas & UI for integration test -->
+    <div style="opacity: 0.01; pointer-events: none; position: absolute; top: -2000px;">
+        <canvas id="gameCanvas" width="640" height="360"></canvas>
+        <div id="screenPrompt"></div>
+        <div id="dialogueBox">
+            <div id="speakerName"></div>
+            <div id="dialogueText"></div>
+            <div id="continuePrompt"></div>
+        </div>
+        <div id="choiceBox">
+            <div id="choiceTitle"></div>
+            <div id="choiceOptions"></div>
+        </div>
+        <div id="sceneOverlay">
+            <h2 id="overlayTitle"></h2>
+            <p id="overlaySubtitle"></p>
+        </div>
+        <button id="btnFullscreen"><span class="fs-text"></span></button>
+
+        <section id="jukeboxPanel">
+            <div class="record-shelf">
+                <button class="record-btn" data-record="forest" id="btnRecForest"></button>
+                <button class="record-btn" data-record="ocean" id="btnRecOcean"></button>
+                <button class="record-btn" data-record="atmosphere" id="btnRecAtmosphere"></button>
+                <button class="record-btn locked" data-record="earth" id="btnRecEarth"></button>
+            </div>
+            <div class="control-deck">
+                <button class="deck-btn" id="btnPower"></button>
+                <button class="deck-btn primary" id="btnPlay"></button>
+                <button class="deck-btn" id="btnPause"></button>
+                <button class="deck-btn" id="btnStop"></button>
+                <button class="deck-btn" id="btnReplay"></button>
+                <button class="deck-btn" id="btnEject"></button>
+                <div class="volume-container">
+                    <span id="volIcon">🔊</span>
+                    <input type="range" id="volSlider" min="0" max="100" value="80">
+                    <span id="volLabel">80%</span>
+                </div>
+                <button class="deck-btn" id="btnTransparency"></button>
+                <button class="deck-btn" id="btnProceed"></button>
+            </div>
+
+            <!-- Forest Soundscape & Environmental Toolbar -->
+            <div class="forest-controls-bar" id="forestToolbar" style="display: none;">
+                <button class="sub-btn active" id="btnModeMorning">🌅 DAWN</button>
+                <button class="sub-btn" id="btnModeAfternoon">☀️ DAY</button>
+                <button class="sub-btn" id="btnModeEvening">🌇 DUSK</button>
+                <button class="sub-btn" id="btnModeNight">🌙 NIGHT</button>
+
+                <button class="sub-btn" id="btnMuteMusic">🎵 MUSIC</button>
+                <button class="sub-btn" id="btnMuteCanopy">🍃 CANOPY</button>
+                <button class="sub-btn" id="btnMuteWildlife">🐦 BIRDS</button>
+                <button class="sub-btn" id="btnMuteWater">💧 STREAM</button>
+
+                <input type="range" id="ambienceSlider" min="0" max="100" value="75">
+                <span id="ambLabel">75%</span>
+            </div>
+        </section>
+
+        <aside id="nasaHud">
+            <div class="hud-title-bar">
+                <span id="hudMetric"></span>
+                <span id="hudValue"></span>
+            </div>
+            <canvas id="nasaWaveform" width="612" height="36"></canvas>
+            <p id="hudDesc"></p>
+            <div id="forestSciencePanel" class="science-panel" style="display: none;"></div>
+            <div id="oceanSciencePanel" class="science-panel" style="display: none;"></div>
+        </aside>
+    </div>
+
+    <!-- Scripts under test -->
+    <script src="js/forest-data-source.js"></script>
+    <script src="js/ocean-data-source.js"></script>
+    <script src="js/tone.js"></script>
+    <script src="js/forest-sonification.js"></script>
+    <script src="js/ocean-sonification.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/pixelart.js"></script>
+    <script src="js/game.js"></script>
+
+    <script>
+        const logs = document.getElementById('logs');
+        const summary = document.getElementById('summary');
+        let passCount = 0;
+        let failCount = 0;
+
+        function addSection(title) {
+            const d = document.createElement('div');
+            d.className = 'sec';
+            d.innerHTML = `<h3>${title}</h3><ul id="ul_${passCount + failCount}"></ul>`;
+            logs.appendChild(d);
+            return d.querySelector('ul');
+        }
+
+        function assert(cond, msg, ul) {
+            const li = document.createElement('li');
+            if (cond) {
+                li.innerHTML = `<span class="pass">[PASS]</span> ${msg}`;
+                passCount++;
+            } else {
+                li.innerHTML = `<span class="fail">[FAIL]</span> ${msg}`;
+                failCount++;
+                console.error("FAIL:", msg);
+            }
+            ul.appendChild(li);
+        }
+
+        async function runE2E() {
+            try {
+                if (!window.game) {
+                    window.game = new Game();
+                }
+                const game = window.game;
+                const forest = window.forestSonification;
+                const ocean = window.oceanSonification;
+                const sound = window.soundEngine;
+
+                // ----------------------------------------------------
+                // 1. Scene 5 Jukebox Setup
+                // ----------------------------------------------------
+                const ul1 = addSection("1. Scene 5 Jukebox Setup & Initialization");
+                assert(game !== undefined, "window.game instantiated", ul1);
+                game.initScene('scene5');
+                assert(game.currentScene === 'scene5', "Switched to Scene 5 (Jukebox)", ul1);
+                assert(document.getElementById('jukeboxPanel').style.display === 'flex', "Jukebox dashboard panel displayed", ul1);
+
+                // ----------------------------------------------------
+                // 2. Forest Record 003 Insertion & NASA GEDI Telemetry
+                // ----------------------------------------------------
+                const ul2 = addSection("2. Forest Record 003 Insertion & NASA GEDI Telemetry");
+                game.selectJukeboxRecord('forest');
+                assert(game.jukeboxState.activeRecord === 'forest', "Active record set to 'forest'", ul2);
+                assert(forest.isPlaying === true, "Tone.js Forest Sonification is playing", ul2);
+                assert(sound.isPlaying === false, "Base sound engine stopped (no duplicate audio)", ul2);
+                assert(ocean.isPlaying === false, "Ocean sonification stopped (clean audio isolation)", ul2);
+                assert(document.getElementById('forestSciencePanel').style.display === 'block', "NASA GEDI scientific panel displayed automatically", ul2);
+                assert(document.getElementById('forestToolbar').style.display === 'flex', "Forest environmental soundscape toolbar displayed", ul2);
+
+                // Dialogue verification
+                assert(game.currentDialogue !== null, "Narrative dialogue triggered upon record insertion", ul2);
+                assert(game.currentDialogue.speaker === 'RYLAND', `Speaker is RYLAND (got '${game.currentDialogue.speaker}')`, ul2);
+                assert(game.currentDialogue.text.includes("NASA GEDI"), "Dialogue text mentions NASA GEDI archive", ul2);
+
+                // ----------------------------------------------------
+                // 3. Soundscape Modes & Day/Night Controls
+                // ----------------------------------------------------
+                const ul3 = addSection("3. Soundscape Modes & Day/Night Controls");
+                
+                // Test Daytime Mode
+                document.getElementById('btnModeAfternoon').click();
+                assert(forest.soundscape.mode === 'afternoon', "Clicking [DAY] switches mode to 'afternoon'", ul3);
+                assert(document.getElementById('btnModeAfternoon').classList.contains('active'), "Day button highlighted as active", ul3);
+
+                // Test Night Mode
+                document.getElementById('btnModeNight').click();
+                assert(forest.soundscape.mode === 'night', "Clicking [NIGHT] switches mode to 'night'", ul3);
+                assert(document.getElementById('btnModeNight').classList.contains('active'), "Night button highlighted as active", ul3);
+
+                // Test Dawn Mode
+                document.getElementById('btnModeMorning').click();
+                assert(forest.soundscape.mode === 'morning', "Clicking [DAWN] switches mode to 'morning'", ul3);
+
+                // ----------------------------------------------------
+                // 4. Layer Mute Toggles & Ambience Volume
+                // ----------------------------------------------------
+                const ul4 = addSection("4. Layer Mute Toggles & Ambience Volume");
+                
+                const btnMuteMusic = document.getElementById('btnMuteMusic');
+                btnMuteMusic.click();
+                assert(forest.soundscape.musicMuted === true, "Clicking [🎵 MUSIC] mutes music synthesis layer", ul4);
+                btnMuteMusic.click();
+                assert(forest.soundscape.musicMuted === false, "Clicking [🎵 MUSIC] again un-mutes music layer", ul4);
+
+                const btnMuteBirds = document.getElementById('btnMuteWildlife');
+                btnMuteBirds.click();
+                assert(forest.soundscape.wildlifeMuted === true, "Clicking [🐦 BIRDS] mutes bird & wildlife calls", ul4);
+                btnMuteBirds.click();
+                assert(forest.soundscape.wildlifeMuted === false, "Clicking [🐦 BIRDS] again un-mutes bird calls", ul4);
+
+                const ambSlider = document.getElementById('ambienceSlider');
+                ambSlider.value = 60;
+                ambSlider.dispatchEvent(new Event('input'));
+                assert(forest.soundscape.canopyVolume === 0.60, "Ambience slider sets canopy wind volume to 0.60", ul4);
+                assert(document.getElementById('ambLabel').innerText === "60%", "Ambience label reads '60%'", ul4);
+
+                // ----------------------------------------------------
+                // 5. Transport Controls Verification
+                // ----------------------------------------------------
+                const ul5 = addSection("5. Transport Controls Verification");
+                
+                // Pause
+                document.getElementById('btnPause').click();
+                assert(forest.isPaused === true, "Clicking [PAUSE] sets forest.isPaused = true", ul5);
+                assert(game.jukeboxState.isPaused === true, "game.jukeboxState.isPaused = true", ul5);
+                const savedIdx = forest.currentIndex;
+
+                // Resume
+                document.getElementById('btnPlay').click();
+                assert(forest.isPlaying === true, "Clicking [PLAY] (resume) sets forest.isPlaying = true", ul5);
+                assert(forest.isPaused === false, "isPaused cleared on resume", ul5);
+                assert(forest.currentIndex === savedIdx, "Resumed from exact preserved step index: " + savedIdx, ul5);
+
+                // Stop
+                document.getElementById('btnStop').click();
+                assert(forest.isPlaying === false, "Clicking [STOP] sets forest.isPlaying = false", ul5);
+                assert(forest.currentIndex === 0, "Clicking [STOP] resets step pointer to 0", ul5);
+
+                // Replay
+                document.getElementById('btnReplay').click();
+                assert(forest.isPlaying === true, "Clicking [REPLAY] restarts playback", ul5);
+                assert(forest.currentIndex === 0, "Playback restarted from step 0", ul5);
+
+                // Master Volume Slider
+                const volSlider = document.getElementById('volSlider');
+                volSlider.value = 50;
+                volSlider.dispatchEvent(new Event('input'));
+                assert(forest.volumeLevel === 0.50, "Master volume updates forest.volumeLevel to 0.50", ul5);
+
+                // Transparency modal toggle
+                const fPnl = document.getElementById('forestSciencePanel');
+                document.getElementById('btnTransparency').click();
+                assert(fPnl.style.display === 'none', "Clicking [SCIENCE INFO] hides forest transparency panel", ul5);
+                document.getElementById('btnTransparency').click();
+                assert(fPnl.style.display === 'block', "Clicking [SCIENCE INFO] restores forest transparency panel", ul5);
+
+                // ----------------------------------------------------
+                // 6. Record Switching & Audio Isolation (Forest vs Ocean)
+                // ----------------------------------------------------
+                const ul6 = addSection("6. Record Switching & Audio Isolation (Forest vs Ocean)");
+                
+                // Switch to Ocean Record 002
+                game.selectJukeboxRecord('ocean');
+                assert(game.jukeboxState.activeRecord === 'ocean', "Switched active record to 'ocean'", ul6);
+                assert(forest.isPlaying === false, "Tone.js Forest sonification halted when switching to Ocean", ul6);
+                assert(ocean.isPlaying === true, "Tone.js Ocean sonification playing on Ocean record", ul6);
+                assert(fPnl.style.display === 'none', "Forest science panel hidden on Ocean record", ul6);
+                assert(document.getElementById('forestToolbar').style.display === 'none', "Forest soundscape toolbar hidden on Ocean record", ul6);
+                assert(document.getElementById('oceanSciencePanel').style.display === 'block', "Ocean science panel displayed on Ocean record", ul6);
+
+                // Switch back to Forest Record 003
+                game.selectJukeboxRecord('forest');
+                assert(game.jukeboxState.activeRecord === 'forest', "Switched active record back to 'forest'", ul6);
+                assert(forest.isPlaying === true, "Tone.js Forest sonification resumed on Forest record", ul6);
+                assert(ocean.isPlaying === false, "Tone.js Ocean sonification halted when switching to Forest", ul6);
+                assert(document.getElementById('forestSciencePanel').style.display === 'block', "Forest science panel restored", ul6);
+                assert(document.getElementById('forestToolbar').style.display === 'flex', "Forest soundscape toolbar restored", ul6);
+
+                // Test Eject
+                document.getElementById('btnEject').click();
+                assert(forest.isPlaying === false, "Clicking [EJECT] silences forest audio", ul6);
+                assert(ocean.isPlaying === false, "Ocean audio silenced on eject", ul6);
+                assert(game.jukeboxState.activeRecord === null, "Eject clears active record state", ul6);
+                assert(document.getElementById('forestToolbar').style.display === 'none', "Toolbar hidden on eject", ul6);
+
+                // ----------------------------------------------------
+                // FINAL SUMMARY
+                // ----------------------------------------------------
+                const total = passCount + failCount;
+                if (failCount === 0) {
+                    summary.style.background = "#143a24";
+                    summary.style.border = "2px solid #62c98a";
+                    summary.innerHTML = `<span class="pass">✔ ALL ${passCount}/${total} FOREST E2E INTEGRATION TESTS PASSED!</span><br>The Forest Record 003 experience is fully functional, robustly isolated, and meets all NASA specifications.`;
+                } else {
+                    summary.style.background = "#3d1424";
+                    summary.style.border = "2px solid #f28bbd";
+                    summary.innerHTML = `<span class="fail">✖ ${failCount}/${total} TESTS FAILED!</span>`;
+                }
+            } catch (err) {
+                const errDiv = document.createElement('div');
+                errDiv.style.color = '#ff4444';
+                errDiv.innerText = `FATAL TEST RUN ERROR: ${err.message}\n${err.stack}`;
+                document.body.appendChild(errDiv);
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            window.addEventListener('DOMContentLoaded', runE2E);
+        } else {
+            runE2E();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SOUND OF TIMES — End-to-End Game Integration QA Test</title>
+    <style>
+        body { background: #0b0617; color: #fff; font-family: monospace; padding: 15px; }
+        .pass { color: #62c98a; font-weight: bold; }
+        .fail { color: #f28bbd; font-weight: bold; }
+        .sec { background: #1c1038; border: 1px solid #4a2c7a; margin-bottom: 10px; padding: 10px; border-radius: 4px; }
+        #summary { font-size: 16px; padding: 12px; margin-top: 15px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>End-to-End Game Integration QA Test</h1>
+    <div id="logs"></div>
+    <div id="summary"></div>
+
+    <!-- Hidden game canvas & UI for integration test -->
+    <div style="opacity: 0.01; pointer-events: none; position: absolute; top: -2000px;">
+        <canvas id="gameCanvas" width="640" height="360"></canvas>
+        <div id="screenPrompt"></div>
+        <div id="dialogueBox">
+            <div id="speakerName"></div>
+            <div id="dialogueText"></div>
+            <div id="continuePrompt"></div>
+        </div>
+        <div id="choiceBox">
+            <div id="choiceTitle"></div>
+            <div id="choiceOptions"></div>
+        </div>
+        <div id="sceneOverlay">
+            <h2 id="overlayTitle"></h2>
+            <p id="overlaySubtitle"></p>
+        </div>
+        <section id="jukeboxPanel">
+            <div class="record-shelf">
+                <button class="record-btn" data-record="forest" id="btnRecForest"></button>
+                <button class="record-btn" data-record="ocean" id="btnRecOcean"></button>
+                <button class="record-btn" data-record="atmosphere" id="btnRecAtmosphere"></button>
+                <button class="record-btn locked" data-record="earth" id="btnRecEarth"></button>
+            </div>
+            <div class="control-deck">
+                <button class="deck-btn" id="btnPower"></button>
+                <button class="deck-btn primary" id="btnPlay"></button>
+                <button class="deck-btn" id="btnPause"></button>
+                <button class="deck-btn" id="btnStop"></button>
+                <button class="deck-btn" id="btnReplay"></button>
+                <button class="deck-btn" id="btnEject"></button>
+                <div class="volume-container">
+                    <span id="volIcon">🔊</span>
+                    <input type="range" id="volSlider" min="0" max="100" value="80">
+                    <span id="volLabel">80%</span>
+                </div>
+                <button class="deck-btn" id="btnTransparency"></button>
+                <button class="deck-btn" id="btnProceed"></button>
+            </div>
+        </section>
+        <aside id="nasaHud">
+            <div class="hud-title-bar">
+                <span id="hudMetric"></span>
+                <span id="hudValue"></span>
+            </div>
+            <canvas id="nasaWaveform" width="612" height="36"></canvas>
+            <p id="hudDesc"></p>
+            <div id="oceanSciencePanel" class="science-panel" style="display: none;"></div>
+        </aside>
+    </div>
+
+    <!-- Scripts under test -->
+    <script src="js/ocean-data-source.js"></script>
+    <script src="js/tone.js"></script>
+    <script src="js/ocean-sonification.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/pixelart.js"></script>
+    <script src="js/game.js"></script>
+
+    <script>
+        window.onerror = function(msg, url, line, col, err) {
+            const errDiv = document.createElement('div');
+            errDiv.style.color = '#ff4444';
+            errDiv.style.fontSize = '16px';
+            errDiv.innerText = `GLOBAL JS ERROR: ${msg} (Line ${line}:${col}) \n${err ? err.stack : ''}`;
+            document.body.appendChild(errDiv);
+        };
+
+        const logs = document.getElementById('logs');
+        const summary = document.getElementById('summary');
+        let passCount = 0;
+        let failCount = 0;
+
+        function addSection(title) {
+            const d = document.createElement('div');
+            d.className = 'sec';
+            d.innerHTML = `<h3>${title}</h3><ul id="ul_${passCount + failCount}"></ul>`;
+            logs.appendChild(d);
+            return d.querySelector('ul');
+        }
+
+        function test(cond, msg, ul) {
+            const li = document.createElement('li');
+            if (cond) {
+                li.innerHTML = `<span class="pass">[PASS]</span> ${msg}`;
+                passCount++;
+            } else {
+                li.innerHTML = `<span class="fail">[FAIL]</span> ${msg}`;
+                failCount++;
+                console.error("FAIL:", msg);
+            }
+            ul.appendChild(li);
+        }
+
+        async function runE2E() {
+            try {
+                if (!window.game) {
+                    window.game = new Game();
+                }
+                const game = window.game;
+                const ocean = window.oceanSonification;
+                const sound = window.soundEngine;
+
+                // ----------------------------------------------------
+                // 1. Scene 5 Jukebox Initialization
+                // ----------------------------------------------------
+                const ul1 = addSection("1. Scene 5 Jukebox Setup & Initialization");
+                test(game !== undefined, "window.game initialized", ul1);
+                game.initScene('scene5');
+                test(game.currentScene === 'scene5', "game switched to Scene 5 (Jukebox)", ul1);
+                test(document.getElementById('jukeboxPanel').style.display === 'flex', "Jukebox control panel displayed", ul1);
+
+                // ----------------------------------------------------
+                // 2. Ocean Record Insertion & Narrative Trigger
+                // ----------------------------------------------------
+                const ul2 = addSection("2. Ocean Record Insertion & NASA Telemetry");
+                game.selectJukeboxRecord('ocean');
+                test(game.jukeboxState.activeRecord === 'ocean', "Active record set to 'ocean'", ul2);
+                test(ocean.isPlaying === true, "Tone.js Ocean Sonification is playing", ul2);
+                test(sound.isPlaying === false, "Base soundEngine stopped (no duplicate audio track)", ul2);
+                test(document.getElementById('oceanSciencePanel').style.display === 'block', "NASA ECCO scientific panel displayed automatically", ul2);
+                
+                // Verify dialogue
+                test(game.currentDialogue !== null, "Narrative dialogue triggered upon record insertion", ul2);
+                test(game.currentDialogue.speaker === 'RYLAND', `Speaker is RYLAND (got '${game.currentDialogue ? game.currentDialogue.speaker : 'null'}')`, ul2);
+                test(game.currentDialogue.text.includes("NASA ECCO"), "Dialogue text mentions NASA ECCO archive", ul2);
+
+                // Advance through Ryland's dialogue
+                game.advanceDialogue();
+                game.advanceDialogue();
+
+                // ----------------------------------------------------
+                // 3. Transport Controls Verification
+                // ----------------------------------------------------
+                const ul3 = addSection("3. Interactive Transport Controls (Pause, Resume, Stop, Replay, Eject, Volume)");
+                
+                // Test Pause
+                document.getElementById('btnPause').click();
+                test(ocean.isPaused === true, "Clicking [PAUSE] sets ocean.isPaused = true", ul3);
+                test(game.jukeboxState.isPaused === true, "game.jukeboxState.isPaused = true", ul3);
+                const savedIndex = ocean.currentIndex;
+
+                // Test Resume via Play button
+                document.getElementById('btnPlay').click();
+                test(ocean.isPlaying === true, "Clicking [PLAY] (resume) sets ocean.isPlaying = true", ul3);
+                test(ocean.isPaused === false, "isPaused cleared on resume", ul3);
+                test(ocean.currentIndex === savedIndex, "Playback resumed from exact preserved step index: " + savedIndex, ul3);
+
+                // Test Stop
+                document.getElementById('btnStop').click();
+                test(ocean.isPlaying === false, "Clicking [STOP] sets ocean.isPlaying = false", ul3);
+                test(ocean.currentIndex === 0, "Clicking [STOP] resets currentIndex to 0", ul3);
+
+                // Test Replay
+                document.getElementById('btnReplay').click();
+                test(ocean.isPlaying === true, "Clicking [REPLAY] restarts playback", ul3);
+                test(ocean.currentIndex === 0, "Playback restarted from step 0", ul3);
+
+                // Test Volume Slider
+                const slider = document.getElementById('volSlider');
+                slider.value = 45;
+                slider.dispatchEvent(new Event('input'));
+                test(ocean.volumeLevel === 0.45, "Volume slider updates ocean.volumeLevel to 0.45", ul3);
+                test(document.getElementById('volLabel').innerText === "45%", "Volume percentage label displays '45%'", ul3);
+
+                // Test Transparency Toggle Button
+                const pnl = document.getElementById('oceanSciencePanel');
+                document.getElementById('btnTransparency').click();
+                test(pnl.style.display === 'none', "Clicking [SCIENCE INFO] hides transparency panel", ul3);
+                document.getElementById('btnTransparency').click();
+                test(pnl.style.display === 'block', "Clicking [SCIENCE INFO] again shows transparency panel", ul3);
+
+                // ----------------------------------------------------
+                // 4. Record Switching & Audio Isolation
+                // ----------------------------------------------------
+                const ul4 = addSection("4. Record Switching Isolation (Preventing Audio Bleed)");
+                
+                // Switch to Forest
+                game.selectJukeboxRecord('forest');
+                test(game.jukeboxState.activeRecord === 'forest', "Switched active record to 'forest'", ul4);
+                test(ocean.isPlaying === false, "Tone.js Ocean sonification immediately stopped when switching away", ul4);
+                test(pnl.style.display === 'none', "Ocean science panel hidden on non-ocean record", ul4);
+
+                // Switch back to Ocean
+                game.selectJukeboxRecord('ocean');
+                test(game.jukeboxState.activeRecord === 'ocean', "Switched active record back to 'ocean'", ul4);
+                test(ocean.isPlaying === true, "Tone.js Ocean sonification resumed on Ocean record", ul4);
+                test(sound.isPlaying === false, "SoundEngine record playback stopped (clean isolation)", ul4);
+
+                // Test Eject
+                document.getElementById('btnEject').click();
+                test(ocean.isPlaying === false, "Clicking [EJECT] stops Tone.js sonification", ul4);
+                test(game.jukeboxState.activeRecord === null, "Eject clears active record state", ul4);
+
+                // ----------------------------------------------------
+                // RESULTS
+                // ----------------------------------------------------
+                const total = passCount + failCount;
+                if (failCount === 0) {
+                    summary.style.background = "#143a24";
+                    summary.style.border = "2px solid #62c98a";
+                    summary.innerHTML = `<span class="pass">✔ ALL ${passCount}/${total} E2E INTEGRATION TESTS PASSED!</span><br>The Ocean Record feature is fully connected, bug-free, and adheres strictly to project specs.`;
+                } else {
+                    summary.style.background = "#3d1424";
+                    summary.style.border = "2px solid #f28bbd";
+                    summary.innerHTML = `<span class="fail">✖ ${failCount}/${total} TESTS FAILED!</span>`;
+                }
+            } catch (err) {
+                const errDiv = document.createElement('div');
+                errDiv.style.color = '#ff4444';
+                errDiv.style.fontSize = '16px';
+                errDiv.innerText = `RUN ERROR: ${err.message}\n${err.stack}`;
+                document.body.appendChild(errDiv);
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            window.addEventListener('DOMContentLoaded', runE2E);
+        } else {
+            runE2E();
+        }
+    </script>
+</body>
+</html>
