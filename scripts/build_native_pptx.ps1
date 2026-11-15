@@ -1,4 +1,4 @@
-﻿# Build 100% Native PowerPoint Presentation using PowerPoint COM Object
+# Build 100% Native PowerPoint Presentation using PowerPoint COM Object
 $ErrorActionPreference = "Stop"
 
 $workspace = "C:\Users\Lenovo\Desktop\Sound of time"

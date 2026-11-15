@@ -140,6 +140,23 @@ class Game {
                 this.initScene('scene1');
             };
         }
+        const btnJumpDeparture = document.getElementById('btnJumpDeparture');
+        if (btnJumpDeparture) {
+            btnJumpDeparture.onclick = () => {
+                this.sound.stopSceneAmbience();
+                this.sound.currentSceneAmbience = null;
+                this.sound.init();
+                this.sound.resume();
+                if (typeof Tone !== 'undefined' && Tone.start) {
+                    Tone.start().catch(() => {});
+                }
+                this.hasAudioPermission = true;
+                if (this.audioPermissionOverlay) {
+                    this.audioPermissionOverlay.style.display = 'none';
+                }
+                this.initScene('scene6');
+            };
+        }
 
         // Global NASA Data callback
         window.onNasaDataPoint = (type, dataPoint, norm) => {
@@ -342,9 +359,16 @@ class Game {
                 } else if (e.key === '3') {
                     this.selectJukeboxRecord('atmosphere');
                 } else if (e.key === '4') {
-                    if (this.jukeboxState.unlockedRecords.earth) {
-                        this.selectJukeboxRecord('earth');
+                    this.unlockEarthRecord();
+                    this.selectJukeboxRecord('earth');
+                } else if (e.key === 'p' || e.key === 'P') {
+                    if (window.memoryCinema && window.memoryCinema.isOpen) {
+                        window.memoryCinema.togglePixelMode();
+                    } else {
+                        this.initScene('scene6');
                     }
+                    e.preventDefault();
+                    return;
                 }
             }
 
@@ -450,6 +474,16 @@ class Game {
             this.ui.btnFullscreen.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.toggleFullscreen();
+            });
+        }
+
+        // Screen prompt click to proceed to departure in Scene 5
+        if (this.ui && this.ui.screenPrompt) {
+            this.ui.screenPrompt.style.cursor = 'pointer';
+            this.ui.screenPrompt.addEventListener('click', () => {
+                if (this.currentScene === 'scene5') {
+                    this.initScene('scene6');
+                }
             });
         }
 
@@ -838,10 +872,32 @@ class Game {
         this.jukeboxState.isPowered = true;
 
         this.setupJukeboxUI();
-        this.showPrompt('[ [ < / > ] SWITCH RECORD  |  [ENTER] ZOOM INTO MEMORY BUBBLE ]');
+        this.showPrompt('[ [ < / > ] SWITCH RECORD  |  [ENTER] ZOOM INTO MEMORY  |  [🚀 PROCEED TO DEPARTURE] ]');
 
         // Auto-select Forest record first
         this.selectJukeboxRecord('forest');
+
+        // Automatically unlock Departure button and Earth Record after 1 second
+        setTimeout(() => {
+            const btnProceed = document.getElementById('btnProceed');
+            if (btnProceed) {
+                btnProceed.style.display = 'inline-block';
+            }
+            this.unlockEarthRecord();
+        }, 1000);
+    }
+
+    unlockEarthRecord() {
+        this.jukeboxState.unlockedRecords.earth = true;
+        const earthBtn = document.getElementById('btnRecEarth');
+        if (earthBtn) {
+            earthBtn.classList.remove('locked');
+            earthBtn.innerHTML = '<span class="rec-icon">🌍</span><span>004 EARTH (UNLOCKED)</span>';
+        }
+        const btnProceed = document.getElementById('btnProceed');
+        if (btnProceed) {
+            btnProceed.style.display = 'inline-block';
+        }
     }
 
     // SCENE 6 — THE DECISION
@@ -1073,8 +1129,7 @@ class Game {
                 }
                 const rec = btn.getAttribute('data-record');
                 if (rec === 'earth' && !this.jukeboxState.unlockedRecords.earth) {
-                    this.showPrompt('[ 🔒 RECORD 004 IS LOCKED — LISTEN TO RECORDS 001, 002 & 003 FIRST ]');
-                    return;
+                    this.unlockEarthRecord();
                 }
                 this.selectJukeboxRecord(rec);
             };
@@ -1561,7 +1616,7 @@ class Game {
             this.triggerRecordDialogue(rec);
         }
 
-        this.showPrompt(`[ PLAYING ${rec.toUpperCase()} RECORD — SPACE: PAUSE | Z: MEMORY VISION ]`);
+        this.showPrompt(`[ PLAYING ${rec.toUpperCase()} RECORD — SPACE: PAUSE | [ENTER]: MEMORY | 🚀 PROCEED TO DEPARTURE ]`);
 
         // Check if all 3 played to unlock Earth record
         if (this.jukeboxState.playedRecords.has('forest') &&
@@ -1584,9 +1639,10 @@ class Game {
             }, 8000);
         }
 
-        // Show Proceed button once player has experienced the records
-        if (this.jukeboxState.playedRecords.size >= 3) {
-            document.getElementById('btnProceed').style.display = 'block';
+        // Show Proceed button
+        const btnProceed = document.getElementById('btnProceed');
+        if (btnProceed) {
+            btnProceed.style.display = 'inline-block';
         }
     }
 

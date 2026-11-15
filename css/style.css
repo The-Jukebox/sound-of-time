@@ -1117,16 +1117,34 @@ body {
 }
 
 #btnProceed {
-    display: none;
-    background: #ffca72;
+    display: inline-block;
+    background: linear-gradient(135deg, #ffca72, #ff9f43);
     color: #1a1005;
-    border-color: #ffe6b0;
+    border: 1px solid #ffe6b0;
     margin-left: auto;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(255, 202, 114, 0.4);
+    animation: proceedPulse 2.5s infinite alternate ease-in-out;
+    transition: all 0.25s ease;
+}
+
+@keyframes proceedPulse {
+    from {
+        box-shadow: 0 0 8px rgba(255, 202, 114, 0.3);
+        transform: translateY(0);
+    }
+    to {
+        box-shadow: 0 0 18px rgba(255, 202, 114, 0.85);
+        transform: translateY(-1px);
+    }
 }
 
 #btnProceed:hover {
-    background: #fff;
-    box-shadow: 0 0 14px rgba(255, 202, 114, 0.8);
+    background: #ffffff;
+    color: #0b0717;
+    box-shadow: 0 0 20px rgba(255, 202, 114, 1.0);
+    transform: scale(1.06);
 }
 
 /* Volume Control Container */
