@@ -94,6 +94,17 @@ class Game {
             btnFullscreen: document.getElementById('btnFullscreen')
         };
 
+        // Audio Permission State
+        this.hasAudioPermission = false;
+        this.isAudioMuted = false;
+        this.audioPermissionOverlay = document.getElementById('audioPermissionOverlay');
+        this.btnAllowAudio = document.getElementById('btnAllowAudio');
+        this.btnMuteAudio = document.getElementById('btnMuteAudio');
+        this.btnAudioToggle = document.getElementById('btnAudioToggle');
+        this.audioIcon = document.getElementById('audioIcon');
+        this.audioText = document.getElementById('audioText');
+
+        this.setupAudioPermission();
         this.setupInput();
 
         // Global NASA Data callback
@@ -106,13 +117,132 @@ class Game {
 
         // Start animation loop
         this.lastTime = performance.now();
-        this.initScene('scene1');
+        if (!this.audioPermissionOverlay) {
+            this.hasAudioPermission = true;
+            this.initScene('scene1');
+        }
         requestAnimationFrame((t) => this.loop(t));
+    }
+
+    setupAudioPermission() {
+        if (!this.audioPermissionOverlay) {
+            this.hasAudioPermission = true;
+            return;
+        }
+
+        const grantAudio = (enableSound) => {
+            if (this.hasAudioPermission) return;
+            this.hasAudioPermission = true;
+            this.isAudioMuted = !enableSound;
+
+            if (enableSound) {
+                this.sound.resume();
+                if (typeof Tone !== 'undefined' && Tone.start) {
+                    Tone.start().catch(() => {});
+                }
+            } else {
+                if (this.sound && this.sound.masterGain) {
+                    this.sound.masterGain.gain.setValueAtTime(0, this.sound.ctx ? this.sound.ctx.currentTime : 0);
+                }
+            }
+
+            this.updateAudioToggleUI();
+
+            // Smooth fade out of permission dialog
+            this.audioPermissionOverlay.style.transition = 'opacity 0.25s ease';
+            this.audioPermissionOverlay.style.opacity = '0';
+            setTimeout(() => {
+                this.audioPermissionOverlay.style.display = 'none';
+                this.initScene('scene1');
+            }, 250);
+        };
+
+        if (this.btnAllowAudio) {
+            this.btnAllowAudio.onclick = (e) => {
+                e.stopPropagation();
+                grantAudio(true);
+            };
+        }
+
+        if (this.btnMuteAudio) {
+            this.btnMuteAudio.onclick = (e) => {
+                e.stopPropagation();
+                grantAudio(false);
+            };
+        }
+
+        if (this.btnAudioToggle) {
+            this.btnAudioToggle.onclick = (e) => {
+                e.stopPropagation();
+                this.toggleAudioMute();
+            };
+        }
+    }
+
+    toggleAudioMute() {
+        this.isAudioMuted = !this.isAudioMuted;
+        if (this.isAudioMuted) {
+            if (this.sound && this.sound.masterGain) {
+                this.sound.masterGain.gain.setValueAtTime(0, this.sound.ctx ? this.sound.ctx.currentTime : 0);
+            }
+            if (typeof Tone !== 'undefined' && Tone.Destination) {
+                Tone.Destination.mute = true;
+            }
+        } else {
+            this.sound.resume();
+            if (typeof Tone !== 'undefined' && Tone.start) {
+                Tone.start().catch(() => {});
+                Tone.Destination.mute = false;
+            }
+            const vol = 0.85;
+            if (this.sound && this.sound.masterGain) {
+                this.sound.masterGain.gain.setValueAtTime(vol, this.sound.ctx ? this.sound.ctx.currentTime : 0);
+            }
+        }
+        this.updateAudioToggleUI();
+    }
+
+    updateAudioToggleUI() {
+        if (!this.btnAudioToggle) return;
+        if (this.isAudioMuted) {
+            if (this.audioIcon) this.audioIcon.innerText = '🔇';
+            if (this.audioText) this.audioText.innerText = 'SOUND: OFF';
+            this.btnAudioToggle.style.color = '#a89fb8';
+            this.btnAudioToggle.style.borderColor = '#47365a';
+        } else {
+            if (this.audioIcon) this.audioIcon.innerText = '🔊';
+            if (this.audioText) this.audioText.innerText = 'SOUND: ON';
+            this.btnAudioToggle.style.color = '#ffd166';
+            this.btnAudioToggle.style.borderColor = '#63431d';
+        }
     }
 
     setupInput() {
         window.addEventListener('keydown', (e) => {
-            this.sound.resume();
+            // Audio Permission Dialog keyboard response
+            if (!this.hasAudioPermission && this.audioPermissionOverlay && this.audioPermissionOverlay.style.display !== 'none') {
+                if (e.key === 'Enter' || e.code === 'Space') {
+                    e.preventDefault();
+                    if (this.btnAllowAudio) this.btnAllowAudio.click();
+                    return;
+                } else if (e.key === 'm' || e.key === 'M' || e.key === 'Escape') {
+                    e.preventDefault();
+                    if (this.btnMuteAudio) this.btnMuteAudio.click();
+                    return;
+                }
+                return;
+            }
+
+            // Keyboard shortcut M for mute/unmute
+            if (e.key === 'm' || e.key === 'M') {
+                this.toggleAudioMute();
+                e.preventDefault();
+                return;
+            }
+
+            if (!this.isAudioMuted) {
+                this.sound.resume();
+            }
             this.keys[e.key.toLowerCase()] = true;
             this.keys[e.code] = true;
 
@@ -212,7 +342,9 @@ class Game {
 
         // Click on canvas to resume sound, zoom into memory bubble, or advance dialogue
         this.canvas.addEventListener('click', (e) => {
-            this.sound.resume();
+            if (!this.isAudioMuted) {
+                this.sound.resume();
+            }
             if (this.currentScene === 'scene5' && this.jukeboxState.activeRecord) {
                 const rect = this.canvas.getBoundingClientRect();
                 const scaleX = this.canvas.width / rect.width;
