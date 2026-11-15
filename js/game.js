@@ -96,6 +96,22 @@ class Game {
 
         this.setupInput();
 
+        // Direct EIC Navigation Buttons
+        const btnJumpJukebox = document.getElementById('btnJumpJukebox');
+        if (btnJumpJukebox) {
+            btnJumpJukebox.onclick = () => {
+                this.sound.resume();
+                this.initScene('scene5');
+            };
+        }
+        const btnStoryMode = document.getElementById('btnStoryMode');
+        if (btnStoryMode) {
+            btnStoryMode.onclick = () => {
+                this.sound.resume();
+                this.initScene('scene1');
+            };
+        }
+
         // Global NASA Data callback
         window.onNasaDataPoint = (type, dataPoint, norm) => {
             this.updateNasaHud(type, dataPoint, norm);
@@ -119,6 +135,13 @@ class Game {
             // Fullscreen toggle shortcut (F)
             if (e.key === 'f' || e.key === 'F') {
                 this.toggleFullscreen();
+                e.preventDefault();
+                return;
+            }
+
+            // Quick jump to Jukebox shortcut (J)
+            if (e.key === 'j' || e.key === 'J') {
+                this.initScene('scene5');
                 e.preventDefault();
                 return;
             }
@@ -294,6 +317,19 @@ class Game {
         if (this.ui && this.ui.nasaHud) this.ui.nasaHud.style.display = 'none';
         this.hideChoice();
 
+        // Update EIC Nav Dock Buttons
+        const btnJumpJukebox = document.getElementById('btnJumpJukebox');
+        const btnStoryMode = document.getElementById('btnStoryMode');
+        if (btnJumpJukebox && btnStoryMode) {
+            if (sceneName === 'scene5') {
+                btnJumpJukebox.classList.add('active');
+                btnStoryMode.classList.remove('active');
+            } else {
+                btnJumpJukebox.classList.remove('active');
+                btnStoryMode.classList.add('active');
+            }
+        }
+
         switch (sceneName) {
             case 'scene1':
                 this.initScene1();
@@ -360,7 +396,7 @@ class Game {
                 { speaker: 'ROCKY', text: 'Question: Why is human five minutes always longer than Eridian five minutes? Human math is broken!' },
                 { speaker: 'RYAN', text: '(laughs) That\'s teacher time, Rocky. Come on, let\'s go teach them some science.' }
             ], () => {
-                this.showPrompt('[A/D] or [←/→] WALK TOWARDS THE CLASSROOM');
+                this.showPrompt('[A/D] or [←/→] WALK TOWARDS THE CLASSROOM | OR CLICK "LAUNCH EARTH JUKEBOX" ABOVE');
             });
         }, 1800);
     }
@@ -540,9 +576,9 @@ class Game {
 
         this.queueDialogues([
             { speaker: 'SYSTEM', text: '*BZZT... CLUNK... WARM VACUUM TUBE HUM...*' },
-            { speaker: 'SYSTEM', text: 'DISPLAY: [ EARTH ARCHIVE — 001 ]' },
-            { speaker: 'RYAN', text: 'Earth Archive! Rocky... these are actual soundscapes and NASA data from Earth!' },
-            { speaker: 'ROCKY', text: 'Amaze! It stores the voice of your world! Push button, Grace! Let us listen!' }
+            { speaker: 'SYSTEM', text: 'DISPLAY: [ NASA EARTH INFORMATION CENTER — ARCHIVE 001 ]' },
+            { speaker: 'RYAN', text: 'NASA\'s Earth Information Center! Rocky... it translates Earth observation frames into real-time soundscapes!' },
+            { speaker: 'ROCKY', text: 'Amaze! It turns the sight of your planet into living music! Push button, Grace! Let us listen!' }
         ], () => {
             this.initScene('scene5');
         });
@@ -551,8 +587,18 @@ class Game {
     // SCENE 5 — THE SOUND COLLECTION
     initScene5() {
         this.sound.startSceneAmbience('home_interior');
+        this.sound.init();
         this.ui.jukeboxPanel.style.display = 'flex';
         this.ui.nasaHud.style.display = 'block';
+
+        this.eli.x = 220;
+        this.eli.facing = 1;
+        this.eli.state = 'idle';
+        this.eli.isCarrying = false;
+        this.koru.x = 420;
+        this.koru.facing = -1;
+        this.koru.state = 'idle';
+        this.jukeboxState.isPowered = true;
 
         this.setupJukeboxUI();
         this.showPrompt('[CLICK JUKEBOX CONTROLS OR USE KEYS: SPACE=PLAY/PAUSE | S=STOP | R=REPLAY | E=EJECT | 1-4=RECORDS]');
@@ -1173,7 +1219,7 @@ class Game {
     triggerRecordDialogue(recordKey) {
         if (recordKey === 'forest') {
             this.queueDialogues([
-                { speaker: 'RYAN', text: 'Record 003: The Forest. NASA GEDI lidar structure and biomass archive.' },
+                { speaker: 'RYLAND', text: 'Record 003: The Forest. NASA GEDI lidar structure and biomass archive.' },
                 { speaker: 'ROCKY', text: 'Listen! High-frequency melodic vibrations! Organisms are in the gas!' },
                 { speaker: 'RYAN', text: 'Those are birds welcoming the dawn sun, Rocky. And wind moving through living trees sixty meters tall.' },
                 { speaker: 'ROCKY', text: 'Amaze! Amaze! Amaze! Giant carbon towers filled with singing creatures!' },
@@ -1183,7 +1229,7 @@ class Game {
             ], null, true);
         } else if (recordKey === 'ocean') {
             this.queueDialogues([
-                { speaker: 'RYAN', text: 'Record 002: The Ocean. NASA ECCO daily temperature and salinity measurements.' },
+                { speaker: 'RYLAND', text: 'Record 002: The Ocean. NASA ECCO daily temperature and salinity measurements.' },
                 { speaker: 'ROCKY', text: 'Deep resonant frequencies! Chords changing pitch! Why does the fluid sing?' },
                 { speaker: 'RYAN', text: 'Those are ocean currents, Rocky. Cold subpolar waters hum low and deep, while the warm Gulf Stream sings high.' },
                 { speaker: 'ROCKY', text: 'Question: Water that covers seventy percent of a world has its own voice? Can we visit this water?' },
@@ -1209,30 +1255,30 @@ class Game {
     updateNasaHud(type, dataPoint, norm) {
         if (!this.ui || !this.ui.hudMetric) return;
         if (type === 'forest') {
-            this.ui.hudMetric.innerText = `NASA GEDI L4B/L3 3D Canopy Structure [${dataPoint.location || 'Transect ' + dataPoint.step}]`;
+            this.ui.hudMetric.innerText = `NASA EIC | GEDI L4B/L3 3D Canopy Visual Frame [${dataPoint.location || 'Transect ' + dataPoint.step}]`;
             const hStr = (dataPoint.canopyHeight != null) ? `${dataPoint.canopyHeight.toFixed(1)}m` : 'N/A';
             const cStr = (dataPoint.canopyCover != null) ? `${(dataPoint.canopyCover * 100).toFixed(0)}%` : 'N/A';
             const bStr = (dataPoint.biomass != null) ? `${dataPoint.biomass.toFixed(1)} Mg/ha` : 'N/A';
             this.ui.hudValue.innerText = `Height: ${hStr} | Cover: ${cStr} | Biomass: ${bStr}`;
-            this.ui.hudDesc.innerText = `NASA GEDI High-Resolution Spaceborne Lidar (DOI: 10.5067/GEDI/GEDI04_B.002). Waveform laser return converted into multi-octave Lydian pitch, canopy density chorus, and sub-bass biomass resonance. Biome: ${dataPoint.biome || 'Temperate Rainforest'}.`;
+            this.ui.hudDesc.innerText = `NASA Earth Information Center (EIC) Biosphere Exhibit & GEDI Spaceborne Lidar (DOI: 10.5067/GEDI/GEDI04_B.002). Waveform laser return converted into multi-octave Lydian pitch, canopy density chorus, and sub-bass biomass resonance. Biome: ${dataPoint.biome || 'Temperate Rainforest'}.`;
         } else if (type === 'ocean') {
-            this.ui.hudMetric.innerText = `NASA ECCO V4r4 Ocean Temp & Salinity [${dataPoint.date || 'Day ' + dataPoint.step}]`;
+            this.ui.hudMetric.innerText = `NASA EIC | ECCO V4r4 & SVS 3912 Ocean Current Frame [${dataPoint.date || 'Day ' + dataPoint.step}]`;
             const tempStr = (dataPoint.temperature != null) ? `${dataPoint.temperature.toFixed(2)}°C` : 'N/A (Reef/Land Mask)';
             const salStr = (dataPoint.salinity != null) ? `${dataPoint.salinity.toFixed(2)} PSU` : 'N/A';
             const speedStr = (dataPoint.currentSpeed != null) ? `${dataPoint.currentSpeed.toFixed(2)} m/s` : 'N/A';
             this.ui.hudValue.innerText = `Temp: ${tempStr} | Salt: ${salStr} | Current: ${speedStr}`;
-            this.ui.hudDesc.innerText = `NASA ECCO 0.5° Daily Mean (DOI: 10.5067/ECG5D-OTS44) & SVS 3912. Potential temperature mapped to pitch, salinity to overtone timbre, and current flow to stereo panning. Location: ${dataPoint.location} (${dataPoint.lat}°N, ${Math.abs(dataPoint.lon)}°W).`;
+            this.ui.hudDesc.innerText = `NASA Earth Information Center (EIC) Ocean Circulation Exhibit (DOI: 10.5067/ECG5D-OTS44) & SVS 3912. Potential temperature mapped to pitch, salinity to overtone timbre, and current flow to stereo panning. Location: ${dataPoint.location} (${dataPoint.lat}°N, ${Math.abs(dataPoint.lon)}°W).`;
         } else if (type === 'atmosphere') {
-            this.ui.hudMetric.innerText = `NASA MERRA-2 & GPM IMERG Precipitation [${dataPoint.location || 'Station ' + dataPoint.step}]`;
+            this.ui.hudMetric.innerText = `NASA EIC | MERRA-2 & GPM IMERG Precipitation Frame [${dataPoint.location || 'Station ' + dataPoint.step}]`;
             const rainStr = (dataPoint.precipitationRate != null) ? `${dataPoint.precipitationRate.toFixed(1)} mm/hr` : '0 mm/hr';
             const windStr = (dataPoint.windSpeed != null) ? `${dataPoint.windSpeed.toFixed(1)} m/s` : 'N/A';
             const pStr = (dataPoint.barometricPressure != null) ? `${dataPoint.barometricPressure.toFixed(1)} hPa` : 'N/A';
             this.ui.hudValue.innerText = `Rain: ${rainStr} | Wind: ${windStr} | Pressure: ${pStr}`;
-            this.ui.hudDesc.innerText = `NASA MERRA-2 Global Meteorological Reanalysis (DOI: 10.5067/95140KBM4KUS) & GPM IMERG. Surface precipitation rate controls dynamic rain cascades, wind speed controls aerodynamic filter cutoffs, and pressure maps to harmonic Dorian pitches. Location: ${dataPoint.location || 'Global Front'}.`;
+            this.ui.hudDesc.innerText = `NASA Earth Information Center (EIC) Atmospheric Dynamics Exhibit (DOI: 10.5067/95140KBM4KUS) & GPM IMERG. Surface precipitation rate controls dynamic rain cascades, wind speed controls aerodynamic filter cutoffs, and pressure maps to harmonic Dorian pitches. Location: ${dataPoint.location || 'Global Front'}.`;
         } else if (type === 'earth') {
-            this.ui.hudMetric.innerText = `NASA VOYAGER GOLDEN RECORD 'SOUNDS OF EARTH'`;
+            this.ui.hudMetric.innerText = `NASA EIC | Planetary Symphony & Voyager Golden Record`;
             this.ui.hudValue.innerText = `${dataPoint.track || 'Track ' + dataPoint.step} | Chord: ${dataPoint.harmonicChord || 'F Lydian'}`;
-            this.ui.hudDesc.innerText = `NASA Voyager 1 & 2 Interstellar Time Capsule (DOI: 10.5067/VOYAGER-GOLDEN-RECORD-SOUNDS-1977). ${dataPoint.caption || 'The planetary symphony uniting biosphere, ocean, and atmosphere with human piano memory.'}`;
+            this.ui.hudDesc.innerText = `NASA Earth Information Center (EIC) Integrated Biosphere-Hydrosphere-Atmosphere Archive (DOI: 10.5067/VOYAGER-GOLDEN-RECORD-SOUNDS-1977). ${dataPoint.caption || 'The planetary symphony uniting biosphere, ocean, and atmosphere with human piano memory.'}`;
         }
     }
 
@@ -1610,7 +1656,7 @@ class Game {
         this.queueDialogues([
             { speaker: 'RYAN', text: 'That definitely wasn\'t here yesterday.' },
             { speaker: 'ROCKY', text: 'Question: What is that object? Smells like petroleum polymer and brass!' },
-            { speaker: 'RYAN', text: 'It\'s... an Earth jukebox! A vintage analog music player!' },
+            { speaker: 'RYAN', text: 'It\'s... an Earth jukebox! It bears the NASA Earth Information Center emblem!' },
             { speaker: 'ROCKY', text: 'Amaze! Heavy sound apparatus from your world! Let us carry it to habitat!' }
         ], () => {
             this.showChoiceMenu('CHOICE 1 — What should we do?', [

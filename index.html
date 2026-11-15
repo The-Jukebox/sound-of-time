@@ -9,9 +9,19 @@
 <body>
 
     <header class="game-header">
-        <h1 class="game-title">SOUND OF TIMES</h1>
-        <p class="game-subtitle">A little piece of Earth, far away from home.</p>
+        <h1 class="game-title">SOUND OF TIMES — EARTH JUKEBOX</h1>
+        <p class="game-subtitle">NASA’s Earth Information Center (EIC) Sonification Project: Translating Earth Science Sight into Sound in Real Time</p>
     </header>
+
+    <!-- NASA EIC Direct Navigation Dock -->
+    <div class="eic-navigation-dock">
+        <button id="btnJumpJukebox" class="nav-dock-btn primary" title="Jump directly to Scene 5: Earth Jukebox & Real-Time Sonification">
+            🌍 LAUNCH EARTH JUKEBOX [SCENE 5]
+        </button>
+        <button id="btnStoryMode" class="nav-dock-btn" title="Play narrative exploration mode from beginning">
+            📖 STORY MODE [SCENE 1]
+        </button>
+    </div>
 
     <!-- Responsive Game Container -->
     <div class="game-container" id="gameContainer">
@@ -29,7 +39,7 @@
         <div class="crt-overlay"></div>
 
         <!-- On-Screen Action Prompt -->
-        <div id="screenPrompt">[A/D] WALK TOWARDS THE CLASSROOM</div>
+        <div id="screenPrompt">[A/D] WALK TOWARDS THE CLASSROOM | OR CLICK 'LAUNCH EARTH JUKEBOX' ABOVE</div>
 
         <!-- Dialogue Box -->
         <div id="dialogueBox">
@@ -57,7 +67,7 @@
     <section id="jukeboxPanel">
         <div class="jukebox-header">
             <span class="jukebox-title">RETRO EARTH ARCHIVE JUKEBOX</span>
-            <span class="jukebox-emblem">🌍 SOL-3 REPOSITORY</span>
+            <span class="jukebox-emblem">🌍 NASA EARTH INFORMATION CENTER (EIC) — SOL-3 ARCHIVE</span>
         </div>
 
         <!-- 4 Jukebox Records -->
@@ -131,11 +141,11 @@
     <!-- NASA Science Sonification Live HUD -->
     <aside id="nasaHud">
         <div class="hud-title-bar">
-            <span id="hudMetric">NASA OBSERVATION PIPELINE</span>
+            <span id="hudMetric">NASA EIC OBSERVATION PIPELINE</span>
             <span id="hudValue">INITIALIZING DATA...</span>
         </div>
         <canvas id="nasaWaveform" width="612" height="36"></canvas>
-        <p id="hudDesc">Connecting real NASA satellite observations to procedural Web Audio sonification engine...</p>
+        <p id="hudDesc">Connecting real NASA Earth Information Center (EIC) visual observations to procedural Web Audio sonification engine...</p>
 
         <!-- Forest Scientific Transparency Panel (Record 003) -->
         <div id="forestSciencePanel" class="science-panel" style="display: none;">
@@ -148,6 +158,10 @@
                 <div class="science-item">
                     <span class="sci-label">DATASET:</span>
                     <span class="sci-val">Gridded GEDI Vegetation Structure Metrics & Biomass Density (L4B & L3)</span>
+                </div>
+                <div class="science-item">
+                    <span class="sci-label">EIC EXHIBIT:</span>
+                    <span class="sci-val">NASA Earth Information Center — Global Biosphere & 3D Canopy Structure Hyperwall</span>
                 </div>
                 <div class="science-item">
                     <span class="sci-label">NASA SOURCE:</span>
@@ -197,6 +211,10 @@
                     <span class="sci-val">ECCO Ocean Temperature & Salinity Daily Mean 0.5° (V4 Release 4)</span>
                 </div>
                 <div class="science-item">
+                    <span class="sci-label">EIC EXHIBIT:</span>
+                    <span class="sci-val">NASA Earth Information Center — Ocean Circulation Hyperwall (SVS 3912 Perpetual Ocean)</span>
+                </div>
+                <div class="science-item">
                     <span class="sci-label">NASA SOURCE:</span>
                     <span class="sci-val">NASA JPL / PO.DAAC (DOI: 10.5067/ECG5D-OTS44)</span>
                 </div>
@@ -244,6 +262,10 @@
                     <span class="sci-val">MERRA-2 3D Meteorological Assimilation & GPM IMERG Precipitation</span>
                 </div>
                 <div class="science-item">
+                    <span class="sci-label">EIC EXHIBIT:</span>
+                    <span class="sci-val">NASA Earth Information Center — Dynamic Atmosphere & Weather Systems (SVS 4252)</span>
+                </div>
+                <div class="science-item">
                     <span class="sci-label">NASA SOURCE:</span>
                     <span class="sci-val">NASA Goddard Space Flight Center / GES DISC (DOI: 10.5067/95140KBM4KUS)</span>
                 </div>
@@ -288,6 +310,10 @@
                 <div class="science-item">
                     <span class="sci-label">MISSION:</span>
                     <span class="sci-val">NASA Voyager 1 & 2 Interstellar Time Capsule ('The Sounds of Earth')</span>
+                </div>
+                <div class="science-item">
+                    <span class="sci-label">EIC EXHIBIT:</span>
+                    <span class="sci-val">NASA Earth Information Center — Interconnected Earth System & Voyager Time Capsule</span>
                 </div>
                 <div class="science-item">
                     <span class="sci-label">NASA SOURCE:</span>

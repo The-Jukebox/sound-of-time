@@ -122,6 +122,28 @@ The jukebox contains 4 records with full interactive playback (Play, Pause, Stop
 
 ---
 
+## 🏛️ NASA EARTH INFORMATION CENTER (EIC) — CHALLENGE ALIGNMENT
+
+> *"NASA’s Earth Information Center (EIC) produces stunning visualizations of our changing planet, but presenting Earth science through visualization alone limits who can reach it. We invite you to make this complex Earth science accessible, engaging, and multi-sensory by translating sight into sound. Your challenge is to build an 'Earth Jukebox'—an interface, script, or application that pairs EIC visual frames with dynamic sonifications generated in real time."*
+
+**Sound of Times** directly addresses this challenge by creating an **Earth Jukebox** that bridges the visual exhibits of NASA's Earth Information Center with real-time procedural sonification:
+
+1. **Translating Sight into Sound (Real-Time Sonification Engine):**
+   - **Ocean Circulation Visual Frames (SVS 3912 & ECCO V4r4):** Sea surface temperature color ramps and vector streamlines become pitch contours, FM timbre modulations, and stereo panning surges.
+   - **Biosphere 3D Canopy Visual Frames (GEDI L4B/L3):** High-resolution orbital lidar profiles of global forests become notes across an Earth Lydian scale, with canopy density governing harmonic filter cutoffs.
+   - **Atmospheric Weather Visual Frames (MERRA-2 & GPM IMERG SVS 4252):** Precipitation hyperwall animations directly drive physical rain droplet synthesis, barometric drone pitches, and convective thunder rolls.
+
+2. **The "Earth Jukebox" Multi-Sensory Interface:**
+   - **Physical Tactile Controls:** 4 curated vinyl records (Atmosphere 001, Ocean 002, Forest 003, Earth Complete Archive 004), transport buttons (Power, Play, Pause, Stop, Replay, Eject), master volume, and stem mute controls.
+   - **Visual Frame Synchronization:** The habitat panoramic bay window transforms with audio-reactive parallax visuals (surging wave crests, swaying trees, rain streaking down glass, lightning flashes, day/night cycles).
+   - **Full HD Slow-Mo Memory Cinema:** Curated photographic visual frames with interactive slow-motion rates (0.2×, 0.35×, 1.0×) paired with real-time acoustic soundscapes.
+
+3. **Inclusivity & Accessibility:**
+   - **Dual Sensory Redundancy:** Translates visual data into acoustic music and soundscapes for blind and low-vision audiences, while providing real-time waveform oscilloscopes, numeric telemetry HUDs, and on-screen captions for deaf and hard-of-hearing audiences.
+   - **Full Keyboard & Click Accessibility:** Playable via keyboard shortcuts or mouse clicks.
+
+---
+
 ## 🔬 REAL NASA SCIENCE DATA & SONIFICATION ARCHITECTURE
 
 All audio in **Sound of Times** is synthesized procedurally in real-time using **Tone.js** and the **Web Audio API** driven by documented NASA scientific datasets:

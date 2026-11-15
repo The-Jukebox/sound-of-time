@@ -97,7 +97,7 @@ class PixelRenderer {
     initRyanSprites() {
         const loadImg = (path) => {
             const img = new Image();
-            img.src = path;
+            img.src = path + '?v=' + Date.now();
             return img;
         };
 
@@ -1754,7 +1754,7 @@ class PixelRenderer {
                 const baseScale = 82.0 / 234.0;
                 const w = spriteImg.naturalWidth * baseScale;
                 const h = spriteImg.naturalHeight * baseScale;
-                const bob = (state === 'walk') ? Math.abs(Math.sin(t * 10)) * 1.5 : Math.sin(t * 2.2) * 0.7;
+                const bob = (state === 'walk') ? 0 : Math.sin(t * 2.2) * 0.7;
                 const kneelOffset = (state === 'kneel') ? 16 : 0;
 
                 ctx.drawImage(spriteImg, -w / 2, -h - bob + kneelOffset, w, h);

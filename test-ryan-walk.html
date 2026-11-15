@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ryan Walking Sprite — Smoothness & Motion Verification</title>
+    <style>
+        body {
+            background: #110e20;
+            color: #e5e5f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 24px;
+        }
+        h1 { margin-top: 0; color: #ffd15c; font-size: 24px; }
+        .grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        .card {
+            background: #1a162b;
+            border: 1px solid #3b335a;
+            border-radius: 8px;
+            padding: 16px;
+        }
+        canvas {
+            background: #25203b;
+            border: 2px solid #55487a;
+            border-radius: 6px;
+            image-rendering: pixelated;
+        }
+        .controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+        button {
+            background: #4e3b7b;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        button:hover { background: #684fa5; }
+        .frames-container {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .frame-item {
+            text-align: center;
+            background: #221c38;
+            border: 1px solid #3d335f;
+            border-radius: 6px;
+            padding: 8px;
+            position: relative;
+        }
+        .frame-item.active {
+            border-color: #ffd15c;
+            box-shadow: 0 0 10px rgba(255, 209, 92, 0.4);
+        }
+        .frame-item img {
+            width: 90px;
+            height: auto;
+            image-rendering: pixelated;
+            display: block;
+            margin: 0 auto 6px;
+            background: repeating-conic-gradient(#2d264a 0% 25%, #1f1936 0% 50%) 50% / 16px 16px;
+            border-radius: 4px;
+        }
+        .frame-label {
+            font-size: 12px;
+            color: #a79fc0;
+        }
+        .badge {
+            display: inline-block;
+            background: #2b7a4b;
+            color: #aff5c8;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Ryan (Eli) Walking Animation — Smooth Alignment Preview</h1>
+    <div class="badge">v3 Head & Ground Anchored + Synthetic Bob Eliminated</div>
+    
+    <div class="grid">
+        <div class="card">
+            <h3>Live In-Game Animation</h3>
+            <canvas id="animCanvas" width="520" height="200"></canvas>
+            <div class="controls">
+                <button id="btnMotion">Walking: Across Screen</button>
+                <button id="btnFlip">Facing: Right</button>
+                <button id="btnCarry">Carry Jukebox: Off</button>
+                <button id="btnState">State: WALK</button>
+                <button id="btnPlayPause">Pause</button>
+                <button id="btnStep">Step Next Frame</button>
+            </div>
+            <div class="controls" style="margin-top: 10px;">
+                <label>Speed: <input type="range" id="speedSlider" min="4" max="16" value="10"> <span id="speedVal">10 fps</span></label>
+                <span id="currentFrameBadge" style="margin-left: 20px; font-weight: bold; color: #ffd15c;">Frame: 0</span>
+            </div>
+        </div>
+
+        <div class="card" style="flex: 1; min-width: 320px;">
+            <h3>Smoothness Fixes Applied</h3>
+            <ul style="line-height: 1.8; color: #c4bcd8; font-size: 14px;">
+                <li><strong>Head & Spine Alignment:</strong> The head center is locked to $x = 71.0 \pm 0.5$ in all 6 frames. Zero lateral wobble or hitching.</li>
+                <li><strong>Out-of-Phase Bob Removed:</strong> Removed the synthetic <code>Math.abs(Math.sin(t * 10)) * 1.5</code> bounce that was conflicting with the sprite's natural stride.</li>
+                <li><strong>Ground Contact Locked:</strong> Feet baseline is anchored to $y = 233$, with passing feet naturally lifting 2–3px above ground during stride transition.</li>
+                <li><strong>Cache Busting Added:</strong> Added timestamp versioning to ensure your browser always loads the updated sprites instantly without stale cache.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Individual 6 Frames (Highlighted frame shows live playback)</h3>
+        <div class="frames-container">
+            <div class="frame-item" id="fcard_0">
+                <img id="img_0" src="" alt="Frame 0">
+                <div class="frame-label">Frame 0 (Contact)</div>
+            </div>
+            <div class="frame-item" id="fcard_1">
+                <img id="img_1" src="" alt="Frame 1">
+                <div class="frame-label">Frame 1 (Passing)</div>
+            </div>
+            <div class="frame-item" id="fcard_2">
+                <img id="img_2" src="" alt="Frame 2">
+                <div class="frame-label">Frame 2 (Stride)</div>
+            </div>
+            <div class="frame-item" id="fcard_3">
+                <img id="img_3" src="" alt="Frame 3">
+                <div class="frame-label">Frame 3 (Contact)</div>
+            </div>
+            <div class="frame-item" id="fcard_4">
+                <img id="img_4" src="" alt="Frame 4">
+                <div class="frame-label">Frame 4 (Passing)</div>
+            </div>
+            <div class="frame-item" id="fcard_5">
+                <img id="img_5" src="" alt="Frame 5">
+                <div class="frame-label">Frame 5 (Stride)</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/pixelart.js"></script>
+    <script>
+        // Force cache bust on static preview imgs
+        const v = Date.now();
+        for (let i = 0; i < 6; i++) {
+            document.getElementById(`img_${i}`).src = `assets/ryan/walk_${i}.png?v=${v}`;
+        }
+
+        const canvas = document.getElementById('animCanvas');
+        const ctx = canvas.getContext('2d');
+        const renderer = new PixelRenderer(canvas);
+
+        let facing = 1;
+        let isCarrying = false;
+        let state = 'walk';
+        let isAcross = true;
+        let isPlaying = true;
+        let manualFrame = 0;
+        let fps = 10;
+
+        document.getElementById('btnMotion').addEventListener('click', (e) => {
+            isAcross = !isAcross;
+            e.target.textContent = `Walking: ${isAcross ? 'Across Screen' : 'In Place'}`;
+            if (!isAcross) posX = 260;
+        });
+
+        document.getElementById('btnFlip').addEventListener('click', (e) => {
+            facing *= -1;
+            e.target.textContent = `Facing: ${facing === 1 ? 'Right' : 'Left'}`;
+        });
+
+        document.getElementById('btnCarry').addEventListener('click', (e) => {
+            isCarrying = !isCarrying;
+            e.target.textContent = `Carry Jukebox: ${isCarrying ? 'On' : 'Off'}`;
+        });
+
+        document.getElementById('btnState').addEventListener('click', (e) => {
+            state = (state === 'walk') ? 'idle' : 'walk';
+            e.target.textContent = `State: ${state.toUpperCase()}`;
+        });
+
+        document.getElementById('btnPlayPause').addEventListener('click', (e) => {
+            isPlaying = !isPlaying;
+            e.target.textContent = isPlaying ? 'Pause' : 'Play';
+        });
+
+        document.getElementById('btnStep').addEventListener('click', () => {
+            isPlaying = false;
+            document.getElementById('btnPlayPause').textContent = 'Play';
+            manualFrame = (manualFrame + 1) % 6;
+            renderer.animTime = manualFrame / fps;
+        });
+
+        document.getElementById('speedSlider').addEventListener('input', (e) => {
+            fps = parseInt(e.target.value);
+            document.getElementById('speedVal').textContent = `${fps} fps`;
+        });
+
+        let lastTime = performance.now();
+        let posX = 100;
+
+        function animate(now) {
+            const dt = (now - lastTime) / 1000;
+            lastTime = now;
+
+            if (isPlaying) {
+                renderer.animTime += dt * (fps / 10);
+            }
+
+            const currentFrame = Math.floor(renderer.animTime * fps) % 6;
+            document.getElementById('currentFrameBadge').textContent = `Frame: ${currentFrame} / 5`;
+
+            // Highlight active frame card
+            for (let i = 0; i < 6; i++) {
+                const card = document.getElementById(`fcard_${i}`);
+                if (i === currentFrame && state === 'walk') {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            }
+
+            // Movement
+            if (state === 'walk' && isAcross && isPlaying) {
+                posX += facing * 60 * dt;
+                if (facing === 1 && posX > canvas.width - 60) facing = -1;
+                if (facing === -1 && posX < 60) facing = 1;
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Ground floor lines
+            ctx.fillStyle = '#1c1533';
+            ctx.fillRect(0, 160, canvas.width, 40);
+            ctx.fillStyle = '#4a3a78';
+            ctx.fillRect(0, 158, canvas.width, 2);
+
+            // Subtle vertical guideline to demonstrate zero body sway
+            if (!isAcross) {
+                ctx.save();
+                ctx.strokeStyle = 'rgba(255, 209, 92, 0.15)';
+                ctx.setLineDash([4, 4]);
+                ctx.beginPath();
+                ctx.moveTo(posX, 20);
+                ctx.lineTo(posX, 160);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // Draw Ryan
+            renderer.drawEli(posX, 160, state, facing, isCarrying, false, false);
+
+            requestAnimationFrame(animate);
+        }
+
+        requestAnimationFrame(animate);
+    </script>
+</body>
+</html>

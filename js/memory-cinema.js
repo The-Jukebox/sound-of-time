@@ -37,31 +37,31 @@
                 leaves: {
                     title: "LUSH CANOPY LEAVES SWAYING IN THE SUNLIGHT",
                     quote: "“I remember lying under the trees on warm summer afternoons... watching thousands of leaves move so gently in the wind.”",
-                    nasaTag: "NASA GEDI L4B 58.4m Canopy Architecture",
+                    nasaTag: "NASA EIC Exhibit | NASA GEDI L4B 58.4m Canopy Architecture",
                     defaultFor: 'forest'
                 },
                 ocean: {
                     title: "MAJESTIC OCEAN SURF & CRESTING BREAKERS",
                     quote: "“The endless blue... the sound of the tide rolling in, curling, and breaking onto warm sand. It made me feel like I belonged.”",
-                    nasaTag: "NASA ECCO V4r4 24.2°C Tropical Gyre",
+                    nasaTag: "NASA EIC Exhibit | NASA ECCO V4r4 24.2°C Tropical Gyre",
                     defaultFor: 'ocean'
                 },
                 birds: {
                     title: "IRIDESCENT HUMMINGBIRD & MORNING CHORUS",
                     quote: "“A tiny hummingbird hovering in our garden... its little wings moving faster than thought, yet resting completely still in mid-air.”",
-                    nasaTag: "NASA GEDI Foliage Diversity & Avian Habitat",
+                    nasaTag: "NASA EIC Exhibit | NASA GEDI Foliage Diversity & Avian Habitat",
                     defaultFor: 'birds'
                 },
                 stream: {
                     title: "MOUNTAIN BROOK & SUSPENDED DROPLETS",
                     quote: "“Pure glacial water trickling across river stones. On hot hikes, we would cup our hands to drink from the brook.”",
-                    nasaTag: "NASA GEDI Riparian Corridor Transect",
+                    nasaTag: "NASA EIC Exhibit | NASA GEDI Riparian Corridor Transect",
                     defaultFor: 'stream'
                 },
                 rain: {
                     title: "SOFT FOREST RAIN FALLING ON THE CANOPY",
                     quote: "“Water falling from the sky... tapping against the glass window. Earth's quietest, most peaceful lullaby.”",
-                    nasaTag: "NASA MERRA-2 Atmospheric Precipitation",
+                    nasaTag: "NASA EIC Exhibit | NASA MERRA-2 Atmospheric Precipitation",
                     defaultFor: 'atmosphere'
                 }
             };
