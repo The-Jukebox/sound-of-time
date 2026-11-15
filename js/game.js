@@ -836,7 +836,7 @@ class Game {
         this.sound.stopSceneAmbience();
         this.sound.currentSceneAmbience = null;
         this.ui.jukeboxPanel.style.display = 'flex';
-        this.ui.nasaHud.style.display = 'block';
+        this.ui.nasaHud.style.display = 'none';
 
         this.eli.x = 220;
         this.eli.facing = 1;
@@ -1194,8 +1194,10 @@ class Game {
                 else if (this.jukeboxState.activeRecord === 'earth') targetId = 'earthSciencePanel';
                 const pnl = document.getElementById(targetId);
                 if (pnl) {
-                    pnl.style.display = (pnl.style.display === 'none' || pnl.style.display === '') ? 'block' : 'none';
-                    this.showPrompt(`[ SCIENTIFIC TRANSPARENCY: ${pnl.style.display === 'block' ? 'DISPLAYED' : 'COLLAPSED'} ]`);
+                    const willShow = (pnl.style.display === 'none');
+                    pnl.style.display = willShow ? 'block' : 'none';
+                    if (this.ui.nasaHud) this.ui.nasaHud.style.display = willShow ? 'block' : 'none';
+                    this.showPrompt(`[ SCIENTIFIC DETAILS: ${willShow ? 'DISPLAYED' : 'COLLAPSED'} ]`);
                 }
             };
         }
@@ -1703,7 +1705,10 @@ class Game {
     }
 
     openMemoryVision(visionKey = null) {
+        this.dismissDialogue();
         if (window.memoryCinema) {
+            window.memoryCinema.forceCanvasMode = true;
+            window.memoryCinema.isPixelated = true;
             window.memoryCinema.open(visionKey);
         }
     }

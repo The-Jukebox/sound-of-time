@@ -800,6 +800,61 @@ body {
     border: 1px solid #2eaadc;
 }
 
+.pixel-toggle-btn {
+    font-size: 8px;
+    color: #ffd27d !important;
+    background: #3e2712 !important;
+    padding: 2px 8px;
+    border-radius: 3px;
+    border: 1px solid #ffaa33 !important;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
+}
+
+.pixel-toggle-btn:hover {
+    background: #633f1c !important;
+    box-shadow: 0 0 8px rgba(255, 170, 51, 0.6);
+}
+
+.pixel-toggle-btn.pixel-active {
+    color: #92e6b5 !important;
+    background: #153823 !important;
+    border-color: #3eb875 !important;
+}
+
+.slide-btn {
+    font-size: 8px;
+    color: #a4e6ff !important;
+    background: #132a42 !important;
+    padding: 2px 8px;
+    border-radius: 3px;
+    border: 1px solid #47d8f2 !important;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
+}
+
+.slide-btn:hover {
+    background: #234c75 !important;
+    box-shadow: 0 0 8px rgba(71, 216, 242, 0.5);
+}
+
+.slide-indicator {
+    font-size: 8px;
+    color: #e2d2f7 !important;
+    background: #281944 !important;
+    padding: 2px 7px;
+    border-radius: 3px;
+    border: 1px solid #732aab !important;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
 .memory-title {
     font-size: 11px;
     color: #ffffff;
