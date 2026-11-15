@@ -86,7 +86,11 @@
             <div class="memory-viewport">
                 <canvas id="memoryCanvas"></canvas>
                 <div id="memoryVideoContainer" class="memory-video-container" style="display: none;">
-                    <iframe id="memoryYoutubeIframe" src=""></iframe>
+                    <iframe id="memoryYoutubeIframe" src="" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                    <div id="videoLocalAdvisory" class="video-local-advisory" style="display: none;">
+                        <button id="btnAdvisorySwitchCanvas">🎨 SWITCH TO HD NATURE CINEMA</button>
+                        <button id="btnAdvisoryTryEmbed">📺 TRY EMBEDDED PLAYER</button>
+                    </div>
                     <div class="memory-video-bar">
                         <span class="video-status-indicator">🔴 4K HDR LIVE ARCHIVE</span>
                         <div class="video-actions">
@@ -149,7 +153,7 @@
     <script src="js/forest-data-source.js"></script>
     <script src="js/ocean-data-source.js"></script>
     <script src="js/atmosphere-data-source.js"></script>
-    <script src="js/earth-archive-data-source.js"></script>
+    <script src="js/earth-data-source.js"></script>
     <script src="js/forest-sonification.js"></script>
     <script src="js/ocean-sonification.js"></script>
     <script src="js/atmosphere-sonification.js"></script>
@@ -234,6 +238,31 @@
                     canvasRenderError = true;
                 }
                 assert(!canvasRenderError, "drawSlowMoBlackForest renders on canvas without exceptions", ul1);
+
+                // ----------------------------------------------------
+                // TEST 1-B: NASA Whole Earth Video Memory Integration (iTHUUjTA-LI)
+                // ----------------------------------------------------
+                assert(window.memoryCinema.visionMeta.earth != null, "visionMeta has 'earth' metadata", ul1);
+                assert(window.memoryCinema.visionMeta.earth.youtubeId === "iTHUUjTA-LI", "youtubeId matches NASA Earth video (iTHUUjTA-LI)", ul1);
+                assert(window.memoryCinema.visionMeta.earth.isYoutube === true, "earth isYoutube flag is set to true", ul1);
+                assert(window.memoryCinema.hdImages.earth != null, "earth HD image registered", ul1);
+
+                // Open Earth vision
+                window.memoryCinema.open('earth');
+                assert(window.memoryCinema.isOpen === true, "memoryCinema open for earth vision", ul1);
+                assert(window.memoryCinema.currentVision === 'earth', "currentVision is 'earth'", ul1);
+                assert(videoCont.style.display !== 'none', "videoContainer displayed for NASA Earth video", ul1);
+                assert(iframe.src.includes('iTHUUjTA-LI'), "memoryYoutubeIframe src contains iTHUUjTA-LI NASA embed URL", ul1);
+
+                let earthCanvasError = false;
+                try {
+                    window.memoryCinema.drawSlowMoEarth(ctx, 960, 540, 1.0);
+                } catch (e) {
+                    earthCanvasError = true;
+                }
+                assert(!earthCanvasError, "drawSlowMoEarth renders on canvas without exceptions", ul1);
+
+                window.memoryCinema.close();
 
                 // ----------------------------------------------------
                 // TEST 2: Authentic Black Forest Stream & Gurgling Brook Soundscape

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
     <title>SOUND OF TIMES — A Little Piece of Earth, Far Away from Home</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -381,18 +382,17 @@
             <div id="memoryVideoContainer" class="memory-video-container" style="display: none;">
                 <iframe id="memoryYoutubeIframe" 
                         src="" 
-                        title="Black Forest Nature Ambience Video Memory" 
+                        title="4K Nature Ambience Video Memory" 
                         frameborder="0" 
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
                         referrerpolicy="strict-origin-when-cross-origin"
                         allowfullscreen>
                 </iframe>
-                <div class="memory-video-bar">
-                    <span class="video-status-indicator">🔴 4K HDR LIVE ARCHIVE: WUTACH CREEK, BLACK FOREST</span>
-                    <div class="video-actions">
-                        <button class="video-toggle-btn" id="btnToggleVideoMode" title="Switch between 4K Video and HD Canvas">🎨 SWITCH TO HD CANVAS</button>
-                        <a href="https://youtu.be/_FtPdpids-Y" target="_blank" rel="noopener noreferrer" class="video-external-link">OPEN ON YOUTUBE ↗</a>
-                    </div>
+
+                <!-- Sleek Minimal Floating Control Bar (Zero Clutter) -->
+                <div class="memory-video-floating-bar" id="memoryVideoFloatingBar">
+                    <button class="video-toggle-btn" id="btnToggleVideoMode" title="Switch between 4K Video and HD Canvas">🎨 HD CANVAS MODE</button>
+                    <a href="https://youtu.be/_FtPdpids-Y" target="_blank" rel="noopener noreferrer" class="video-external-link" id="videoExternalLink">↗ OPEN ON YOUTUBE</a>
                 </div>
             </div>
             
@@ -405,6 +405,7 @@
                     <span class="memory-tag">💭 ELI'S MEMORY OF EARTH</span>
                     <span class="memory-speed-tag" id="memorySpeedTag">⏱️ SLOW MOTION 0.35x</span>
                     <span class="memory-nasa-tag" id="memoryNasaTag">NASA EARTH OBSERVATION</span>
+                    <a href="https://youtu.be/_FtPdpids-Y" target="_blank" rel="noopener noreferrer" class="memory-tag youtube-header-link" id="btnHeaderYoutube" title="Watch authentic 4K HDR Black Forest Nature Ambience on YouTube">▶️ 4K VIDEO (YOUTUBE) ↗</a>
                 </div>
                 <h2 class="memory-title" id="memoryTitle">CANOPY LEAVES SWAYING IN THE SUNLIGHT</h2>
                 <p class="memory-quote" id="memoryQuote">"I remember how the sun felt filtering through the leaves... moving so gently in the wind."</p>
@@ -413,10 +414,11 @@
             <!-- Memory Vision Selector Dock -->
             <div class="memory-dock">
                 <div class="memory-btn-group">
+                    <button class="mem-select-btn" data-vision="earth">🌍 WHOLE EARTH (NASA 4K)</button>
                     <button class="mem-select-btn" data-vision="blackforest">🌲 BLACK FOREST (4K VIDEO)</button>
                     <button class="mem-select-btn active" data-vision="leaves">🍃 LEAVES IN BREEZE</button>
-                    <button class="mem-select-btn" data-vision="ocean">🌊 OCEAN SURF & WAVES</button>
-                    <button class="mem-select-btn" data-vision="birds">🐦 HUMMINGBIRDS & CHIRP</button>
+                    <button class="mem-select-btn" data-vision="ocean">🌊 OCEAN SURF (4K VIDEO)</button>
+                    <button class="mem-select-btn" data-vision="birds">🐦 BIRD CHIRPING (4K VIDEO)</button>
                     <button class="mem-select-btn" data-vision="stream">💧 MOUNTAIN STREAM</button>
                     <button class="mem-select-btn" data-vision="rain">🌧️ CANOPY RAIN</button>
                 </div>

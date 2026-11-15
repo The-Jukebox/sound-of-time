@@ -814,21 +814,202 @@ body {
     background: #000;
 }
 
-.memory-video-bar {
+.memory-video-floating-bar {
     position: absolute;
-    top: 86px;
-    left: 18px;
+    top: 14px;
     right: 18px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    background: rgba(10, 6, 20, 0.88);
+    gap: 10px;
+    background: rgba(10, 6, 20, 0.82);
     backdrop-filter: blur(8px);
-    border: 1px solid rgba(130, 210, 255, 0.45);
+    border: 1px solid rgba(130, 210, 255, 0.4);
     padding: 6px 14px;
-    border-radius: 4px;
-    z-index: 12;
+    border-radius: 20px;
+    z-index: 35;
     pointer-events: auto;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+}
+
+.memory-video-bar {
+    display: none !important;
+}
+
+/* Completely suppress any advisory cards — Only clean video mode */
+.video-local-advisory {
+    display: none !important;
+}
+
+.video-advisory-badge {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    color: #62c98a;
+    background: rgba(98, 201, 138, 0.12);
+    border: 1px solid rgba(98, 201, 138, 0.5);
+    padding: 4px 12px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+}
+
+.video-advisory-body {
+    display: flex;
+    max-width: 720px;
+    width: 100%;
+    background: rgba(18, 12, 32, 0.88);
+    border: 1.5px solid rgba(130, 90, 200, 0.45);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 0 35px rgba(0, 0, 0, 0.8), 0 0 20px rgba(98, 201, 138, 0.2);
+}
+
+.video-advisory-thumb {
+    position: relative;
+    width: 240px;
+    min-width: 200px;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.video-advisory-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.85;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.video-advisory-thumb:hover img {
+    transform: scale(1.05);
+    opacity: 1;
+}
+
+.video-advisory-play-overlay {
+    position: absolute;
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 45, 85, 0.85);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 0 16px rgba(255, 45, 85, 0.8);
+    pointer-events: none;
+}
+
+.video-advisory-info {
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
+}
+
+.video-advisory-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 11px;
+    color: #fff;
+    margin: 0 0 6px 0;
+    letter-spacing: 0.5px;
+}
+
+.video-advisory-meta {
+    font-size: 8px;
+    color: #8ae4ff;
+    margin: 0 0 8px 0;
+}
+
+.video-advisory-text {
+    font-size: 8.5px;
+    font-style: italic;
+    color: #d8cde8;
+    line-height: 1.45;
+    margin: 0 0 14px 0;
+}
+
+.video-advisory-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.advisory-btn {
+    font-family: inherit;
+    font-size: 8px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+}
+
+.advisory-btn.primary-yt {
+    background: #ff2d55;
+    color: #fff;
+    border: 1px solid #ff7b9f;
+    box-shadow: 0 0 12px rgba(255, 45, 85, 0.5);
+}
+
+.advisory-btn.primary-yt:hover {
+    background: #ff476f;
+    transform: translateY(-1px);
+    box-shadow: 0 0 18px rgba(255, 45, 85, 0.8);
+}
+
+.advisory-btn.secondary-canvas {
+    background: #1b4d2e;
+    color: #a4f5c2;
+    border: 1px solid #38ef7d;
+}
+
+.advisory-btn.secondary-canvas:hover {
+    background: #25663d;
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+.advisory-btn.tertiary-embed {
+    background: rgba(40, 30, 60, 0.8);
+    color: #bfa8e6;
+    border: 1px solid #6b5299;
+}
+
+.advisory-btn.tertiary-embed:hover {
+    background: rgba(60, 45, 90, 0.9);
+    color: #fff;
+}
+
+.video-advisory-note {
+    font-size: 7.5px;
+    color: #a092b8;
+    line-height: 1.35;
+    margin: 0;
+}
+
+.youtube-header-link {
+    background: rgba(255, 45, 85, 0.25) !important;
+    border-color: #ff4d6d !important;
+    color: #ff9ebb !important;
+    transition: all 0.15s ease;
+    cursor: pointer;
+    pointer-events: auto !important;
+    text-decoration: none;
+}
+
+.youtube-header-link:hover {
+    background: rgba(255, 45, 85, 0.6) !important;
+    color: #fff !important;
+    box-shadow: 0 0 8px rgba(255, 45, 85, 0.6);
 }
 
 .video-status-indicator {

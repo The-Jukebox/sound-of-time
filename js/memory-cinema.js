@@ -37,6 +37,15 @@
 
             // Vision metadata and nostalgic Eli quotes
             this.visionMeta = {
+                earth: {
+                    title: "THE WHOLE BLUE PLANET: SEEING EARTH AS ONLY NASA CAN",
+                    quote: "“The blue marble suspended in the dark silence of space... oceans, forests, living atmosphere. Everything we ever loved, all on one fragile world.”",
+                    nasaTag: "NASA Earth Information Center — Hyperwall & Planetary Biosphere",
+                    defaultFor: 'earth',
+                    isYoutube: true,
+                    youtubeId: "iTHUUjTA-LI",
+                    youtubeUrl: "https://youtu.be/iTHUUjTA-LI"
+                },
                 blackforest: {
                     title: "BLACK FOREST: WUTACH STREAM & EUROPEAN BIRDSONG",
                     quote: "“I remember hiking deep into Germany's Black Forest... Wutach Creek murmuring gently over mossy stones, tall firs whispering in the cool mountain breeze, and soft robins calling from the canopy. This is how the living forest sounded.”",
@@ -53,16 +62,22 @@
                     defaultFor: 'forest'
                 },
                 ocean: {
-                    title: "MAJESTIC OCEAN SURF & CRESTING BREAKERS",
+                    title: "MAJESTIC OCEAN SURF & CRESTING BREAKERS: RELAXING CRASHING BEACH WAVES",
                     quote: "“The endless blue... the sound of the tide rolling in, curling, and breaking onto warm sand. It made me feel like I belonged.”",
                     nasaTag: "NASA EIC Exhibit | NASA ECCO V4r4 24.2°C Tropical Gyre",
-                    defaultFor: 'ocean'
+                    defaultFor: 'ocean',
+                    isYoutube: true,
+                    youtubeId: "rET3lp6kk2E",
+                    youtubeUrl: "https://youtu.be/rET3lp6kk2E"
                 },
                 birds: {
-                    title: "IRIDESCENT HUMMINGBIRD & MORNING CHORUS",
-                    quote: "“A tiny hummingbird hovering in our garden... its little wings moving faster than thought, yet resting completely still in mid-air.”",
+                    title: "BIRD SOUNDS SPECTACULAR: MORNING CHORUS & IRIDESCENT HUMMINGBIRD",
+                    quote: "“A tiny hummingbird hovering in our garden... its little wings moving faster than thought, while morning songbirds fill the dawn with spectacular chirping and melodies of life.”",
                     nasaTag: "NASA EIC Exhibit | NASA GEDI Foliage Diversity & Avian Habitat",
-                    defaultFor: 'birds'
+                    defaultFor: 'birds',
+                    isYoutube: true,
+                    youtubeId: "rYoZgpAEkFs",
+                    youtubeUrl: "https://youtu.be/rYoZgpAEkFs"
                 },
                 stream: {
                     title: "MOUNTAIN BROOK & SUSPENDED DROPLETS",
@@ -83,6 +98,7 @@
 
             // Full HD Photographic Images
             this.hdImages = {
+                earth: this.loadHDImage('earth_hd.jpg'),
                 blackforest: this.loadHDImage('blackforest_hd.jpg'),
                 leaves: this.loadHDImage('leaves_hd.jpg'),
                 ocean: this.loadHDImage('ocean_hd.jpg'),
@@ -117,7 +133,7 @@
         }
 
         cycleVision(dir) {
-            if (this.currentVision === 'blackforest') {
+            if (this.currentVision === 'blackforest' || this.currentVision === 'earth') {
                 this.setVision(dir > 0 ? 'leaves' : 'rain');
                 return;
             }
@@ -156,6 +172,8 @@
             }
             this.videoContainer = document.getElementById('memoryVideoContainer');
             this.iframe = document.getElementById('memoryYoutubeIframe');
+            this.headerEl = document.querySelector('.memory-header');
+            this.vignetteEl = document.querySelector('.memory-dream-vignette');
             this.titleEl = document.getElementById('memoryTitle');
             this.quoteEl = document.getElementById('memoryQuote');
             this.speedTag = document.getElementById('memorySpeedTag');
@@ -165,6 +183,19 @@
             const toggleVideoBtn = document.getElementById('btnToggleVideoMode');
             if (toggleVideoBtn) {
                 toggleVideoBtn.onclick = () => this.toggleVideoMode();
+            }
+
+            // Wire Advisory Card Buttons (Local file protocol fallback)
+            const advCanvasBtn = document.getElementById('btnAdvisorySwitchCanvas');
+            if (advCanvasBtn) {
+                advCanvasBtn.onclick = () => this.toggleVideoMode();
+            }
+            const advEmbedBtn = document.getElementById('btnAdvisoryTryEmbed');
+            if (advEmbedBtn) {
+                advEmbedBtn.onclick = () => {
+                    const adv = document.getElementById('videoLocalAdvisory');
+                    if (adv) adv.style.display = 'none';
+                };
             }
 
             // Wire Vision Selectors
@@ -268,6 +299,8 @@
                     this.currentVision = 'ocean';
                 } else if (rec === 'atmosphere') {
                     this.currentVision = 'rain';
+                } else if (rec === 'earth') {
+                    this.currentVision = 'earth';
                 } else {
                     this.currentVision = 'blackforest';
                 }
@@ -300,6 +333,8 @@
             }
             if (this.videoContainer) this.videoContainer.style.display = 'none';
             if (this.canvas) this.canvas.style.display = 'block';
+            if (this.headerEl) this.headerEl.style.display = 'block';
+            if (this.vignetteEl) this.vignetteEl.style.display = 'block';
 
             if (this.overlay) {
                 this.overlay.classList.add('zooming-out');
@@ -339,21 +374,32 @@
             });
 
             // Handle 4K Video Mode vs HD Canvas Mode
-            if (visionKey === 'blackforest' && !this.forceCanvasMode) {
+            const meta = this.visionMeta[visionKey];
+            if (meta && meta.isYoutube && !this.forceCanvasMode) {
                 if (this.videoContainer) this.videoContainer.style.display = 'flex';
                 if (this.canvas) this.canvas.style.display = 'none';
+                if (this.headerEl) this.headerEl.style.display = 'none';
+                if (this.vignetteEl) this.vignetteEl.style.display = 'none';
                 if (this.iframe) {
-                    const embedUrl = 'https://www.youtube-nocookie.com/embed/_FtPdpids-Y?autoplay=1&mute=0&rel=0&modestbranding=1&loop=1&playlist=_FtPdpids-Y';
-                    if (!this.iframe.src || this.iframe.src.indexOf('_FtPdpids-Y') === -1) {
+                    const ytId = (meta && meta.youtubeId) ? meta.youtubeId : '_FtPdpids-Y';
+                    const embedUrl = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1&controls=1&enablejsapi=1&rel=0`;
+                    if (!this.iframe.src || this.iframe.src.indexOf(ytId) === -1) {
                         this.iframe.src = embedUrl;
                     }
                 }
+                const advisory = document.getElementById('videoLocalAdvisory');
+                if (advisory) advisory.style.display = 'none';
+                this.updateVideoUI(meta);
             } else {
                 if (this.videoContainer) this.videoContainer.style.display = 'none';
                 if (this.canvas) this.canvas.style.display = 'block';
+                if (this.headerEl) this.headerEl.style.display = 'block';
+                if (this.vignetteEl) this.vignetteEl.style.display = 'block';
                 if (this.iframe) {
                     try { this.iframe.src = ''; } catch (e) {}
                 }
+                const advisory = document.getElementById('videoLocalAdvisory');
+                if (advisory) advisory.style.display = 'none';
                 this.resizeCanvas();
             }
 
@@ -397,6 +443,84 @@
             document.querySelectorAll('.mem-select-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.getAttribute('data-vision') === this.currentVision);
             });
+        }
+
+        updateVideoUI(meta) {
+            if (!meta) return;
+            const statusInd = document.querySelector('.video-status-indicator');
+            const extLink = document.querySelector('.video-external-link');
+            const headerLink = document.getElementById('btnHeaderYoutube');
+            const badge = document.querySelector('.video-advisory-badge');
+            const title = document.querySelector('.video-advisory-title');
+            const metaEl = document.querySelector('.video-advisory-meta');
+            const textEl = document.querySelector('.video-advisory-text');
+            const primaryBtn = document.querySelector('.advisory-btn.primary-yt');
+            const thumbImg = document.querySelector('.video-advisory-thumb img');
+
+            const isEarth = (meta.youtubeId === 'iTHUUjTA-LI');
+            const isBirds = (meta.youtubeId === 'rYoZgpAEkFs');
+            const isOcean = (meta.youtubeId === 'rET3lp6kk2E');
+
+            if (statusInd) {
+                statusInd.textContent = isEarth
+                    ? '🔴 4K NASA ARCHIVE: SEEING EARTH AS ONLY NASA CAN'
+                    : (isBirds 
+                        ? '🔴 4K NATURE ARCHIVE: BIRD SOUNDS SPECTACULAR' 
+                        : (isOcean
+                            ? '🔴 4K NATURE ARCHIVE: RELAXING OCEAN WAVES CRASHING'
+                            : '🔴 4K HDR LIVE ARCHIVE: WUTACH CREEK, BLACK FOREST'));
+            }
+            if (extLink) {
+                extLink.href = meta.youtubeUrl;
+                extLink.textContent = isEarth ? 'OPEN NASA VIDEO ↗' : (isBirds ? 'OPEN BIRD VIDEO ↗' : (isOcean ? 'OPEN OCEAN VIDEO ↗' : 'OPEN ON YOUTUBE ↗'));
+            }
+            if (headerLink) {
+                headerLink.href = meta.youtubeUrl;
+                headerLink.textContent = isEarth ? '▶️ NASA WHOLE EARTH (4K) ↗' : (isBirds ? '▶️ 4K BIRD CHORUS (YOUTUBE) ↗' : (isOcean ? '▶️ 4K OCEAN WAVES (YOUTUBE) ↗' : '▶️ 4K VIDEO (YOUTUBE) ↗'));
+            }
+            if (badge) {
+                badge.textContent = isEarth
+                    ? '🌍 THE WHOLE EARTH — SEEING EARTH AS ONLY NASA CAN'
+                    : (isBirds 
+                        ? '🐦 MORNING BIRD CHORUS — BIRD SOUNDS SPECTACULAR' 
+                        : (isOcean
+                            ? '🌊 OCEAN SURF — RELAXING CRASHING BEACH WAVES'
+                            : '🌲 BLACK FOREST — 4K HDR NATURE STREAM & BIRDSONG'));
+            }
+            if (title) {
+                title.textContent = isEarth
+                    ? 'Seeing Earth as Only NASA Can — The Whole Blue Planet'
+                    : (isBirds 
+                        ? 'Bird Sounds Spectacular: Morning Birds Chirping' 
+                        : (isOcean
+                            ? 'Relaxing Ocean Waves Crashing on the Beach'
+                            : 'Wutach Creek Stream & European Songbird Chorus'));
+            }
+            if (metaEl) {
+                metaEl.textContent = `🎥 Reference: YouTube 4K Nature Sound Recording (${meta.youtubeId})`;
+            }
+            if (textEl) {
+                textEl.textContent = meta.quote;
+            }
+            if (primaryBtn) {
+                primaryBtn.href = meta.youtubeUrl;
+                primaryBtn.textContent = isEarth
+                    ? '▶️ WATCH NASA EARTH VIDEO ON YOUTUBE ↗'
+                    : (isBirds 
+                        ? '▶️ WATCH 4K BIRD CHORUS ON YOUTUBE ↗' 
+                        : (isOcean
+                            ? '▶️ WATCH 4K OCEAN WAVES ON YOUTUBE ↗'
+                            : '▶️ WATCH 4K VIDEO ON YOUTUBE ↗'));
+            }
+            if (thumbImg) {
+                thumbImg.src = isEarth 
+                    ? 'assets/memories/earth_hd.jpg' 
+                    : (isBirds 
+                        ? 'assets/memories/birds_hd.jpg' 
+                        : (isOcean 
+                            ? 'assets/memories/ocean_hd.jpg' 
+                            : 'assets/memories/blackforest_hd.jpg'));
+            }
         }
 
         startRenderLoop() {
@@ -459,6 +583,9 @@
             ctx.clearRect(0, 0, w, h);
 
             switch (this.currentVision) {
+                case 'earth':
+                    this.drawSlowMoEarth(ctx, w, h, t);
+                    break;
                 case 'blackforest':
                     this.drawSlowMoBlackForest(ctx, w, h, t);
                     break;
@@ -481,6 +608,64 @@
 
             // Cinematic Slow-Motion Vignette & Dream Bloom
             this.drawCinematicVignette(ctx, w, h);
+        }
+
+        // VISION 0-A: THE WHOLE BLUE PLANET (SEEING EARTH AS ONLY NASA CAN)
+        drawSlowMoEarth(ctx, w, h, t) {
+            const hasHD = this.drawHDImage(ctx, this.hdImages.earth, w, h, t);
+            if (!hasHD) {
+                // Procedural deep space background
+                ctx.fillStyle = '#020108';
+                ctx.fillRect(0, 0, w, h);
+
+                // Cosmic stars
+                ctx.fillStyle = '#ffffff';
+                for (let i = 0; i < 90; i++) {
+                    const sx = (i * 67 + Math.sin(t * 0.1 + i) * 3) % w;
+                    const sy = (i * 47 + Math.cos(t * 0.08 + i) * 2) % h;
+                    const sz = (i % 5 === 0) ? 2.5 : 1.2;
+                    ctx.globalAlpha = 0.4 + (Math.sin(t * 2 + i) * 0.3);
+                    ctx.fillRect(sx, sy, sz, sz);
+                }
+                ctx.globalAlpha = 1.0;
+
+                // Center planet Earth
+                const cx = w * 0.5;
+                const cy = h * 0.5;
+                const r = Math.min(w, h) * 0.35;
+
+                // Glowing blue atmosphere halo
+                const halo = ctx.createRadialGradient(cx, cy, r * 0.85, cx, cy, r * 1.35);
+                halo.addColorStop(0, 'rgba(71, 216, 242, 0.55)');
+                halo.addColorStop(0.5, 'rgba(30, 136, 229, 0.25)');
+                halo.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                ctx.fillStyle = halo;
+                ctx.beginPath();
+                ctx.arc(cx, cy, r * 1.35, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Planet sphere
+                ctx.fillStyle = '#0d47a1';
+                ctx.beginPath();
+                ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Atmospheric luminous limb edge glow
+            ctx.save();
+            ctx.globalCompositeOperation = 'screen';
+            const cx = w * 0.5;
+            const cy = h * 0.5;
+            const r = Math.min(w, h) * 0.38;
+            const limbGlow = ctx.createRadialGradient(cx, cy, r * 0.92, cx, cy, r * 1.08);
+            limbGlow.addColorStop(0, 'rgba(71, 216, 242, 0.45)');
+            limbGlow.addColorStop(0.5, 'rgba(100, 220, 255, 0.3)');
+            limbGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = limbGlow;
+            ctx.beginPath();
+            ctx.arc(cx, cy, r * 1.08, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
         }
 
         // VISION 0: BLACK FOREST WUTACH STREAM (SLOW-MO NATURE AMBIENCE)
