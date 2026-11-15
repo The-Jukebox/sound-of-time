@@ -327,6 +327,17 @@
             pointer-events: none;
         }
 
+        .visual-img-frame {
+            width: 100%;
+            max-height: 175px;
+            border-radius: 6px;
+            border: 1.5px solid var(--neon-cyan);
+            object-fit: cover;
+            box-shadow: 0 0 14px rgba(71, 216, 242, 0.35);
+            margin-bottom: 8px;
+            image-rendering: auto;
+        }
+
         /* Slide 1 Hero Specifics */
         .hero-title-box {
             text-align: center;
@@ -688,13 +699,13 @@
 
                 <div class="col-right">
                     <div class="visual-display-box" style="height: 100%;">
-                        <div style="font-size: 40px; margin-bottom: 10px;">🪐 &bull; 🎵 &bull; 🦀</div>
-                        <div style="font-family: var(--pixel-font); font-size: 11px; color: var(--neon-gold); margin-bottom: 12px;">EMOTIONAL ARC</div>
-                        <ul class="bullet-list" style="text-align: left; width: 100%;">
-                            <li><span class="highlight-cyan">Exile on Erid:</span> Isolation, longing, teaching science across species.</li>
-                            <li><span class="highlight-gold">The Acoustic Discovery:</span> Unlocking Earth’s winds, rains, and waves.</li>
-                            <li><span class="highlight-pink">Rocky's Loyalty:</span> "I will not let you travel alone! We go together!"</li>
-                            <li><span class="highlight-green">The Homecoming:</span> Standing together on Earth's pebble coast.</li>
+                        <img src="assets/presentation/scene_jukebox.png" alt="Buried Sol-3 Jukebox on 40 Eridani" class="visual-img-frame">
+                        <div style="font-family: var(--pixel-font); font-size: 10px; color: var(--neon-gold); margin-bottom: 8px;">EMOTIONAL NARRATIVE ARC</div>
+                        <ul class="bullet-list" style="text-align: left; width: 100%; font-size: 15px;">
+                            <li><span class="highlight-cyan">Exile on Erid:</span> Isolation, longing, teaching science.</li>
+                            <li><span class="highlight-gold">Acoustic Discovery:</span> Unlocking Earth’s winds &amp; waves.</li>
+                            <li><span class="highlight-pink">Rocky's Loyalty:</span> "I will not let you travel alone!"</li>
+                            <li><span class="highlight-green">The Homecoming:</span> Standing together on Earth's coast.</li>
                         </ul>
                     </div>
                 </div>
@@ -744,16 +755,17 @@
 
                 <div class="col-right">
                     <div class="visual-display-box" style="height: 100%;">
-                        <div style="font-family: var(--pixel-font); font-size: 10px; color: var(--neon-cyan); margin-bottom: 12px;">SCIENCE &rarr; SOUND PIPELINE</div>
-                        <div style="background: rgba(71, 216, 242, 0.1); border: 1px solid var(--neon-cyan); padding: 12px; border-radius: 6px; width: 100%; text-align: left; font-size: 16px; margin-bottom: 12px;">
+                        <img src="assets/presentation/scene_forest.jpg" alt="NASA Forest Canopy & Atmosphere Sonification" class="visual-img-frame">
+                        <div style="font-family: var(--pixel-font); font-size: 10px; color: var(--neon-cyan); margin-bottom: 8px;">SCIENCE &rarr; SOUND PIPELINE</div>
+                        <div style="background: rgba(71, 216, 242, 0.08); border: 1px solid var(--neon-cyan); padding: 8px 12px; border-radius: 6px; width: 100%; text-align: left; font-size: 14px; margin-bottom: 6px;">
                             <div>1. Ingest Daily Numerical Datasets</div>
                             <div>2. Normalize Physical Variables [0.0 - 1.0]</div>
                             <div>3. Mathematical Scale Quantization</div>
-                            <div>4. Real-Time Tone.js / Web Audio Generation</div>
+                            <div>4. Real-Time Tone.js Audio Generation</div>
                             <div>5. Live Oscilloscope Canvas Rendering</div>
                         </div>
-                        <div style="font-size: 13px; color: #8e7eb0;">
-                            &bull; Certified scientific transparency &bull; Not field recordings &bull; Genuine data sonification
+                        <div style="font-size: 12px; color: #8e7eb0;">
+                            &bull; Certified scientific transparency &bull; Real data sonification
                         </div>
                     </div>
                 </div>
@@ -803,19 +815,20 @@
 
                 <div class="col-right">
                     <div class="visual-display-box" style="height: 100%;">
-                        <div style="font-family: var(--pixel-font); font-size: 10px; color: var(--neon-gold); margin-bottom: 12px;">SYSTEM ARCHITECTURE</div>
-                        <div style="text-align: left; width: 100%; font-size: 15px; color: #d6cee8; display: flex; flex-direction: column; gap: 8px;">
+                        <img src="assets/presentation/scene_snow.jpg" alt="60 FPS Pixel-Art Engine" class="visual-img-frame">
+                        <div style="font-family: var(--pixel-font); font-size: 10px; color: var(--neon-gold); margin-bottom: 8px;">SYSTEM ARCHITECTURE</div>
+                        <div style="text-align: left; width: 100%; font-size: 14px; color: #d6cee8; display: flex; flex-direction: column; gap: 6px;">
                             <div style="border-left: 2px solid var(--neon-cyan); padding-left: 8px;">
-                                <strong style="color:var(--neon-cyan);">Canvas Renderer:</strong> 640x360 pixel art pipeline with camera lerp &amp; dynamic lighting.
+                                <strong style="color:var(--neon-cyan);">Canvas Renderer:</strong> 640x360 pixel art engine with dynamic lighting.
                             </div>
                             <div style="border-left: 2px solid var(--neon-green); padding-left: 8px;">
-                                <strong style="color:var(--neon-green);">Sonification Engines:</strong> 4 independent procedural Tone.js synthesizer suites.
+                                <strong style="color:var(--neon-green);">Sonification Suites:</strong> 4 independent procedural Web Audio synths.
                             </div>
                             <div style="border-left: 2px solid var(--neon-pink); padding-left: 8px;">
-                                <strong style="color:var(--neon-pink);">Cinema Overlay:</strong> Full HD photographic memory renderer with variable slow-mo.
+                                <strong style="color:var(--neon-pink);">Cinema Overlay:</strong> Full HD memory renderer with slow-mo drift.
                             </div>
                             <div style="border-left: 2px solid var(--neon-gold); padding-left: 8px;">
-                                <strong style="color:var(--neon-gold);">State &amp; Dialogues:</strong> Non-blocking typewriter queue with keyboard action clamps.
+                                <strong style="color:var(--neon-gold);">State &amp; Dialogues:</strong> Non-blocking typewriter queue &amp; SFX.
                             </div>
                         </div>
                     </div>
@@ -866,15 +879,19 @@
 
                 <div class="col-right">
                     <div class="visual-display-box" style="height: 100%;">
-                        <div style="font-family: var(--pixel-font); font-size: 10px; color: var(--neon-cyan); margin-bottom: 10px;">ENVIRONMENT CONTRAST</div>
-                        <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; text-align: left;">
-                            <div style="background: rgba(18, 8, 38, 0.9); border: 1px solid #7842a8; padding: 10px; border-radius: 4px;">
-                                <div style="color: var(--neon-purple); font-weight: bold;">40 ERIDANI (Night World)</div>
-                                <div style="font-size: 15px; color: #baa7d6;">Deep purple cosmos, glowing ringed gas giant, sister moon, and dark volcanic peaks.</div>
+                        <div style="display: flex; gap: 8px; width: 100%; margin-bottom: 8px;">
+                            <img src="assets/presentation/rocky_exoskeleton.png" alt="Rocky's Geodesic Xenonite Exoskeleton" style="width: 50%; max-height: 130px; border-radius: 4px; border: 1.5px solid var(--neon-gold); object-fit: cover;">
+                            <img src="assets/presentation/eridian_children.jpg" alt="Young Eridian Students on Basalt Columns" style="width: 50%; max-height: 130px; border-radius: 4px; border: 1.5px solid var(--neon-cyan); object-fit: cover;">
+                        </div>
+                        <div style="font-family: var(--pixel-font); font-size: 10px; color: var(--neon-cyan); margin-bottom: 8px;">ENVIRONMENT CONTRAST</div>
+                        <div style="display: flex; flex-direction: column; gap: 6px; width: 100%; text-align: left;">
+                            <div style="background: rgba(18, 8, 38, 0.9); border: 1px solid #7842a8; padding: 6px 10px; border-radius: 4px;">
+                                <div style="color: var(--neon-purple); font-weight: bold; font-size: 14px;">40 ERIDANI (Night World)</div>
+                                <div style="font-size: 13px; color: #baa7d6;">Deep purple cosmos, ringed gas giant, sister moon &amp; basalt columns.</div>
                             </div>
-                            <div style="background: rgba(30, 48, 45, 0.9); border: 1px solid #47d8f2; padding: 10px; border-radius: 4px;">
-                                <div style="color: var(--neon-cyan); font-weight: bold;">JURASSIC COAST (Earth Finale)</div>
-                                <div style="font-size: 15px; color: #aee3eb;">Pale misty daylight, Durdle Door sea arch, multi-depth turquoise waves &amp; pebble shoreline.</div>
+                            <div style="background: rgba(30, 48, 45, 0.9); border: 1px solid #47d8f2; padding: 6px 10px; border-radius: 4px;">
+                                <div style="color: var(--neon-cyan); font-weight: bold; font-size: 14px;">JURASSIC COAST (Earth Finale)</div>
+                                <div style="font-size: 13px; color: #aee3eb;">Pale misty daylight, Durdle Door arch &amp; turquoise waves.</div>
                             </div>
                         </div>
                     </div>
@@ -925,14 +942,15 @@
 
                 <div class="col-right">
                     <div class="visual-display-box" style="height: 100%;">
-                        <div style="font-family: var(--pixel-font); font-size: 10px; color: var(--neon-gold); margin-bottom: 12px;">KEYBOARD &amp; CONTROLS</div>
-                        <div style="width: 100%; text-align: left; font-size: 15px; display: flex; flex-direction: column; gap: 8px;">
-                            <div><kbd style="color:var(--neon-gold); background:#221238; padding:2px 6px; border:1px solid #663e99;">[A/D] / [←/→]</kbd> Walk characters</div>
-                            <div><kbd style="color:var(--neon-gold); background:#221238; padding:2px 6px; border:1px solid #663e99;">[ENTER] / [E]</kbd> Inspect, Advance, Zoom</div>
-                            <div><kbd style="color:var(--neon-gold); background:#221238; padding:2px 6px; border:1px solid #663e99;">[1] - [4]</kbd> Select Earth Records</div>
-                            <div><kbd style="color:var(--neon-gold); background:#221238; padding:2px 6px; border:1px solid #663e99;">[SPACE]</kbd> Play / Pause Jukebox</div>
-                            <div><kbd style="color:var(--neon-gold); background:#221238; padding:2px 6px; border:1px solid #663e99;">[M]</kbd> Instant Audio Mute / Unmute</div>
-                            <div><kbd style="color:var(--neon-gold); background:#221238; padding:2px 6px; border:1px solid #663e99;">[F]</kbd> Seamless Fullscreen Toggle</div>
+                        <img src="assets/presentation/beach_reunion.jpg" alt="Ryan and Rocky on Earth Beach" class="visual-img-frame">
+                        <div style="font-family: var(--pixel-font); font-size: 10px; color: var(--neon-gold); margin-bottom: 8px;">KEYBOARD &amp; CONTROLS</div>
+                        <div style="width: 100%; text-align: left; font-size: 14px; display: flex; flex-direction: column; gap: 5px;">
+                            <div><kbd style="color:var(--neon-gold); background:#221238; padding:2px 5px; border:1px solid #663e99;">[A/D] / [←/→]</kbd> Walk characters</div>
+                            <div><kbd style="color:var(--neon-gold); background:#221238; padding:2px 5px; border:1px solid #663e99;">[ENTER] / [E]</kbd> Inspect, Advance, Sit</div>
+                            <div><kbd style="color:var(--neon-gold); background:#221238; padding:2px 5px; border:1px solid #663e99;">[1] - [4]</kbd> Select Earth Records</div>
+                            <div><kbd style="color:var(--neon-gold); background:#221238; padding:2px 5px; border:1px solid #663e99;">[SPACE]</kbd> Play / Pause Jukebox</div>
+                            <div><kbd style="color:var(--neon-gold); background:#221238; padding:2px 5px; border:1px solid #663e99;">[M]</kbd> Instant Audio Mute / Unmute</div>
+                            <div><kbd style="color:var(--neon-gold); background:#221238; padding:2px 5px; border:1px solid #663e99;">[F]</kbd> Seamless Fullscreen Toggle</div>
                         </div>
                     </div>
                 </div>
@@ -980,12 +998,12 @@
 
                 <div class="col-right">
                     <div class="visual-display-box" style="height: 100%; border-color: var(--neon-gold);">
-                        <div style="font-size: 32px; margin-bottom: 8px;">🤝 &bull; ✨ &bull; 💙</div>
-                        <div style="font-family: var(--pixel-font); font-size: 13px; color: var(--neon-gold); margin-bottom: 8px;">THANK YOU!</div>
-                        <p style="font-size: 16px; color: #baa7d6; font-style: italic; margin-bottom: 16px;">
+                        <img src="assets/presentation/durdle_door.jpg" alt="Durdle Door Grand Finale Coastline" class="visual-img-frame" style="max-height: 155px; border-color: var(--neon-gold);">
+                        <div style="font-family: var(--pixel-font); font-size: 11px; color: var(--neon-gold); margin-bottom: 6px;">THANK YOU!</div>
+                        <p style="font-size: 14px; color: #baa7d6; font-style: italic; margin-bottom: 10px;">
                             "Good. Proud. We saved two worlds, Grace. We are friends forever. Fist my bump!"
                         </p>
-                        <div style="background: rgba(255, 209, 102, 0.1); border: 1px solid var(--neon-gold); padding: 10px 16px; border-radius: 4px; font-family: var(--pixel-font); font-size: 9px; color: #fff;">
+                        <div style="background: rgba(255, 209, 102, 0.1); border: 1px solid var(--neon-gold); padding: 8px 14px; border-radius: 4px; font-family: var(--pixel-font); font-size: 9px; color: #fff;">
                             TEAM SPACE SOUNDS<br>
                             <span style="color:var(--neon-cyan);">Carol Pillai</span> &amp; <span style="color:var(--neon-pink);">Ziven Pereira</span>
                         </div>
