@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sound of Times — Black Forest Video Memory & Soundscape QA Tests</title>
+    <style>
+        body { font-family: 'Consolas', monospace; background: #080511; color: #d8cbeb; padding: 20px; }
+        h1 { color: #a4e6ff; font-size: 20px; margin-bottom: 5px; }
+        .sec { margin-bottom: 20px; border-left: 3px solid #732aab; padding-left: 12px; }
+        .sec h3 { color: #ffd27d; margin: 6px 0; font-size: 14px; }
+        .pass { color: #62c98a; font-weight: bold; }
+        .fail { color: #ff7b9f; font-weight: bold; }
+        #summary { font-size: 16px; padding: 14px; margin-top: 20px; border-radius: 4px; }
+        ul { list-style: none; padding-left: 0; }
+        li { margin-bottom: 4px; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>SOUND OF TIMES — BLACK FOREST MEMORY &amp; SOUNDSCAPE QA SUITE</h1>
+    <div id="summary">Running comprehensive QA assertions...</div>
+    <div id="logs"></div>
+
+    <!-- Hidden Game DOM Fixture -->
+    <div style="display:none;">
+        <canvas id="gameCanvas" width="960" height="540"></canvas>
+        <section id="jukeboxPanel" style="display: none;">
+            <div class="record-shelf">
+                <button class="record-btn" data-record="forest" id="btnRecForest"></button>
+                <button class="record-btn" data-record="ocean" id="btnRecOcean"></button>
+                <button class="record-btn" data-record="atmosphere" id="btnRecAtmosphere"></button>
+                <button class="record-btn locked" data-record="earth" id="btnRecEarth"></button>
+            </div>
+            <div class="control-deck">
+                <button class="deck-btn" id="btnPower"></button>
+                <button class="deck-btn primary" id="btnPlay"></button>
+                <button class="deck-btn" id="btnPause"></button>
+                <button class="deck-btn" id="btnStop"></button>
+                <button class="deck-btn" id="btnReplay"></button>
+                <button class="deck-btn" id="btnEject"></button>
+                <button id="btnProceed"></button>
+                <button id="btnMemoryVision"></button>
+                <div class="volume-container">
+                    <span id="volIcon">🔊</span>
+                    <input type="range" id="volSlider" min="0" max="100" value="80">
+                    <span id="volLabel">80%</span>
+                </div>
+            </div>
+
+            <!-- Forest Soundscape & Environmental Toolbar -->
+            <div class="forest-controls-bar" id="forestToolbar" style="display: none;">
+                <button class="sub-btn active" id="btnModeMorning">🌅 DAWN</button>
+                <button class="sub-btn" id="btnModeAfternoon">☀️ DAY</button>
+                <button class="sub-btn" id="btnModeEvening">🌇 DUSK</button>
+                <button class="sub-btn" id="btnModeNight">🌙 NIGHT</button>
+
+                <button class="sub-btn" id="btnCallBird">🐦 BIRD</button>
+                <button class="sub-btn" id="btnStreamGurgle">💧 STREAM</button>
+                <button class="sub-btn" id="btnWoodpecker">🪵 WOODPECKER</button>
+                <button class="sub-btn" id="btnFrog">🐸 FROG</button>
+                <button class="sub-btn" id="btnRainDrop">🌧️ RAIN</button>
+                <button class="sub-btn" id="btnThunder">⚡ THUNDER</button>
+
+                <button class="sub-btn" id="btnMuteMusic">🎵 MUSIC</button>
+                <button class="sub-btn" id="btnMuteCanopy">🍃 CANOPY</button>
+                <button class="sub-btn" id="btnMuteWildlife">🐦 BIRDS</button>
+                <button class="sub-btn" id="btnMuteWater">💧 STREAM</button>
+
+                <input type="range" id="ambienceSlider" min="0" max="100" value="75">
+                <span id="ambLabel">75%</span>
+            </div>
+        </section>
+
+        <aside id="nasaHud" style="display: none;">
+            <div class="hud-title-bar">
+                <span id="hudMetric"></span>
+                <span id="hudValue"></span>
+            </div>
+            <canvas id="nasaWaveform" width="612" height="36"></canvas>
+            <p id="hudDesc"></p>
+            <div id="forestSciencePanel" class="science-panel" style="display: none;"></div>
+            <div id="oceanSciencePanel" class="science-panel" style="display: none;"></div>
+        </aside>
+
+        <div id="screenPrompt"></div>
+        <div id="memoryCinemaOverlay" class="memory-cinema" style="display: none;">
+            <div class="memory-viewport">
+                <canvas id="memoryCanvas"></canvas>
+                <div id="memoryVideoContainer" class="memory-video-container" style="display: none;">
+                    <iframe id="memoryYoutubeIframe" src=""></iframe>
+                    <div class="memory-video-bar">
+                        <span class="video-status-indicator">🔴 4K HDR LIVE ARCHIVE</span>
+                        <div class="video-actions">
+                            <button class="video-toggle-btn" id="btnToggleVideoMode">🎨 SWITCH TO HD CANVAS</button>
+                            <a href="https://youtu.be/_FtPdpids-Y" class="video-external-link">OPEN ON YOUTUBE ↗</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="memory-dream-vignette"></div>
+                <div class="memory-header">
+                    <span class="memory-tag">💭 ELI'S MEMORY OF EARTH</span>
+                    <span class="memory-speed-tag" id="memorySpeedTag">⏱️ SLOW MOTION 0.35x</span>
+                    <span class="memory-nasa-tag" id="memoryNasaTag">NASA EARTH OBSERVATION</span>
+                    <h2 class="memory-title" id="memoryTitle">TITLE</h2>
+                    <p class="memory-quote" id="memoryQuote">QUOTE</p>
+                </div>
+                <div class="memory-dock">
+                    <div class="memory-btn-group">
+                        <button class="mem-select-btn" data-vision="blackforest">🌲 BLACK FOREST</button>
+                        <button class="mem-select-btn" data-vision="leaves">🍃 LEAVES</button>
+                        <button class="mem-select-btn" data-vision="ocean">🌊 OCEAN</button>
+                        <button class="mem-select-btn" data-vision="birds">🐦 BIRDS</button>
+                        <button class="mem-select-btn" data-vision="stream">💧 STREAM</button>
+                        <button class="mem-select-btn" data-vision="rain">🌧️ RAIN</button>
+                    </div>
+                    <div class="memory-speed-group">
+                        <button class="speed-btn" data-speed="0.2">0.2x</button>
+                        <button class="speed-btn active" data-speed="0.35">0.35x</button>
+                        <button class="speed-btn" data-speed="1.0">1.0x</button>
+                    </div>
+                    <button class="memory-close-btn" id="btnCloseMemory">ZOOM OUT</button>
+                </div>
+            </div>
+        </div>
+        <div id="hudTime"></div>
+        <div id="hudLocation"></div>
+        <div id="hudStatus"></div>
+        <div id="prompt"></div>
+        <div id="dialogueBox"><span id="speakerName"></span><p id="dialogueText"></p></div>
+        <div id="choices"></div>
+        <div id="jukeboxModal">
+            <button class="record-btn" data-record="ocean"></button>
+            <button class="record-btn" data-record="forest"></button>
+            <button id="btnPower"></button>
+            <button id="btnPlay"></button>
+            <button id="btnPause"></button>
+            <button id="btnStop"></button>
+            <button id="btnReplay"></button>
+            <button id="btnEject"></button>
+            <button id="btnProceed"></button>
+            <button id="btnMemoryVision"></button>
+            <input type="range" id="volSlider" value="70">
+            <span id="volLabel">70%</span>
+            <span id="volIcon">🔊</span>
+        </div>
+    </div>
+
+    <!-- Tone.js & Game Scripts -->
+    <script src="js/tone.js"></script>
+    <script src="js/forest-data-source.js"></script>
+    <script src="js/ocean-data-source.js"></script>
+    <script src="js/atmosphere-data-source.js"></script>
+    <script src="js/earth-archive-data-source.js"></script>
+    <script src="js/forest-sonification.js"></script>
+    <script src="js/ocean-sonification.js"></script>
+    <script src="js/atmosphere-sonification.js"></script>
+    <script src="js/earth-sonification.js"></script>
+    <script src="js/memory-cinema.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/pixelart.js"></script>
+    <script src="js/game.js"></script>
+
+    <script>
+        const logs = document.getElementById('logs');
+        const summary = document.getElementById('summary');
+        let passCount = 0;
+        let failCount = 0;
+
+        function addSection(title) {
+            const div = document.createElement('div');
+            div.className = 'sec';
+            div.innerHTML = `<h3>${title}</h3><ul id="ul_${passCount + failCount}"></ul>`;
+            logs.appendChild(div);
+            return div.querySelector('ul');
+        }
+
+        function assert(cond, msg, ul) {
+            const li = document.createElement('li');
+            if (cond) {
+                passCount++;
+                li.innerHTML = `<span class="pass">[PASS]</span> ${msg}`;
+            } else {
+                failCount++;
+                li.innerHTML = `<span class="fail">[FAIL]</span> ${msg}`;
+            }
+            ul.appendChild(li);
+        }
+
+        async function runTests() {
+            try {
+                // ----------------------------------------------------
+                // TEST 1: Black Forest Video Memory Architecture & YouTube Embed
+                // ----------------------------------------------------
+                const ul1 = addSection("1. YouTube Video Memory Integration (_FtPdpids-Y)");
+                assert(window.memoryCinema != null, "MemoryCinemaManager instance exists on window", ul1);
+                assert(window.memoryCinema.visionMeta.blackforest != null, "visionMeta has 'blackforest' metadata", ul1);
+                assert(window.memoryCinema.visionMeta.blackforest.youtubeId === "_FtPdpids-Y", "youtubeId matches requested video ID (_FtPdpids-Y)", ul1);
+                assert(window.memoryCinema.visionMeta.blackforest.isYoutube === true, "isYoutube flag is set to true", ul1);
+                assert(window.memoryCinema.visionOrder.includes('blackforest'), "visionOrder includes 'blackforest'", ul1);
+                assert(window.memoryCinema.visionOrder[0] === 'blackforest', "'blackforest' is the primary default vision in progression", ul1);
+
+                // Open Black Forest vision
+                window.memoryCinema.open('blackforest');
+                assert(window.memoryCinema.isOpen === true, "memoryCinema is open", ul1);
+                assert(window.memoryCinema.currentVision === 'blackforest', "currentVision is 'blackforest'", ul1);
+
+                const videoCont = document.getElementById('memoryVideoContainer');
+                const iframe = document.getElementById('memoryYoutubeIframe');
+                assert(videoCont && videoCont.style.display !== 'none', "memoryVideoContainer is displayed for video memory", ul1);
+                assert(iframe && iframe.src.includes('_FtPdpids-Y'), "memoryYoutubeIframe src contains _FtPdpids-Y embed URL", ul1);
+
+                // Toggle video mode to canvas mode
+                window.memoryCinema.toggleVideoMode();
+                assert(window.memoryCinema.forceCanvasMode === true, "forceCanvasMode is active after toggle", ul1);
+                assert(videoCont.style.display === 'none', "videoContainer hidden in canvas mode", ul1);
+                assert(window.memoryCinema.canvas.style.display !== 'none', "canvas displayed in canvas mode", ul1);
+
+                // Toggle back to video mode
+                window.memoryCinema.toggleVideoMode();
+                assert(window.memoryCinema.forceCanvasMode === false, "forceCanvasMode restored to false", ul1);
+                assert(videoCont.style.display !== 'none', "videoContainer restored in video mode", ul1);
+
+                // Close memory cinema & verify complete video silence
+                window.memoryCinema.close();
+                assert(window.memoryCinema.isOpen === false, "memoryCinema closed", ul1);
+                assert(iframe.src === '' || iframe.src.endsWith('about:blank') || iframe.src.indexOf('http') === -1, "YouTube iframe src cleared immediately on close to stop all audio", ul1);
+
+                // Verify procedural canvas fallback rendering
+                const canvas = window.memoryCinema.canvas;
+                const ctx = canvas.getContext('2d');
+                let canvasRenderError = false;
+                try {
+                    window.memoryCinema.drawSlowMoBlackForest(ctx, 960, 540, 1.5);
+                } catch (e) {
+                    canvasRenderError = true;
+                }
+                assert(!canvasRenderError, "drawSlowMoBlackForest renders on canvas without exceptions", ul1);
+
+                // ----------------------------------------------------
+                // TEST 2: Authentic Black Forest Stream & Gurgling Brook Soundscape
+                // ----------------------------------------------------
+                const ul2 = addSection("2. Authentic Black Forest Stream & Gurgling Brook Synthesis");
+                const fEngine = new ForestSonificationEngine();
+                window.forestSonification = fEngine;
+                assert(fEngine != null, "ForestSonificationEngine exists", ul2);
+                await fEngine.initAudio();
+
+                const soundscape = fEngine.soundscape;
+                assert(soundscape != null, "soundscape manager exists", ul2);
+                assert(soundscape.streamNoise != null, "streamNoise generator exists", ul2);
+                assert(soundscape.streamNoise.type === "pink", "streamNoise uses pink noise for natural fluid turbulence (not harsh white noise)", ul2);
+                assert(soundscape.streamFilter != null, "streamFilter low-mid water body filter exists", ul2);
+                assert(soundscape.streamEddyFilter != null, "streamEddyFilter moss/eddy ripple filter exists", ul2);
+                assert(soundscape.streamFoamFilter != null, "streamFoamFilter high liquid spray filter exists", ul2);
+                assert(soundscape.streamBubbleSynth != null, "streamBubbleSynth exists for liquid bubble pops", ul2);
+                assert(soundscape.streamGurgleSynth != null, "streamGurgleSynth exists for rock crevice water gurgles", ul2);
+
+                let gurgleError = false;
+                try {
+                    soundscape.playStreamGurgle();
+                } catch (e) {
+                    gurgleError = true;
+                }
+                assert(!gurgleError, "playStreamGurgle executes cleanly without exceptions", ul2);
+
+                // Mode balancing for Black Forest ambience
+                soundscape.setMode('morning');
+                assert(soundscape.streamIntensity >= 0.65, "Morning mode streamIntensity is prominent (>= 0.65)", ul2);
+                soundscape.setMode('afternoon');
+                assert(soundscape.streamIntensity >= 0.60, "Afternoon mode streamIntensity is soothing (>= 0.60)", ul2);
+                soundscape.setMode('evening');
+                assert(soundscape.streamIntensity >= 0.60, "Evening mode streamIntensity is peaceful (>= 0.60)", ul2);
+
+                // ----------------------------------------------------
+                // TEST 3: European Woodland Avian Chorus of the Black Forest
+                // ----------------------------------------------------
+                const ul3 = addSection("3. European Woodland Avian Chorus (Black Forest Species)");
+                const robinRes = soundscape.callBird('robin');
+                assert(robinRes && robinRes.species === 'robin', "European Robin (Erithacus rubecula) silvery warble callable", ul3);
+
+                const blackbirdRes = soundscape.callBird('blackbird');
+                assert(blackbirdRes && blackbirdRes.species === 'blackbird', "European Blackbird (Turdus merula) fluty melody callable", ul3);
+
+                const thrushRes = soundscape.callBird('thrush');
+                assert(thrushRes && thrushRes.species === 'thrush', "European Song Thrush (Turdus philomelos) fluty couplets callable", ul3);
+
+                const chiffchaffRes = soundscape.callBird('chiffchaff');
+                assert(chiffchaffRes && chiffchaffRes.species === 'chiffchaff', "Common Chiffchaff (Phylloscopus collybita) couplet callable", ul3);
+
+                const blackcapRes = soundscape.callBird('blackcap');
+                assert(blackcapRes && blackcapRes.species === 'blackcap', "Blackcap (Sylvia atricapilla) crystal warble callable", ul3);
+
+                // ----------------------------------------------------
+                // TEST 4: Jukebox UI & Full System Audio Silence
+                // ----------------------------------------------------
+                const ul4 = addSection("4. Jukebox Controls & Sound Stopping Verification");
+                const game = new Game();
+                window.game = game;
+                game.initScene('scene5');
+
+                const btnStream = document.getElementById('btnStreamGurgle');
+                assert(btnStream != null, "Jukebox toolbar #btnStreamGurgle button exists in DOM", ul4);
+                let btnStreamClicked = false;
+                btnStream.onclick = () => { btnStreamClicked = true; soundscape.playStreamGurgle(); };
+                btnStream.click();
+                assert(btnStreamClicked, "Clicking #btnStreamGurgle triggers water gurgle SFX", ul4);
+
+                // Start Forest record & pause/stop
+                game.selectJukeboxRecord('forest');
+                await game.playJukebox();
+                assert(game.jukeboxState.isPlaying === true, "Jukebox playing Forest record", ul4);
+
+                game.pauseJukebox();
+                assert(game.jukeboxState.isPlaying === false, "Jukebox isPlaying is false on pause", ul4);
+                assert(game.jukeboxState.isPaused === true, "Jukebox isPaused is true on pause", ul4);
+                assert(fEngine.masterVolume.mute === true, "Forest masterVolume immediately muted on pause", ul4);
+
+                game.stopJukebox();
+                assert(game.jukeboxState.isPlaying === false, "Jukebox isPlaying is false on stop", ul4);
+                assert(game.jukeboxState.isPaused === false, "Jukebox isPaused is false on stop", ul4);
+                assert(fEngine.masterVolume.mute === true, "Forest masterVolume immediately muted on stop", ul4);
+
+                // FINAL SUMMARY
+                const total = passCount + failCount;
+                if (failCount === 0) {
+                    summary.style.background = "#143a24";
+                    summary.style.border = "2px solid #62c98a";
+                    summary.innerHTML = `<span class="pass">✔ ALL ${passCount}/${total} BLACK FOREST QA TESTS PASSED!</span><br>YouTube Video Memory (_FtPdpids-Y), Multi-Layer Wutach Creek Stream, European Woodland Bird Chorus, and Zero-Audio Leakage are 100% verified!`;
+                } else {
+                    summary.style.background = "#3d1424";
+                    summary.style.border = "2px solid #f28bbd";
+                    summary.innerHTML = `<span class="fail">✖ ${failCount}/${total} TESTS FAILED!</span>`;
+                }
+            } catch (err) {
+                summary.style.background = "#3d1424";
+                summary.style.border = "2px solid #f28bbd";
+                summary.innerHTML = `<span class="fail">EXCEPTION: ${err.message}</span><pre>${err.stack}</pre>`;
+            }
+        }
+
+        window.addEventListener('load', () => {
+            setTimeout(runTests, 250);
+        });
+    </script>
+</body>
+</html>

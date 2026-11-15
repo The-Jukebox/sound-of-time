@@ -1,4 +1,4 @@
-﻿/**
+/**
  * SOUND OF TIMES - Main Game Engine, Scene Management & Narrative State
  */
 
@@ -946,6 +946,16 @@ class Game {
                         if (res) {
                             this.showPrompt(`[ 🐦 BIRD CALLED: ${res.species.toUpperCase()} SINGING IN CANOPY ]`);
                         }
+                    }
+                };
+            }
+
+            const btnStreamGurgle = document.getElementById('btnStreamGurgle');
+            if (btnStreamGurgle) {
+                btnStreamGurgle.onclick = () => {
+                    if (window.forestSonification && window.forestSonification.soundscape) {
+                        window.forestSonification.soundscape.playStreamGurgle();
+                        this.showPrompt('[ 💧 MOUNTAIN STREAM: WATER GURGLING OVER MOSSY STONES ]');
                     }
                 };
             }

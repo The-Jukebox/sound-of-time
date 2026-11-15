@@ -1,4 +1,4 @@
-﻿/**
+/**
  * SOUND OF TIMES - Pixel Art Renderer & Sprite Engine
  * Renders characters (Eli, Koru, Little Rocks), environments, dynamic holograms, and the retro Jukebox.
  */
