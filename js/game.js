@@ -325,6 +325,9 @@ class Game {
             case 'scene7':
                 this.initScene7();
                 break;
+            case 'scene8':
+                this.initScene8();
+                break;
             case 'credits':
                 this.initCredits();
                 break;
@@ -559,7 +562,7 @@ class Game {
 
     // SCENE 5 — THE SOUND COLLECTION
     initScene5() {
-        this.sound.startSceneAmbience('home_interior');
+        this.sound.stopSceneAmbience();
         this.ui.jukeboxPanel.style.display = 'flex';
         this.ui.nasaHud.style.display = 'block';
 
@@ -693,13 +696,93 @@ class Game {
             }
         ], () => {
             this.arrivalComplete = true;
-            this.showPrompt('[HEADING INTO EARTH] — [PRESS R TO REPLAY THE JOURNEY]');
+            this.showPrompt('[RE-ENTERING ATMOSPHERE... LANDING ON EARTH]');
+            setTimeout(() => {
+                this.initScene('scene8');
+            }, 3200);
         });
+    }
+
+    // SCENE 8 — GRAND FINALE: EARTH'S JURASSIC COAST (DURDLE DOOR)
+    initScene8() {
+        this.sound.stopSceneAmbience();
+        this.sound.startSceneAmbience('earth_beach');
+
+        this.showSceneOverlay('SOUND OF TIMES', 'EARTH — THE JURASSIC COAST (SOME TIME LATER...)', 3600);
+
+        // Ryan is seated on the pebble beach listening to the real ocean waves
+        this.eli.x = 310;
+        this.eli.y = this.height * 0.80;
+        this.eli.facing = -1;
+        this.eli.state = 'idle';
+        this.beachSeated = true;
+
+        // Rocky starts walking along the pebble shoreline in his form-fitting xenonite suit
+        this.koru.x = 80;
+        this.koru.y = this.height * 0.80;
+        this.koru.facing = 1;
+        this.koru.state = 'walk';
+        this.rockyBeachSeated = false;
+        this.beachFistBumping = false;
+
+        // Rocky walks up to visit Ryan on the pebble beach!
+        setTimeout(() => {
+            this.queueDialogues([
+                {
+                    speaker: 'ROCKY',
+                    text: 'Why you take so long?',
+                    onShow: () => {
+                        this.koru.x = 210;
+                        this.koru.state = 'walk';
+                    }
+                },
+                {
+                    speaker: 'RYAN',
+                    text: 'Just listening to the waves, Rocky. Come sit with me.'
+                },
+                {
+                    speaker: 'ROCKY',
+                    text: 'Question: This is ocean? Real liquid water ocean?',
+                    onShow: () => {
+                        this.koru.x = 265;
+                        this.koru.facing = 1;
+                        this.koru.state = 'idle';
+                        this.rockyBeachSeated = true; // Sits down beside Ryan!
+                    }
+                },
+                {
+                    speaker: 'RYAN',
+                    text: 'The very same one from the jukebox recording. Seventy percent of Earth\'s surface. Salty, restless, and endless.'
+                },
+                {
+                    speaker: 'ROCKY',
+                    text: 'Amaze. Amaze. Amaze. Sound is... good. Very good. Better than recording. Loud and soft at same time.'
+                },
+                {
+                    speaker: 'RYAN',
+                    text: 'Yeah. It really is. Thank you for coming across the stars to visit me on Earth, Rocky.'
+                },
+                {
+                    speaker: 'ROCKY',
+                    text: 'Good. Proud. We saved two worlds, Grace. We are friends forever. Fist my bump.'
+                },
+                {
+                    speaker: 'RYAN',
+                    text: 'Fist-bump, buddy!',
+                    onShow: () => {
+                        this.beachFistBumping = true;
+                        if (this.sound) this.sound.playRelayClickSfx();
+                    }
+                }
+            ], () => {
+                this.showPrompt('[A/D] or [←/→] WALK TOGETHER BY THE WATER  |  [ENTER] SIT ON PEBBLES  |  [R] REPLAY');
+            });
+        }, 2200);
     }
 
     // CREDITS & ENDING SCREEN
     initCredits() {
-        this.initScene7();
+        this.initScene8();
     }
 
     // ----------------------------------------------------
@@ -867,6 +950,48 @@ class Game {
                 };
             }
 
+            const btnWoodpecker = document.getElementById('btnWoodpecker');
+            if (btnWoodpecker) {
+                btnWoodpecker.onclick = () => {
+                    if (window.forestSonification && window.forestSonification.soundscape) {
+                        window.forestSonification.soundscape.playWoodpeckerTaps();
+                        this.showPrompt('[ 🪵 WOODPECKER DRUMMING ON TREE TRUNK ]');
+                    }
+                };
+            }
+
+            const btnFrog = document.getElementById('btnFrog');
+            if (btnFrog) {
+                btnFrog.onclick = () => {
+                    if (window.forestSonification && window.forestSonification.soundscape) {
+                        window.forestSonification.soundscape.playFrogCroak();
+                        this.showPrompt('[ 🐸 TREEFROG & BULLFROG CROAKING NEAR BROOK ]');
+                    }
+                };
+            }
+
+            const btnRainDrop = document.getElementById('btnRainDrop');
+            if (btnRainDrop) {
+                btnRainDrop.onclick = () => {
+                    if (window.forestSonification && window.forestSonification.soundscape) {
+                        window.forestSonification.soundscape.setRainGain(0.35);
+                        window.forestSonification.soundscape.playCanopyLeafDrip();
+                        this.showPrompt('[ 🌧️ CANOPY RAINFALL & LEAF DRIP PITTER-PATTER ]');
+                    }
+                };
+            }
+
+            const btnThunder = document.getElementById('btnThunder');
+            if (btnThunder) {
+                btnThunder.onclick = () => {
+                    if (window.forestSonification && window.forestSonification.soundscape) {
+                        window.forestSonification.soundscape.playThunderRumble();
+                        this.renderer.triggerFlash();
+                        this.showPrompt('[ ⚡ DISTANT ROLLING ATMOSPHERIC THUNDER ]');
+                    }
+                };
+            }
+
             // Wire Ambience Slider
             const ambSlider = document.getElementById('ambienceSlider');
             const ambLabel = document.getElementById('ambLabel');
@@ -928,6 +1053,7 @@ class Game {
 
     selectJukeboxRecord(recordKey) {
         this.jukeboxState.activeRecord = recordKey;
+        this.sound.playRecordCarouselSfx();
 
         const oceanPnl = document.getElementById('oceanSciencePanel');
         const forestPnl = document.getElementById('forestSciencePanel');
@@ -972,6 +1098,9 @@ class Game {
         if (!this.jukeboxState.activeRecord) return;
         this.jukeboxState.isPlaying = true;
         this.jukeboxState.isPaused = false;
+        this.sound.stopSceneAmbience();
+        this.sound.playTurntableSpinupSfx();
+        this.sound.playNeedleDropSfx();
         this.updateJukeboxButtonStates('playing');
 
         const rec = this.jukeboxState.activeRecord;
@@ -1057,6 +1186,8 @@ class Game {
         if (!this.jukeboxState.activeRecord) return;
         this.jukeboxState.isPlaying = false;
         this.jukeboxState.isPaused = true;
+        this.sound.playNeedleLiftSfx();
+        this.sound.stopSceneAmbience();
         this.updateJukeboxButtonStates('paused');
 
         if (this.jukeboxState.activeRecord === 'ocean' && window.oceanSonification) {
@@ -1077,6 +1208,8 @@ class Game {
     stopJukebox() {
         this.jukeboxState.isPlaying = false;
         this.jukeboxState.isPaused = false;
+        this.sound.playNeedleLiftSfx();
+        this.sound.stopSceneAmbience();
         this.updateJukeboxButtonStates('stopped');
 
         if (window.oceanSonification) window.oceanSonification.stop();
@@ -1442,6 +1575,9 @@ class Game {
             case 'scene7':
                 this.updateScene7(dt);
                 break;
+            case 'scene8':
+                this.updateScene8(dt);
+                break;
             case 'credits':
                 if (this.keys['r'] || this.keys['R']) {
                     this.initScene('scene1');
@@ -1491,6 +1627,65 @@ class Game {
         // Smoothly advance orbital flight progress as the ship approaches Earth
         if (this.flightProgress < 1.0) {
             this.flightProgress = Math.min(1.0, this.flightProgress + dt * 0.04);
+        }
+    }
+
+    updateScene8(dt) {
+        if (this.keys['r'] || this.keys['R']) {
+            this.initScene('scene1');
+            return;
+        }
+
+        if (this.currentDialogue) return;
+
+        // Toggle sitting on the pebble beach with Enter or Space
+        if (this.keys['enter'] || this.keys[' ']) {
+            if (!this.lastToggleSeatTime || this.sceneTime - this.lastToggleSeatTime > 0.45) {
+                this.beachSeated = !this.beachSeated;
+                this.rockyBeachSeated = this.beachSeated;
+                this.lastToggleSeatTime = this.sceneTime;
+                if (this.beachSeated) {
+                    this.eli.state = 'idle';
+                    this.koru.state = 'idle';
+                    this.showPrompt('[ENTER] STAND UP  |  [R] REPLAY THE JOURNEY');
+                } else {
+                    this.showPrompt('[A/D] or [←/→] WALK BY WATER  |  [ENTER] SIT ON PEBBLES');
+                }
+            }
+        }
+
+        if (this.beachSeated) return;
+
+        let moving = false;
+        if (this.keys['arrowright'] || this.keys['d']) {
+            this.eli.x += this.eli.speed * dt;
+            this.eli.facing = 1;
+            this.eli.state = 'walk';
+            moving = true;
+        } else if (this.keys['arrowleft'] || this.keys['a']) {
+            this.eli.x -= this.eli.speed * dt;
+            this.eli.facing = -1;
+            this.eli.state = 'walk';
+            moving = true;
+        }
+
+        if (!moving) {
+            this.eli.state = 'idle';
+        }
+
+        // Clamp Ryan along the shoreline (explore up to the rocky arch base)
+        this.eli.x = Math.max(50, Math.min(385, this.eli.x));
+
+        // Rocky walks alongside Ryan on the pebble beach in his form-fitting suit!
+        const targetRockyX = this.eli.x - 45 * this.eli.facing;
+        const diffX = targetRockyX - this.koru.x;
+        if (Math.abs(diffX) > 12) {
+            this.koru.x += Math.sign(diffX) * this.koru.speed * dt;
+            this.koru.facing = Math.sign(diffX);
+            this.koru.state = 'walk';
+        } else {
+            this.koru.state = 'idle';
+            this.koru.facing = this.eli.facing;
         }
     }
 
@@ -1738,7 +1933,6 @@ class Game {
                 break;
 
             case 'scene7':
-            case 'credits':
                 r.drawSpacecraftHeadingToEarth(
                     this.flightProgress,
                     isRyanSpeaking,
@@ -1747,6 +1941,16 @@ class Game {
                     this.headingIntoAtmosphere,
                     this.arrivalComplete
                 );
+                break;
+
+            case 'scene8':
+            case 'credits':
+                r.drawEarthCoastline(this.cameraX, this.sceneTime);
+                r.drawRyanBeach(this.eli.x, this.eli.y, this.eli.state, this.eli.facing, isRyanSpeaking, this.beachSeated);
+                r.drawRockyBeachSuit(this.koru.x, this.koru.y, this.koru.state, this.koru.facing, isKoruSpeaking, this.rockyBeachSeated);
+                if (this.beachFistBumping) {
+                    r.drawBeachFistBump(this.eli.x, this.eli.y, this.koru.x, this.koru.y);
+                }
                 break;
         }
 

@@ -293,6 +293,12 @@ class SoundEngine {
             // Thrusters and cosmic velocity
             const thrusters = this.createSpaceshipLaunch(0.3);
             this.ambientNodes.push(thrusters);
+        } else if (sceneName === 'earth_beach' || sceneName === 'coastal_ocean') {
+            // Gentle rolling ocean waves surf + coastal sea breeze on Earth
+            const oceanWaves = this.createGentleWaves(0.18);
+            const seaBreeze = this.createWindGenerator(0.08, 550);
+            this.ambientNodes.push(oceanWaves, seaBreeze);
+            this.startPianoTheme();
         }
     }
 

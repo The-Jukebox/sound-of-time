@@ -1,4 +1,4 @@
-/**
+﻿/**
  * SOUND OF TIMES — Earth Archive Record 003: The Forest
  * ForestSonificationEngine & ForestSoundscapeManager
  * 
@@ -233,6 +233,7 @@
             this.stopStepTimer();
             this.soundscape.pause();
             this.silenceSynths();
+            if (this.masterVolume) this.masterVolume.mute = true;
             if (this.onStateChangeCallback) this.onStateChangeCallback('paused');
         }
 
@@ -244,6 +245,7 @@
             this.currentNote = '—';
             this.soundscape.stop();
             this.silenceSynths();
+            if (this.masterVolume) this.masterVolume.mute = true;
             if (this.onStateChangeCallback) this.onStateChangeCallback('stopped');
         }
 
@@ -584,16 +586,55 @@
             this.cricketPan.connect(this.wildlifeBus);
             this.cricketOsc.start();
 
-            // 9. Rain on Canopy Generator
-            this.rainNoise = new Tone.Noise("white");
+            // 9. Authentic Canopy Rain Generator (Pink Noise Body + Pitter-Patter Droplets + Leaf Drips)
+            this.rainNoise = new Tone.Noise("pink");
             this.rainFilter = new Tone.Filter({
-                frequency: 2200,
-                type: "highpass"
+                frequency: 1400,
+                type: "bandpass",
+                Q: 1.2
             });
             this.rainGain = new Tone.Gain(0.0);
+            this.rainPan = new Tone.Panner(-0.15);
             this.rainNoise.connect(this.rainFilter);
             this.rainFilter.connect(this.rainGain);
-            this.rainGain.connect(this.waterBus);
+            this.rainGain.connect(this.rainPan);
+            this.rainPan.connect(this.waterBus);
+
+            // Realistic Pitter-Patter Water Droplet Impact Synth (Foliage & Window Collisions)
+            this.rainDropletSynth = new Tone.Synth({
+                oscillator: { type: "sine" },
+                envelope: { attack: 0.001, decay: 0.022, sustain: 0, release: 0.015 }
+            });
+            this.rainDropletFilter = new Tone.Filter(2600, "bandpass");
+            this.rainDropletPan = new Tone.Panner(0);
+            this.rainDropletSynth.connect(this.rainDropletFilter);
+            this.rainDropletFilter.connect(this.rainDropletPan);
+            this.rainDropletPan.connect(this.waterBus);
+            this.rainDropletSynth.volume.value = -12;
+
+            // Canopy Leaf Drip / Water Puddle Splash Synth (Liquid Resonant Plop)
+            this.leafDripSynth = new Tone.MembraneSynth({
+                pitchDecay: 0.014,
+                octaves: 1.4,
+                oscillator: { type: "sine" },
+                envelope: { attack: 0.001, decay: 0.048, sustain: 0, release: 0.03 }
+            });
+            this.leafDripPan = new Tone.Panner(0.2);
+            this.leafDripSynth.connect(this.leafDripPan);
+            this.leafDripPan.connect(this.waterBus);
+            this.leafDripSynth.volume.value = -10;
+
+            // Distant Rolling Thunder Rumbler
+            this.thunderSynth = new Tone.MembraneSynth({
+                pitchDecay: 0.08,
+                octaves: 2.8,
+                oscillator: { type: "sine" },
+                envelope: { attack: 0.01, decay: 1.8, sustain: 0.05, release: 1.4 }
+            });
+            this.thunderFilter = new Tone.Filter(180, "lowpass");
+            this.thunderSynth.connect(this.thunderFilter);
+            this.thunderFilter.connect(this.canopyBus);
+            this.thunderSynth.volume.value = -6;
 
             // Start ambient base noise generators
             this.leafNoise.start();
@@ -611,16 +652,20 @@
             this.scheduleWildlifeEvents();
             this.scheduleDawnChorus();
             this.scheduleStreamBubbles();
+            this.scheduleRainDroplets();
         }
 
         pause() {
             this.isActive = false;
             this.clearTimers();
-            if (this.leafGain) this.leafGain.gain.rampTo(0, 0.2);
-            if (this.windGain) this.windGain.gain.rampTo(0, 0.2);
-            if (this.streamGain) this.streamGain.gain.rampTo(0, 0.2);
-            if (this.cricketGain) this.cricketGain.gain.rampTo(0, 0.2);
-            if (this.rainGain) this.rainGain.gain.rampTo(0, 0.2);
+            if (this.leafGain) this.leafGain.gain.rampTo(0, 0.05);
+            if (this.windGain) this.windGain.gain.rampTo(0, 0.05);
+            if (this.streamGain) this.streamGain.gain.rampTo(0, 0.05);
+            if (this.cricketGain) this.cricketGain.gain.rampTo(0, 0.05);
+            if (this.rainGain) this.rainGain.gain.rampTo(0, 0.05);
+            if (this.rainDropletSynth && typeof Tone !== 'undefined') {
+                try { this.rainDropletSynth.triggerRelease(); } catch(e) {}
+            }
         }
 
         resume() {
@@ -630,17 +675,22 @@
             this.scheduleWildlifeEvents();
             this.scheduleDawnChorus();
             this.scheduleStreamBubbles();
+            this.scheduleRainDroplets();
         }
 
         stop() {
             this.isActive = false;
             this.clearTimers();
-            if (this.leafGain) this.leafGain.gain.rampTo(0, 0.1);
-            if (this.windGain) this.windGain.gain.rampTo(0, 0.1);
-            if (this.streamGain) this.streamGain.gain.rampTo(0, 0.1);
-            if (this.cricketGain) this.cricketGain.gain.rampTo(0, 0.1);
-            if (this.rainGain) this.rainGain.gain.rampTo(0, 0.1);
+            if (this.leafGain) this.leafGain.gain.rampTo(0, 0.05);
+            if (this.windGain) this.windGain.gain.rampTo(0, 0.05);
+            if (this.streamGain) this.streamGain.gain.rampTo(0, 0.05);
+            if (this.cricketGain) this.cricketGain.gain.rampTo(0, 0.05);
+            if (this.rainGain) this.rainGain.gain.rampTo(0, 0.05);
+            if (this.rainDropletSynth && typeof Tone !== 'undefined') {
+                try { this.rainDropletSynth.triggerRelease(); } catch(e) {}
+            }
         }
+
 
         clearTimers() {
             if (this.wildlifeTimer) clearTimeout(this.wildlifeTimer);
@@ -648,11 +698,86 @@
             if (this.gustTimer) clearTimeout(this.gustTimer);
             if (this.bubbleTimer) clearTimeout(this.bubbleTimer);
             if (this.thunderTimer) clearTimeout(this.thunderTimer);
+            if (this.dropletTimer) clearTimeout(this.dropletTimer);
+            this.dropletTimer = null;
             this.wildlifeTimer = null;
             this.dawnChorusTimer = null;
             this.gustTimer = null;
             this.bubbleTimer = null;
             this.thunderTimer = null;
+        }
+
+        setRainGain(vol) {
+            this.rainIntensity = Math.max(0, Math.min(1, vol));
+            if (!this.isActive || !this.isInitialized || this.waterMuted) {
+                if (this.rainGain) this.rainGain.gain.rampTo(0, 0.05);
+                if (this.dropletTimer) {
+                    clearTimeout(this.dropletTimer);
+                    this.dropletTimer = null;
+                }
+                return;
+            }
+            if (this.rainGain) {
+                const targetGain = this.rainIntensity * 0.22;
+                this.rainGain.gain.rampTo(targetGain, 0.2);
+            }
+            if (this.rainIntensity > 0.02 && !this.dropletTimer) {
+                this.scheduleRainDroplets();
+            }
+        }
+
+        scheduleRainDroplets() {
+            if (!this.isActive || this.waterMuted || this.rainIntensity <= 0.02) {
+                if (this.dropletTimer) {
+                    clearTimeout(this.dropletTimer);
+                    this.dropletTimer = null;
+                }
+                return;
+            }
+
+            const interval = 35 + Math.random() * 60; // 35ms - 95ms rapid pitter-patter
+            this.dropletTimer = setTimeout(() => {
+                if (!this.isActive || this.waterMuted || this.rainIntensity <= 0.02) return;
+
+                if (this.rainDropletSynth && typeof Tone !== 'undefined') {
+                    const pitches = ["A6", "B6", "C7", "D7", "E7", "F#7", "G7", "A7"];
+                    const note = pitches[Math.floor(Math.random() * pitches.length)];
+                    const pan = (Math.random() * 1.6) - 0.8;
+                    const vel = 0.2 + (Math.random() * 0.45) * this.rainIntensity;
+
+                    try {
+                        if (this.rainDropletPan) this.rainDropletPan.pan.setValueAtTime(pan, Tone.now());
+                        this.rainDropletSynth.triggerAttackRelease(note, 0.018, Tone.now(), vel);
+                    } catch (e) {}
+                }
+
+                // Resonant leaf drip
+                if (Math.random() < 0.20 * this.rainIntensity) {
+                    this.playCanopyLeafDrip();
+                }
+
+                this.scheduleRainDroplets();
+            }, interval);
+        }
+
+        playCanopyLeafDrip() {
+            if (!this.leafDripSynth || this.waterMuted || typeof Tone === 'undefined') return;
+            const dripNotes = ["F4", "G4", "A4", "C5", "D5", "E5"];
+            const note = dripNotes[Math.floor(Math.random() * dripNotes.length)];
+            const pan = (Math.random() * 1.4) - 0.7;
+            try {
+                if (this.leafDripPan) this.leafDripPan.pan.setValueAtTime(pan, Tone.now());
+                this.leafDripSynth.triggerAttackRelease(note, 0.045, Tone.now(), 0.55);
+            } catch (e) {}
+        }
+
+        playThunderRumble() {
+            if (!this.thunderSynth || typeof Tone === 'undefined') return;
+            const now = Tone.now();
+            try {
+                this.thunderSynth.triggerAttackRelease("C1", 1.8, now, 0.85);
+                this.thunderSynth.triggerAttackRelease("G0", 2.2, now + 0.35, 0.7);
+            } catch (e) {}
         }
 
         setMode(mode) {
@@ -797,7 +922,7 @@
         callBird(species = 'random') {
             if (this.wildlifeMuted) return null;
 
-            const speciesList = ['thrush', 'robin', 'warbler', 'hummingbird'];
+            const speciesList = ['thrush', 'robin', 'warbler', 'hummingbird', 'dove', 'chickadee', 'woodpecker', 'owl', 'nightingale'];
             const targetSpecies = species === 'random' ? speciesList[Math.floor(Math.random() * speciesList.length)] : species;
 
             let motif = [];
@@ -828,6 +953,21 @@
                 if (this.woodpeckerSynth && typeof Tone !== 'undefined') {
                     try { this.woodpeckerSynth.triggerAttackRelease("A1", 0.08, Tone.now(), 0.3); } catch (e) {}
                 }
+            } else if (targetSpecies === 'dove') {
+                // Mourning Dove: Deep soothing gentle coo
+                motif = ["D5", "G4", "F#4", "D4"];
+                duration = 0.28;
+                interval = 0.32;
+            } else if (targetSpecies === 'chickadee') {
+                // Black-capped Chickadee: Cheerful two-tone whistle + "chick-a-dee-dee"
+                motif = ["E7", "B6", "G7", "G7", "G7"];
+                duration = 0.07;
+                interval = 0.085;
+            } else if (targetSpecies === 'nightingale') {
+                // Common Nightingale: Virtuoso liquid warbling trill
+                motif = ["C7", "E7", "G7", "D8", "B7", "A7"];
+                duration = 0.06;
+                interval = 0.07;
             } else if (targetSpecies === 'woodpecker') {
                 this.playWoodpeckerTaps();
                 return { species: 'woodpecker', pan: 0 };
@@ -904,24 +1044,31 @@
         }
 
         playWoodpeckerTaps() {
-            if (!this.woodpeckerSynth || this.canopyMuted) return;
+            if (!this.woodpeckerSynth || this.canopyMuted || typeof Tone === 'undefined') return;
 
-            const taps = Math.floor(4 + Math.random() * 5); // 4-8 taps
+            const baseTime = Tone.now() + 0.05;
             const pan = Math.random() * 0.8 - 0.4;
-            if (this.woodpeckerPanner) this.woodpeckerPanner.pan.setValueAtTime(pan, Tone.now());
+            try {
+                if (this.woodpeckerPanner) this.woodpeckerPanner.pan.setValueAtTime(pan, baseTime);
+            } catch (e) {}
 
-            for (let i = 0; i < taps; i++) {
-                this.woodpeckerSynth.triggerAttackRelease("C3", 0.04, Tone.now() + (i * 0.075));
+            for (let i = 0; i < 5; i++) {
+                const noteTime = baseTime + (i * 0.085);
+                try {
+                    this.woodpeckerSynth.triggerAttackRelease("C3", 0.035, noteTime);
+                } catch (e) {}
             }
         }
 
         playOwlHoot() {
-            if (!this.birdSynth || this.wildlifeMuted) return;
+            if (!this.birdSynth || this.wildlifeMuted || typeof Tone === 'undefined') return;
 
-            const now = Tone.now();
-            if (this.birdPanner) this.birdPanner.pan.setValueAtTime(Math.random() * 0.6 - 0.3, now);
-            this.birdSynth.triggerAttackRelease("G4", 0.35, now);
-            this.birdSynth.triggerAttackRelease("D4", 0.45, now + 0.45);
+            const baseTime = Tone.now() + 0.05;
+            try {
+                if (this.birdPanner) this.birdPanner.pan.setValueAtTime(Math.random() * 0.6 - 0.3, baseTime);
+                this.birdSynth.triggerAttackRelease("G4", 0.35, baseTime);
+                this.birdSynth.triggerAttackRelease("D4", 0.45, baseTime + 0.45);
+            } catch (e) {}
         }
 
         // Scheduled Wind Gusts

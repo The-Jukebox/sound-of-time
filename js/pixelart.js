@@ -1265,11 +1265,10 @@ class PixelRenderer {
         const activeRecord = state.activeRecord || null;
         const audioMetrics = state.audioMetrics || { energy: 0, bass: 0, treble: 0 };
 
-        // Scale factor: Jukebox is a compact tabletop retro audio unit (~51px tall, 44px wide)
-        // making Ryan (~82px tall) visibly bigger and taller than the jukebox!
-        const jbScale = 0.58;
-        const jw = 76;
-        const jh = 88;
+        // Prominent, rich tabletop retro audio station (~74px wide, 86px tall)
+        const jbScale = 0.78;
+        const jw = 86;
+        const jh = 100;
 
         ctx.save();
         ctx.translate(x, y);
@@ -1278,192 +1277,290 @@ class PixelRenderer {
         const jx = -jw * 0.5;
         const jy = -jh;
 
-        // 1. Wooden Outer Rounded Frame
-        ctx.fillStyle = '#3a1b0b'; // dark mahogany
+        // 1. Rich Mahogany Wooden Cabinet with Beveled Crown
+        ctx.fillStyle = '#2b1206'; // deep dark wood
         ctx.beginPath();
-        ctx.roundRect(jx, jy, jw, jh, [18, 18, 4, 4]);
+        ctx.roundRect(jx - 2, jy - 2, jw + 4, jh + 4, [20, 20, 6, 6]);
         ctx.fill();
 
-        // Brass/Gold Outer Border
-        ctx.strokeStyle = this.palette.warmGold;
-        ctx.lineWidth = 2.5;
+        // Main warm wood grain
+        const woodGrad = ctx.createLinearGradient(jx, jy, jx + jw, jy + jh);
+        woodGrad.addColorStop(0, '#53230c');
+        woodGrad.addColorStop(0.3, '#3a1707');
+        woodGrad.addColorStop(0.7, '#4a1e0a');
+        woodGrad.addColorStop(1, '#2b1206');
+        ctx.fillStyle = woodGrad;
+        ctx.beginPath();
+        ctx.roundRect(jx, jy, jw, jh, [18, 18, 5, 5]);
+        ctx.fill();
+
+        // Polished Brass / Gold Inlay Trim
+        ctx.strokeStyle = '#e6b95c';
+        ctx.lineWidth = 2.0;
         ctx.stroke();
 
-        // Inner dark polished body
-        ctx.fillStyle = this.palette.midnightPurple;
+        // Inner polished chassis
+        ctx.fillStyle = '#0a0515';
         ctx.beginPath();
-        ctx.roundRect(jx + 5, jy + 6, jw - 10, jh - 12, [14, 14, 2, 2]);
+        ctx.roundRect(jx + 5, jy + 6, jw - 10, jh - 12, [14, 14, 3, 3]);
         ctx.fill();
 
-        // 2. Neon Tubes (Cyan & Violet on side arches)
-        const neonPulse = isPowered ? (Math.sin(t * 3.5) * 0.2 + 0.8 + audioMetrics.energy * 0.5) : 0.15;
-        ctx.lineWidth = 3;
+        // 2. Dual Neon Arches (Cyan on left, Warm Coral on right) with Beat Pulse
+        const energyGlow = (audioMetrics.energy || 0) * 0.6;
+        const neonAlpha = isPowered ? (Math.sin(t * 3.5) * 0.15 + 0.85 + energyGlow) : 0.18;
 
-        // Left Neon Tube (Cyan)
-        ctx.strokeStyle = `rgba(71, 216, 242, ${neonPulse})`;
+        // Left Neon Tube (Electric Cyan)
+        ctx.lineWidth = 3.2;
+        ctx.strokeStyle = 'rgba(71, 216, 242, ' + neonAlpha + ')';
         ctx.beginPath();
-        ctx.moveTo(jx + 9, jy + jh - 16);
-        ctx.lineTo(jx + 9, jy + 24);
-        ctx.quadraticCurveTo(jx + 12, jy + 10, jx + 22, jy + 8);
+        ctx.moveTo(jx + 8, jy + jh - 18);
+        ctx.lineTo(jx + 8, jy + 26);
+        ctx.quadraticCurveTo(jx + 12, jy + 10, jx + 24, jy + 7);
         ctx.stroke();
 
-        // Right Neon Tube (Violet/Pink)
-        ctx.strokeStyle = `rgba(242, 139, 189, ${neonPulse})`;
+        // Right Neon Tube (Warm Coral/Pink)
+        ctx.strokeStyle = 'rgba(242, 139, 189, ' + neonAlpha + ')';
         ctx.beginPath();
-        ctx.moveTo(jx + jw - 9, jy + jh - 16);
-        ctx.lineTo(jx + jw - 9, jy + 24);
-        ctx.quadraticCurveTo(jx + jw - 12, jy + 10, jx + jw - 22, jy + 8);
+        ctx.moveTo(jx + jw - 8, jy + jh - 18);
+        ctx.lineTo(jx + jw - 8, jy + 26);
+        ctx.quadraticCurveTo(jx + jw - 12, jy + 10, jx + jw - 24, jy + 7);
         ctx.stroke();
 
-        // 3. Top Earth Emblem / Coin Slot
-        ctx.fillStyle = this.palette.warmGold;
+        // 3. Illuminated Sol-3 Earth Emblem & Top Strobe
+        ctx.fillStyle = '#e6b95c';
         ctx.beginPath();
-        ctx.arc(jx + jw * 0.5, jy + 12, 7, 0, Math.PI * 2);
+        ctx.arc(jx + jw * 0.5, jy + 12, 8, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = '#26134d';
+        ctx.fillStyle = '#180a33';
         ctx.beginPath();
-        ctx.arc(jx + jw * 0.5, jy + 12, 5, 0, Math.PI * 2);
+        ctx.arc(jx + jw * 0.5, jy + 12, 6, 0, Math.PI * 2);
         ctx.fill();
-        // Mini globe cross inside emblem
-        ctx.fillStyle = this.palette.electricBlue;
-        ctx.fillRect(jx + jw * 0.5 - 3, jy + 11, 6, 2);
 
-        // 4. Curved Glass Display (Viewing Window)
-        const glassX = jx + 14;
+        // Mini Earth Continents in Emblem
+        ctx.fillStyle = isPowered ? '#47d8f2' : '#32506d';
+        ctx.beginPath();
+        ctx.arc(jx + jw * 0.5 - 1, jy + 11, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = isPowered ? '#62c98a' : '#2b4432';
+        ctx.fillRect(jx + jw * 0.5 + 1, jy + 12, 3, 2);
+
+        // 4. Large Curved Glass Dome Window
+        const glassX = jx + 12;
         const glassY = jy + 22;
-        const glassW = jw - 28;
-        const glassH = 34;
+        const glassW = jw - 24;
+        const glassH = 40;
 
-        ctx.fillStyle = '#0f081c';
+        ctx.fillStyle = '#06030d';
         ctx.fillRect(glassX, glassY, glassW, glassH);
-        ctx.strokeStyle = '#553773';
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = '#43295c';
+        ctx.lineWidth = 1.2;
         ctx.strokeRect(glassX, glassY, glassW, glassH);
 
-        // Visible Spinning Vinyl Record inside glass
-        const vCenter = { x: glassX + glassW * 0.5, y: glassY + glassH * 0.5 };
-        const vRadius = 14;
+        // Glowing Vacuum Tubes (Warm Filament Valves) in rear of glass
+        if (isPowered) {
+            const tubeX1 = glassX + 7;
+            const tubeX2 = glassX + glassW - 12;
+            const tubeY = glassY + 6;
+            const filamentPulse = 0.75 + Math.sin(t * 7.0) * 0.15 + (audioMetrics.bass || 0) * 0.25;
 
-        // Vinyl disc
-        ctx.fillStyle = '#111115';
+            [tubeX1, tubeX2].forEach(tx => {
+                // Glass valve cylinder
+                ctx.fillStyle = 'rgba(255, 230, 180, 0.12)';
+                ctx.strokeStyle = 'rgba(255, 200, 120, 0.4)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.roundRect(tx, tubeY, 6, 14, [3, 3, 1, 1]);
+                ctx.fill();
+                ctx.stroke();
+
+                // Orange glowing filament coil
+                ctx.fillStyle = 'rgba(255, 140, 30, ' + filamentPulse + ')';
+                ctx.fillRect(tx + 2, tubeY + 4, 2, 7);
+                ctx.fillStyle = 'rgba(255, 240, 180, ' + filamentPulse + ')';
+                ctx.fillRect(tx + 2.5, tubeY + 5, 1, 4);
+            });
+        }
+
+        // Visible Large Spinning Vinyl Record
+        const vCenter = { x: glassX + glassW * 0.5, y: glassY + glassH * 0.5 };
+        const vRadius = 17;
+
+        // Vinyl Disc Body
+        const vinylGrad = ctx.createRadialGradient(vCenter.x, vCenter.y, 2, vCenter.x, vCenter.y, vRadius);
+        vinylGrad.addColorStop(0, '#1c1c22');
+        vinylGrad.addColorStop(0.5, '#0c0c10');
+        vinylGrad.addColorStop(1, '#050508');
+        ctx.fillStyle = vinylGrad;
         ctx.beginPath();
         ctx.arc(vCenter.x, vCenter.y, vRadius, 0, Math.PI * 2);
         ctx.fill();
 
-        // Grooves
-        ctx.strokeStyle = '#282830';
-        ctx.lineWidth = 1;
+        // Realistic Sound Grooves (Concentric Sheen Rings)
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.14)';
+        ctx.lineWidth = 0.8;
         ctx.beginPath();
         ctx.arc(vCenter.x, vCenter.y, vRadius - 3, 0, Math.PI * 2);
         ctx.arc(vCenter.x, vCenter.y, vRadius - 6, 0, Math.PI * 2);
+        ctx.arc(vCenter.x, vCenter.y, vRadius - 9, 0, Math.PI * 2);
         ctx.stroke();
 
         // Center Record Label (Color matches active record)
         let labelColor = '#47d8f2';
-        if (activeRecord === 'forest') labelColor = this.palette.earthGreen;
-        else if (activeRecord === 'ocean') labelColor = this.palette.electricBlue;
-        else if (activeRecord === 'atmosphere') labelColor = this.palette.softPink;
-        else if (activeRecord === 'earth') labelColor = this.palette.warmGold;
+        if (activeRecord === 'forest') labelColor = '#62c98a';
+        else if (activeRecord === 'ocean') labelColor = '#47d8f2';
+        else if (activeRecord === 'atmosphere') labelColor = '#f28bbd';
+        else if (activeRecord === 'earth') labelColor = '#ffca72';
 
         ctx.fillStyle = labelColor;
         ctx.beginPath();
-        ctx.arc(vCenter.x, vCenter.y, 5, 0, Math.PI * 2);
+        ctx.arc(vCenter.x, vCenter.y, 6.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#06020c';
+        ctx.beginPath();
+        ctx.arc(vCenter.x, vCenter.y, 1.8, 0, Math.PI * 2);
         ctx.fill();
 
-        // Spinning indicator / tonearm needle
+        // Spinning Strobe Dots & Vinyl Needle
         if (isPlaying && !isPaused) {
-            const rotAngle = (t * 8) % (Math.PI * 2);
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 1.5;
-            ctx.beginPath();
-            ctx.moveTo(vCenter.x, vCenter.y);
-            ctx.lineTo(vCenter.x + Math.cos(rotAngle) * 4, vCenter.y + Math.sin(rotAngle) * 4);
-            ctx.stroke();
+            const rotAngle = (t * 8.5) % (Math.PI * 2);
 
-            // 4 Radial strobe dots to make vinyl rotation unmistakably visible
+            // 4 Radial strobe dots for clear rotation
             for (let d = 0; d < 4; d++) {
                 const a = rotAngle + (d * Math.PI / 2);
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
-                ctx.fillRect(vCenter.x + Math.cos(a) * 8.5, vCenter.y + Math.sin(a) * 8.5, 1.5, 1.5);
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(vCenter.x + Math.cos(a) * 11, vCenter.y + Math.sin(a) * 11, 1.8, 1.8);
             }
+
+            // Light sheen gleam rotating across record
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(vCenter.x, vCenter.y, vRadius, rotAngle, rotAngle + 0.35);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.28)';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+            ctx.restore();
         }
 
-        // Metal Tonearm
-        ctx.strokeStyle = '#c2a868';
-        ctx.lineWidth = 1.5;
+        // Precision Polished Brass Tonearm with Stylus
+        ctx.strokeStyle = '#e6b95c';
+        ctx.lineWidth = 1.8;
         ctx.beginPath();
-        ctx.moveTo(glassX + glassW - 4, glassY + 4);
-        ctx.lineTo(glassX + glassW - 7, glassY + 12);
-        if (isPlaying || isPaused) {
-            ctx.lineTo(vCenter.x + 6, vCenter.y); // Needle on record
+        ctx.moveTo(glassX + glassW - 5, glassY + 5);
+        ctx.lineTo(glassX + glassW - 9, glassY + 15);
+        if (isPlaying && !isPaused) {
+            ctx.lineTo(vCenter.x + 8, vCenter.y + 2); // Stylus riding the groove
         } else {
-            ctx.lineTo(glassX + glassW - 6, glassY + 24); // Tonearm parked
+            ctx.lineTo(glassX + glassW - 7, glassY + 28); // Parked tonearm
         }
         ctx.stroke();
 
-        // Glass reflection glare line
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+        // Glass Specular Glare Reflection Line
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
         ctx.lineWidth = 1.5;
         ctx.beginPath();
-        ctx.moveTo(glassX + 3, glassY + glassH - 4);
-        ctx.lineTo(glassX + 16, glassY + 4);
+        ctx.moveTo(glassX + 4, glassY + glassH - 4);
+        ctx.lineTo(glassX + 22, glassY + 4);
         ctx.stroke();
 
-        // 5. Digital Display: reads "EARTH ARCHIVE" or record name
-        const dispX = jx + 14;
-        const dispY = jy + 59;
-        const dispW = jw - 28;
-        const dispH = 10;
+        // 5. Digital Marquee Display (Active Record Title / Status)
+        const dispX = jx + 12;
+        const dispY = jy + 64;
+        const dispW = jw - 24;
+        const dispH = 11;
 
-        ctx.fillStyle = '#06020c';
+        ctx.fillStyle = '#040208';
         ctx.fillRect(dispX, dispY, dispW, dispH);
+        ctx.strokeStyle = '#38204d';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(dispX, dispY, dispW, dispH);
 
         if (isPowered) {
-            ctx.fillStyle = this.palette.electricBlue;
-            ctx.font = '6px "Courier New", monospace';
+            ctx.fillStyle = isPlaying ? labelColor : '#62a5b8';
+            ctx.font = 'bold 6.5px "Courier New", monospace';
             ctx.textAlign = 'center';
 
             let displayText = 'EARTH ARCHIVE';
             if (isPlaying) {
-                if (activeRecord === 'forest') displayText = '003 FOREST';
-                else if (activeRecord === 'ocean') displayText = '002 OCEAN';
-                else if (activeRecord === 'atmosphere') displayText = '001 ATMOSPHERE';
-                else if (activeRecord === 'earth') displayText = '004 EARTH';
+                if (activeRecord === 'forest') displayText = '★ 003 FOREST ★';
+                else if (activeRecord === 'ocean') displayText = '★ 002 OCEAN ★';
+                else if (activeRecord === 'atmosphere') displayText = '★ 001 ATMOSPHERE ★';
+                else if (activeRecord === 'earth') displayText = '★ 004 EARTH ★';
             } else if (isPaused) {
-                displayText = '[PAUSED]';
+                displayText = '[ PAUSED ]';
+            } else {
+                displayText = '[ READY ]';
             }
-            ctx.fillText(displayText, dispX + dispW * 0.5, dispY + 7);
+            ctx.fillText(displayText, dispX + dispW * 0.5, dispY + 8);
         }
 
-        // 6. Central Selector Dial & 6 glowing selection buttons
-        const dialX = jx + jw * 0.5;
-        const dialY = jy + 76;
+        // 6. Dual Backlit Analog VU Meters (Left & Right Channel)
+        const vuY = jy + 78;
+        const vuW = 26;
+        const vuH = 9;
 
-        // Dial
-        ctx.fillStyle = this.palette.warmGold;
+        // Left VU Meter
+        [jx + 12, jx + jw - 38].forEach((vx, vIdx) => {
+            // Warm amber backlit dial
+            ctx.fillStyle = isPowered ? '#33230a' : '#141008';
+            ctx.fillRect(vx, vuY, vuW, vuH);
+            ctx.strokeStyle = '#664a14';
+            ctx.lineWidth = 0.8;
+            ctx.strokeRect(vx, vuY, vuW, vuH);
+
+            // Dial scale arc
+            ctx.strokeStyle = isPowered ? 'rgba(255, 200, 100, 0.6)' : '#332810';
+            ctx.beginPath();
+            ctx.arc(vx + vuW * 0.5, vuY + vuH + 4, 10, -Math.PI * 0.8, -Math.PI * 0.2);
+            ctx.stroke();
+
+            // VU Needle bouncing to sound energy
+            const channelEnergy = (vIdx === 0) ? (audioMetrics.energy || 0) : (audioMetrics.bass || 0);
+            const needleAngle = isPlaying ? (-Math.PI * 0.68 + channelEnergy * 0.75 + Math.sin(t * 12 + vIdx) * 0.08) : -Math.PI * 0.68;
+
+            ctx.strokeStyle = '#ff3344'; // Red meter needle
+            ctx.lineWidth = 1.0;
+            ctx.beginPath();
+            ctx.moveTo(vx + vuW * 0.5, vuY + vuH);
+            ctx.lineTo(vx + vuW * 0.5 + Math.cos(needleAngle) * 9, vuY + vuH + Math.sin(needleAngle) * 9);
+            ctx.stroke();
+        });
+
+        // Center Heavy Brass Volume / Tone Knob
+        const knobX = jx + jw * 0.5;
+        const knobY = vuY + 4;
+        ctx.fillStyle = '#e6b95c';
         ctx.beginPath();
-        ctx.arc(dialX, dialY, 5, 0, Math.PI * 2);
+        ctx.arc(knobX, knobY, 4.5, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = '#26134d';
+        ctx.fillStyle = '#3a1707';
         ctx.beginPath();
-        ctx.arc(dialX, dialY, 2, 0, Math.PI * 2);
+        ctx.arc(knobX, knobY, 2.0, 0, Math.PI * 2);
         ctx.fill();
 
-        // 6 small record buttons (3 on left, 3 on right)
-        const btnColors = ['#62c98a', '#47d8f2', '#f28bbd', '#ffca72', '#a67c52', '#8c52ff'];
-        for (let b = 0; b < 6; b++) {
-            const bx = (b < 3) ? (jx + 15 + b * 6) : (jx + jw - 27 + (b - 3) * 6);
-            ctx.fillStyle = isPowered ? btnColors[b] : '#331f47';
-            ctx.fillRect(bx, jy + 74, 4, 4);
+        // 7. Dynamic 8-Band LED Spectrum Visualizer along Speaker Grille
+        const spkY = jy + 90;
+        const numBands = 8;
+        const bandW = 6;
+        const startBx = jx + 13;
+
+        for (let b = 0; b < numBands; b++) {
+            const bx = startBx + b * 7.5;
+            const barEnergy = isPlaying ? Math.min(1.0, (audioMetrics.energy || 0.2) * (0.8 + Math.sin(t * 14 + b * 0.8) * 0.4)) : 0.05;
+            const barH = Math.max(1, Math.floor(barEnergy * 6));
+
+            // Green to Amber LED stack
+            ctx.fillStyle = isPowered ? (b >= 6 ? '#ff4d6d' : (b >= 4 ? '#ffca72' : '#62c98a')) : '#221133';
+            ctx.fillRect(bx, spkY + (6 - barH), bandW, barH);
         }
 
         ctx.restore();
 
-        // 7. Holographic Projection Above Jukebox if record is playing
+        // 8. Holographic Projection Above Jukebox if record is playing
         if (isPlaying && !isPaused && activeRecord) {
             this.drawRecordHologram(x, y - jh * jbScale, activeRecord, audioMetrics);
         }
     }
+
 
     // Dynamic Visual Holograms Above Jukebox for each record
     drawRecordHologram(x, y, recordKey, audioMetrics) {
@@ -3008,6 +3105,688 @@ class PixelRenderer {
             ctx.fillRect(Math.floor(f.x), Math.floor(f.y), Math.ceil(f.size), Math.ceil(f.size));
         });
         ctx.globalAlpha = 1.0;
+    }
+
+    // ----------------------------------------------------
+    // SCENE 8 — GRAND FINALE: EARTH'S JURASSIC COASTLINE & DURDLE DOOR
+    // ----------------------------------------------------
+
+    drawEarthCoastline(cameraX = 0, tideTime = 0) {
+        const ctx = this.ctx;
+        const w = this.width;
+        const h = this.height;
+        const t = this.animTime;
+
+        ctx.save();
+
+        // 1. Bright misty coastal sky (pale English coastal overcast daylight)
+        const skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.58);
+        skyGrad.addColorStop(0, '#d9e5eb');
+        skyGrad.addColorStop(0.5, '#e9f0f3');
+        skyGrad.addColorStop(1, '#f4f2ea');
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, w, h * 0.58);
+
+        // Soft coastal sun diffusion
+        const sunGlow = ctx.createRadialGradient(w * 0.38, h * 0.22, 10, w * 0.38, h * 0.22, 160);
+        sunGlow.addColorStop(0, 'rgba(255, 252, 235, 0.45)');
+        sunGlow.addColorStop(0.5, 'rgba(255, 248, 220, 0.18)');
+        sunGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        ctx.fillStyle = sunGlow;
+        ctx.fillRect(0, 0, w, h * 0.58);
+
+        // Distant sea gulls soaring
+        const gullT = t * 1.5;
+        const gulls = [
+            { x: (w * 0.22 + gullT * 12) % (w + 40) - 20, y: h * 0.18 + Math.sin(gullT * 0.8) * 6, s: 0.8 },
+            { x: (w * 0.28 + gullT * 14) % (w + 40) - 20, y: h * 0.15 + Math.cos(gullT * 0.9) * 5, s: 0.65 },
+            { x: (w * 0.65 + gullT * 10) % (w + 40) - 20, y: h * 0.25 + Math.sin(gullT * 0.7 + 1) * 8, s: 0.9 }
+        ];
+        ctx.strokeStyle = 'rgba(100, 120, 135, 0.6)';
+        ctx.lineWidth = 1.2;
+        gulls.forEach(g => {
+            const wingFlap = Math.sin(t * 8 + g.x * 0.1) * 2;
+            ctx.beginPath();
+            ctx.moveTo(g.x - 5 * g.s, g.y - wingFlap);
+            ctx.quadraticCurveTo(g.x - 2 * g.s, g.y - 2, g.x, g.y);
+            ctx.quadraticCurveTo(g.x + 2 * g.s, g.y - 2, g.x + 5 * g.s, g.y - wingFlap);
+            ctx.stroke();
+        });
+
+        // 2. Far distant headlands / hazy cliffs on left horizon
+        ctx.fillStyle = 'rgba(180, 198, 208, 0.65)';
+        ctx.beginPath();
+        ctx.moveTo(0, h * 0.46);
+        ctx.lineTo(w * 0.22, h * 0.46);
+        ctx.lineTo(w * 0.16, h * 0.42);
+        ctx.lineTo(w * 0.08, h * 0.41);
+        ctx.lineTo(0, h * 0.43);
+        ctx.closePath();
+        ctx.fill();
+
+        // 3. Turquoise Ocean Waters (Multi-layered depths)
+        const oceanTopY = h * 0.44;
+        const oceanBottomY = h * 0.68;
+
+        const seaGrad = ctx.createLinearGradient(0, oceanTopY, 0, oceanBottomY);
+        seaGrad.addColorStop(0, '#2e6f77');
+        seaGrad.addColorStop(0.35, '#3b929c');
+        seaGrad.addColorStop(0.7, '#4eb4be');
+        seaGrad.addColorStop(1, '#68ccd6');
+        ctx.fillStyle = seaGrad;
+        ctx.fillRect(0, oceanTopY, w, oceanBottomY - oceanTopY + 12);
+
+        // Gentle animated ocean wave swells (flowing through bay and under arch)
+        for (let waveRow = 0; waveRow < 5; waveRow++) {
+            const rowY = oceanTopY + 8 + waveRow * 14;
+            const waveSpeed = 1.2 + waveRow * 0.2;
+            const waveFreq = 0.035 - waveRow * 0.003;
+            const waveAmp = 2.0 + waveRow * 0.8;
+
+            ctx.strokeStyle = (waveRow % 2 === 0) ? 'rgba(150, 235, 245, 0.45)' : 'rgba(255, 255, 255, 0.65)';
+            ctx.lineWidth = 1.2 + waveRow * 0.3;
+            ctx.beginPath();
+            for (let wx = 0; wx < w; wx += 6) {
+                const wy = rowY + Math.sin(t * waveSpeed + wx * waveFreq) * waveAmp;
+                if (wx === 0) ctx.moveTo(wx, wy);
+                else ctx.lineTo(wx, wy);
+            }
+            ctx.stroke();
+        }
+
+        // 4. THE ICONIC JURASSIC COAST SEA ARCH (Durdle Door formation)
+        this.drawDurdleDoorSeaArch(w * 0.72, h * 0.42);
+
+        // 5. Pebble / Shingle Shoreline (sloping beach)
+        const beachTopY = h * 0.65;
+        const beachGrad = ctx.createLinearGradient(0, beachTopY, 0, h);
+        beachGrad.addColorStop(0, '#534335'); // Wet pebble waterline
+        beachGrad.addColorStop(0.12, '#7a6652'); // Wet shingle
+        beachGrad.addColorStop(0.45, '#9d8870'); // Dry pebbles
+        beachGrad.addColorStop(1, '#b5a086'); // Upper shingle bank
+        ctx.fillStyle = beachGrad;
+
+        ctx.beginPath();
+        ctx.moveTo(0, beachTopY + 4);
+        for (let bx = 0; bx <= w; bx += 10) {
+            const by = beachTopY + Math.sin(bx * 0.015 + 0.5) * 6;
+            ctx.lineTo(bx, by);
+        }
+        ctx.lineTo(w, h);
+        ctx.lineTo(0, h);
+        ctx.closePath();
+        ctx.fill();
+
+        // 6. Breaking Surf & Wave Wash on the pebbles
+        const surfCycle = Math.sin(t * 1.3);
+        const surfReach = surfCycle * 14 + 10;
+        const surfY = beachTopY + 6 - surfReach;
+
+        // Foamy surf wash layer
+        ctx.fillStyle = 'rgba(235, 250, 255, 0.45)';
+        ctx.beginPath();
+        ctx.moveTo(0, surfY + 4);
+        for (let sx = 0; sx <= w; sx += 12) {
+            const sy = surfY + Math.sin(t * 2.2 + sx * 0.06) * 3;
+            ctx.lineTo(sx, sy);
+        }
+        ctx.lineTo(w, beachTopY + 12);
+        ctx.lineTo(0, beachTopY + 12);
+        ctx.closePath();
+        ctx.fill();
+
+        // Crisp white bubbly seafoam edge
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        for (let sx = 0; sx <= w; sx += 8) {
+            const sy = surfY + Math.sin(t * 2.2 + sx * 0.06) * 3;
+            if (sx === 0) ctx.moveTo(sx, sy);
+            else ctx.lineTo(sx, sy);
+        }
+        ctx.stroke();
+
+        // Seafoam bubbles trailing back
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        for (let b = 0; b < 16; b++) {
+            const bx = (b * 41 + t * 5) % w;
+            const by = beachTopY + 2 + ((b * 19) % 18);
+            ctx.fillRect(bx, by, 2, 2);
+        }
+
+        // 7. Individual scattered pebbles on the shingle bank
+        const pebbleSeeds = [
+            { x: 35, y: h * 0.76, w: 5, h: 3, c: '#36322d' },
+            { x: 72, y: h * 0.82, w: 4, h: 3, c: '#e8e2d5' }, // white quartz
+            { x: 120, y: h * 0.72, w: 6, h: 4, c: '#8a4e3b' }, // terracotta rust
+            { x: 165, y: h * 0.88, w: 5, h: 3, c: '#454039' },
+            { x: 210, y: h * 0.78, w: 4, h: 3, c: '#cfa569' }, // amber flint
+            { x: 275, y: h * 0.85, w: 6, h: 4, c: '#e0ded7' },
+            { x: 330, y: h * 0.74, w: 5, h: 3, c: '#8c4f3f' },
+            { x: 385, y: h * 0.82, w: 4, h: 2, c: '#2b2723' },
+            { x: 440, y: h * 0.77, w: 6, h: 4, c: '#bf9965' },
+            { x: 495, y: h * 0.89, w: 5, h: 3, c: '#3b3833' },
+            { x: 550, y: h * 0.80, w: 4, h: 3, c: '#e5ded0' }
+        ];
+
+        pebbleSeeds.forEach(p => {
+            ctx.fillStyle = p.c;
+            ctx.beginPath();
+            ctx.ellipse(p.x, p.y, p.w, p.h, 0.2, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        ctx.restore();
+    }
+
+    // Majestic Durdle Door Sea Arch with Jurassic rock striations
+    drawDurdleDoorSeaArch(archBaseX, archBaseY) {
+        const ctx = this.ctx;
+        const t = this.animTime;
+
+        ctx.save();
+        ctx.translate(archBaseX, archBaseY);
+
+        // Main cliff headland mass sloping down from the right
+        // Strata band 1: Top grass / coastal turf (lichen green & weathered earth)
+        ctx.fillStyle = '#677a5b';
+        ctx.beginPath();
+        ctx.moveTo(130, -85);
+        ctx.quadraticCurveTo(80, -78, 20, -55);
+        ctx.lineTo(-40, -42);
+        ctx.lineTo(-75, -28);
+        ctx.lineTo(-85, 4);
+        ctx.lineTo(-55, 30);
+        ctx.lineTo(130, 70);
+        ctx.closePath();
+        ctx.fill();
+
+        // Strata band 2: Warm ochre sandstone layers (Portland stone)
+        ctx.fillStyle = '#b89868';
+        ctx.beginPath();
+        ctx.moveTo(130, -68);
+        ctx.quadraticCurveTo(70, -60, 10, -42);
+        ctx.lineTo(-45, -30);
+        ctx.lineTo(-80, -12);
+        ctx.lineTo(-78, 24);
+        ctx.lineTo(130, 65);
+        ctx.closePath();
+        ctx.fill();
+
+        // Strata band 3: Purbeck limestone shale (darker striations)
+        ctx.fillStyle = '#7a664d';
+        ctx.beginPath();
+        ctx.moveTo(130, -50);
+        ctx.quadraticCurveTo(60, -44, 0, -28);
+        ctx.lineTo(-50, -18);
+        ctx.lineTo(-72, 8);
+        ctx.lineTo(130, 58);
+        ctx.closePath();
+        ctx.fill();
+
+        // Strata band 4: Sage sea-lichen and moss fissures
+        ctx.fillStyle = '#546349';
+        ctx.beginPath();
+        ctx.moveTo(130, -32);
+        ctx.quadraticCurveTo(50, -28, -8, -14);
+        ctx.lineTo(-58, -4);
+        ctx.lineTo(-68, 26);
+        ctx.lineTo(130, 52);
+        ctx.closePath();
+        ctx.fill();
+
+        // Geological chiseled strata lines (tilted bedding planes!)
+        ctx.strokeStyle = '#382f25';
+        ctx.lineWidth = 1.4;
+        const strataAngles = [-60, -45, -30, -15, 0, 15];
+        strataAngles.forEach(offsetY => {
+            ctx.beginPath();
+            ctx.moveTo(120, offsetY - 18);
+            ctx.lineTo(-45, offsetY - 5);
+            ctx.stroke();
+        });
+
+        // ----------------------------------------------------
+        // THE ARCH PORTAL HOLE (The iconic hollow opening)
+        // Turquoise sea water and distant surf are visible right through it!
+        // ----------------------------------------------------
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(-48, 48);
+        ctx.lineTo(-48, 5);
+        ctx.quadraticCurveTo(-48, -26, -18, -26);
+        ctx.quadraticCurveTo(12, -26, 12, 10);
+        ctx.lineTo(12, 48);
+        ctx.closePath();
+        ctx.clip();
+
+        // Water inside arch
+        const archWaterGrad = ctx.createLinearGradient(0, -26, 0, 48);
+        archWaterGrad.addColorStop(0, '#2e757d');
+        archWaterGrad.addColorStop(0.5, '#48abb5');
+        archWaterGrad.addColorStop(1, '#66d1dc');
+        ctx.fillStyle = archWaterGrad;
+        ctx.fillRect(-55, -32, 75, 85);
+
+        // Distant horizon wave through the arch
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+        ctx.lineWidth = 1.5;
+        const innerWaveY = 12 + Math.sin(t * 1.8) * 3;
+        ctx.beginPath();
+        ctx.moveTo(-50, innerWaveY);
+        ctx.lineTo(15, innerWaveY);
+        ctx.stroke();
+
+        ctx.restore();
+
+        // Inner rock shadow on the arch rim
+        ctx.strokeStyle = '#28231c';
+        ctx.lineWidth = 3.0;
+        ctx.beginPath();
+        ctx.moveTo(-48, 48);
+        ctx.lineTo(-48, 5);
+        ctx.quadraticCurveTo(-48, -26, -18, -26);
+        ctx.quadraticCurveTo(12, -26, 12, 10);
+        ctx.lineTo(12, 48);
+        ctx.stroke();
+
+        // Sun highlight on the seaward pillar of the arch
+        ctx.fillStyle = 'rgba(255, 248, 220, 0.35)';
+        ctx.beginPath();
+        ctx.moveTo(-82, -10);
+        ctx.lineTo(-76, 32);
+        ctx.lineTo(-68, 32);
+        ctx.lineTo(-74, -8);
+        ctx.closePath();
+        ctx.fill();
+
+        // Crashing white surf spray at the base of the pillars
+        const sprayBounce = Math.sin(t * 3.5) * 4;
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.ellipse(-52, 44 - sprayBounce * 0.3, 14, 5 + sprayBounce * 0.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.ellipse(14, 45 - sprayBounce * 0.2, 16, 6 + sprayBounce * 0.4, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+    }
+
+    // Rocky in his form-fitting geodesic xenonite exoskeleton on the beach
+    drawRockyBeachSuit(x, y, state = 'idle', facing = 1, isSpeaking = false, isSeated = false) {
+        const ctx = this.ctx;
+        const t = this.animTime;
+
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.scale(facing, 1);
+
+        const walkCycle = (state === 'walk') ? Math.sin(t * 8) : 0;
+        const legShift = walkCycle * 4;
+        const breath = Math.sin(t * 3) * 1.2;
+
+        if (isSeated) {
+            // Seated / Resting tripod posture on the pebble beach facing ocean waves
+            ctx.lineWidth = 2.6;
+            ctx.strokeStyle = '#6e563d';
+            // Back legs
+            ctx.beginPath();
+            ctx.moveTo(-16, -10);
+            ctx.lineTo(-26, -2);
+            ctx.lineTo(-24, 6);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(16, -10);
+            ctx.lineTo(26, -2);
+            ctx.lineTo(24, 6);
+            ctx.stroke();
+
+            // Mid legs
+            ctx.strokeStyle = '#8a6e50';
+            ctx.beginPath();
+            ctx.moveTo(-10, -6);
+            ctx.lineTo(-18, 4);
+            ctx.lineTo(-14, 8);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(10, -6);
+            ctx.lineTo(18, 4);
+            ctx.lineTo(14, 8);
+            ctx.stroke();
+
+            // Front sensory limb resting on pebble
+            ctx.strokeStyle = '#a68763';
+            ctx.beginPath();
+            ctx.moveTo(0, -6);
+            ctx.lineTo(2, 6);
+            ctx.stroke();
+
+            // 2. Rocky's rock carapace body
+            ctx.fillStyle = '#7a6247';
+            ctx.beginPath();
+            ctx.roundRect(-16, -22, 32, 20, [8, 8, 4, 4]);
+            ctx.fill();
+
+            // Mineral shell highlights
+            ctx.fillStyle = '#9e8160';
+            ctx.fillRect(-12, -20, 24, 6);
+
+            // ----------------------------------------------------
+            // 3. FORM-FITTING GEODESIC XENONITE EXOSKELETON
+            // ----------------------------------------------------
+            ctx.fillStyle = 'rgba(255, 235, 175, 0.22)';
+            ctx.beginPath();
+            ctx.roundRect(-20, -26, 40, 26, 10);
+            ctx.fill();
+
+            ctx.fillStyle = 'rgba(220, 245, 255, 0.35)';
+            ctx.beginPath();
+            ctx.roundRect(-19, -25, 38, 24, 8);
+            ctx.fill();
+
+            // Golden Geodesic Triangular Struts
+            ctx.strokeStyle = '#e6c86a';
+            ctx.lineWidth = 1.3;
+
+            const nodes = [
+                { x: 0, y: -26 },
+                { x: -14, y: -18 },
+                { x: 14, y: -18 },
+                { x: -18, y: -8 },
+                { x: 0, y: -10 },
+                { x: 18, y: -8 },
+                { x: -12, y: 0 },
+                { x: 12, y: 0 }
+            ];
+
+            const edges = [
+                [0, 1], [0, 2], [1, 2],
+                [1, 3], [1, 4], [2, 4], [2, 5],
+                [3, 4], [4, 5],
+                [3, 6], [4, 6], [4, 7], [5, 7],
+                [6, 7]
+            ];
+
+            edges.forEach(([i, j]) => {
+                ctx.beginPath();
+                ctx.moveTo(nodes[i].x, nodes[i].y);
+                ctx.lineTo(nodes[j].x, nodes[j].y);
+                ctx.stroke();
+            });
+
+            // Diamond glint sparkles on vertex nodes
+            ctx.fillStyle = '#ffffff';
+            nodes.forEach(n => {
+                ctx.fillRect(n.x - 1, n.y - 1, 2, 2);
+            });
+
+            // Leg sleeves
+            ctx.strokeStyle = 'rgba(240, 210, 110, 0.85)';
+            ctx.lineWidth = 1.0;
+            ctx.strokeRect(-27, -4, 8, 10);
+            ctx.strokeRect(19, -4, 8, 10);
+        } else {
+            // Walking / Standing posture in form-fitting xenonite suit
+            ctx.lineWidth = 2.8;
+
+            // Leg 1 (Far left)
+            ctx.strokeStyle = '#5a4632';
+            ctx.beginPath();
+            ctx.moveTo(-16, -14);
+            ctx.lineTo(-28 - legShift, -6);
+            ctx.lineTo(-24 - legShift, 8 + breath);
+            ctx.stroke();
+
+            // Leg 2 (Far right)
+            ctx.beginPath();
+            ctx.moveTo(16, -14);
+            ctx.lineTo(28 + legShift, -6);
+            ctx.lineTo(24 + legShift, 8 + breath);
+            ctx.stroke();
+
+            // Leg 3 (Mid left)
+            ctx.strokeStyle = '#7a6247';
+            ctx.beginPath();
+            ctx.moveTo(-10, -10);
+            ctx.lineTo(-18 + legShift * 0.7, 0);
+            ctx.lineTo(-14 + legShift * 0.7, 8);
+            ctx.stroke();
+
+            // Leg 4 (Mid right)
+            ctx.beginPath();
+            ctx.moveTo(10, -10);
+            ctx.lineTo(18 - legShift * 0.7, 0);
+            ctx.lineTo(14 - legShift * 0.7, 8);
+            ctx.stroke();
+
+            // Leg 5 (Front gesture / sensory limb)
+            ctx.strokeStyle = '#9e8160';
+            ctx.beginPath();
+            ctx.moveTo(0, -10);
+            ctx.lineTo(0, 4);
+            ctx.lineTo(2, 8);
+            ctx.stroke();
+
+            // 2. Carapace body
+            ctx.fillStyle = '#7a6247';
+            ctx.beginPath();
+            ctx.roundRect(-16, -30, 32, 22, [8, 8, 5, 5]);
+            ctx.fill();
+
+            // Mineral highlights
+            ctx.fillStyle = '#9c7f5f';
+            ctx.fillRect(-12, -28, 24, 7);
+
+            // ----------------------------------------------------
+            // 3. FORM-FITTING GEODESIC XENONITE SUIT
+            // ----------------------------------------------------
+            ctx.fillStyle = 'rgba(255, 235, 170, 0.25)';
+            ctx.beginPath();
+            ctx.roundRect(-21, -34, 42, 28, 11);
+            ctx.fill();
+
+            ctx.fillStyle = 'rgba(220, 245, 255, 0.38)';
+            ctx.beginPath();
+            ctx.roundRect(-20, -33, 40, 26, 9);
+            ctx.fill();
+
+            // Golden Triangular Frame Struts
+            ctx.strokeStyle = '#e6c86a';
+            ctx.lineWidth = 1.4;
+
+            const nodes = [
+                { x: 0, y: -34 },
+                { x: -16, y: -24 },
+                { x: 16, y: -24 },
+                { x: -18, y: -12 },
+                { x: 0, y: -14 },
+                { x: 18, y: -12 },
+                { x: -12, y: -3 },
+                { x: 12, y: -3 }
+            ];
+
+            const edges = [
+                [0, 1], [0, 2], [1, 2],
+                [1, 3], [1, 4], [2, 4], [2, 5],
+                [3, 4], [4, 5],
+                [3, 6], [4, 6], [4, 7], [5, 7],
+                [6, 7]
+            ];
+
+            edges.forEach(([i, j]) => {
+                ctx.beginPath();
+                ctx.moveTo(nodes[i].x, nodes[i].y);
+                ctx.lineTo(nodes[j].x, nodes[j].y);
+                ctx.stroke();
+            });
+
+            ctx.fillStyle = '#ffffff';
+            nodes.forEach(n => {
+                ctx.fillRect(n.x - 1, n.y - 1, 2, 2);
+            });
+
+            // Leg sleeves
+            ctx.strokeStyle = 'rgba(240, 210, 110, 0.85)';
+            ctx.lineWidth = 1.1;
+            ctx.strokeRect(-29 - legShift, -6, 9, 14);
+            ctx.strokeRect(20 + legShift, -6, 9, 14);
+        }
+
+        // Acoustic speech harmonics
+        if (isSpeaking) {
+            const harmonicAlpha = Math.sin(t * 10) * 0.4 + 0.6;
+            ctx.fillStyle = `rgba(120, 230, 255, ${harmonicAlpha})`;
+            ctx.font = '8px "Courier New", monospace';
+            ctx.fillText('♫', 16, -32 - (t * 8) % 12);
+        }
+
+        ctx.restore();
+    }
+
+    // Ryan in his Earth patterned fleece jacket and beach attire
+    drawRyanBeach(x, y, state = 'idle', facing = 1, isSpeaking = false, isSeated = false) {
+        const ctx = this.ctx;
+        const t = this.animTime;
+
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.scale(facing, 1);
+
+        const walkCycle = (state === 'walk') ? Math.sin(t * 8) : 0;
+        const legSwing = walkCycle * 5;
+
+        if (isSeated) {
+            // Seated peacefully on the pebbles facing the sea (as in movie still!)
+            // Trousers & boots tucked
+            ctx.fillStyle = '#2c333d';
+            ctx.beginPath();
+            ctx.roundRect(-10, -12, 22, 14, 4);
+            ctx.fill();
+
+            // Boots
+            ctx.fillStyle = '#423325';
+            ctx.fillRect(4, -2, 10, 6);
+
+            // Cozy Cream/Oatmeal Fleece Jacket Body
+            ctx.fillStyle = '#ede5d3';
+            ctx.beginPath();
+            ctx.roundRect(-12, -38, 24, 28, [6, 6, 3, 3]);
+            ctx.fill();
+
+            // High fleece neck collar
+            ctx.fillStyle = '#dfd6c0';
+            ctx.fillRect(-6, -42, 12, 6);
+
+            // Mountain ram patterns (Chocolate brown geometric motifs)
+            ctx.fillStyle = '#6e4428';
+            ctx.fillRect(-8, -32, 6, 8);
+            ctx.fillRect(-10, -28, 4, 6);
+            ctx.fillRect(2, -32, 6, 8);
+            ctx.fillRect(6, -28, 4, 6);
+            ctx.fillRect(-10, -18, 20, 3);
+
+            // Arms resting on knees
+            ctx.fillStyle = '#dfd6c0';
+            ctx.beginPath();
+            ctx.roundRect(-2, -26, 12, 16, 3);
+            ctx.fill();
+
+            // Head & windblown brown hair
+            ctx.fillStyle = '#ffd1aa';
+            ctx.fillRect(-5, -48, 10, 8);
+
+            ctx.fillStyle = '#4a2f1b';
+            ctx.fillRect(-6, -52, 12, 6);
+            ctx.fillRect(-7, -50, 4, 5);
+            ctx.fillRect(4, -51, 3, 4);
+        } else {
+            // Walking / Standing on the beach
+            ctx.fillStyle = '#2c333d';
+            ctx.fillRect(-7 - legSwing * 0.4, -24, 6, 22);
+            ctx.fillRect(1 + legSwing * 0.4, -24, 6, 22);
+
+            ctx.fillStyle = '#423325';
+            ctx.fillRect(-8 - legSwing * 0.4, -3, 8, 5);
+            ctx.fillRect(0 + legSwing * 0.4, -3, 8, 5);
+
+            // Cozy Earth Patterned Fleece Jacket
+            ctx.fillStyle = '#ede5d3';
+            ctx.beginPath();
+            ctx.roundRect(-10, -56, 20, 34, [6, 6, 4, 4]);
+            ctx.fill();
+
+            // High fleece collar
+            ctx.fillStyle = '#dfd6c0';
+            ctx.fillRect(-5, -60, 10, 6);
+
+            // Mountain ram patterns
+            ctx.fillStyle = '#6e4428';
+            ctx.fillRect(-7, -50, 6, 8);
+            ctx.fillRect(1, -50, 6, 8);
+            ctx.fillRect(-8, -36, 16, 4);
+
+            // Sleeves
+            ctx.fillStyle = '#dfd6c0';
+            ctx.fillRect(-12, -54, 4, 20);
+            ctx.fillRect(8, -54, 4, 20);
+
+            // Hands
+            ctx.fillStyle = '#ffd1aa';
+            ctx.fillRect(-12, -34, 4, 4);
+            ctx.fillRect(8, -34, 4, 4);
+
+            // Head & Windblown hair
+            ctx.fillStyle = '#ffd1aa';
+            ctx.fillRect(-5, -66, 10, 8);
+
+            ctx.fillStyle = '#2c221e';
+            ctx.fillRect(1, -63, 2, 2);
+            ctx.fillStyle = '#8a4e32';
+            ctx.fillRect(0, -60, 3, 1);
+
+            const hairSway = Math.sin(t * 4) * 1.5;
+            ctx.fillStyle = '#4a2f1b';
+            ctx.fillRect(-6, -70, 12, 6);
+            ctx.fillRect(-7, -68 + hairSway, 4, 5);
+            ctx.fillRect(3, -69, 4, 4);
+        }
+
+        ctx.restore();
+    }
+
+    // Golden harmonic fist-bump between Ryan and Rocky on the beach
+    drawBeachFistBump(x1, y1, x2, y2) {
+        const ctx = this.ctx;
+        const t = this.animTime;
+        const midX = (x1 + x2) / 2;
+        const midY = (y1 + y2) / 2 - 18;
+
+        ctx.save();
+
+        const sparkPulse = (t * 8) % 1.0;
+        ctx.strokeStyle = `rgba(255, 230, 120, ${1.0 - sparkPulse})`;
+        ctx.lineWidth = 2.0;
+        ctx.beginPath();
+        ctx.arc(midX, midY, 6 + sparkPulse * 28, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(midX - 3, midY - 3, 6, 6);
+        ctx.fillStyle = '#ffdc52';
+        ctx.fillRect(midX - 1, midY - 8, 2, 16);
+        ctx.fillRect(midX - 8, midY - 1, 16, 2);
+
+        ctx.font = '10px "Courier New", monospace';
+        ctx.fillStyle = 'rgba(255, 220, 90, 0.95)';
+        ctx.fillText('♫', midX - 14, midY - 12 - (t * 12) % 18);
+        ctx.fillStyle = 'rgba(255, 140, 160, 0.95)';
+        ctx.fillText('♥', midX + 8, midY - 14 - (t * 10) % 16);
+
+        ctx.restore();
     }
 
     // Render active particles
