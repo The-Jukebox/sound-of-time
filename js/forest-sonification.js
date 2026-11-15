@@ -1,4 +1,4 @@
-﻿/**
+/**
  * SOUND OF TIMES — Earth Archive Record 003: The Forest
  * ForestSonificationEngine & ForestSoundscapeManager
  * 

@@ -237,6 +237,17 @@ class Game {
         }
     }
 
+    clearActionKeys() {
+        this.keys['enter'] = false;
+        this.keys['Enter'] = false;
+        this.keys['e'] = false;
+        this.keys['E'] = false;
+        this.keys[' '] = false;
+        this.keys['Space'] = false;
+        this.keys['q'] = false;
+        this.keys['Q'] = false;
+    }
+
     setupInput() {
         window.addEventListener('keydown', (e) => {
             // Audio Permission Dialog keyboard response
@@ -325,6 +336,7 @@ class Game {
             if (e.key === 'e' || e.key === 'E' || e.key === 'Enter' || e.code === 'Space') {
                 if (this.currentDialogue) {
                     this.advanceDialogue();
+                    this.clearActionKeys();
                     e.preventDefault();
                     return;
                 }
@@ -340,6 +352,7 @@ class Game {
                     e.preventDefault();
                 } else if (e.key === 'Enter' || e.key === 'e' || e.key === 'E' || e.code === 'Space') {
                     this.confirmChoice();
+                    this.clearActionKeys();
                     e.preventDefault();
                 }
                 return;
@@ -537,7 +550,7 @@ class Game {
                 { speaker: 'ROCKY', text: 'Question: Why is human five minutes always longer than Eridian five minutes? Human math is broken!' },
                 { speaker: 'RYAN', text: '(laughs) That\'s teacher time, Rocky. Come on, let\'s go teach them some science.' }
             ], () => {
-                this.showPrompt('[A/D] or [←/→] WALK TOWARDS THE CLASSROOM | OR CLICK "LAUNCH EARTH JUKEBOX" ABOVE');
+                this.showPrompt('[A/D] or [ARROWS] WALK TOWARDS THE CLASSROOM | OR CLICK "LAUNCH EARTH JUKEBOX" ABOVE');
             });
         }, 1800);
     }
@@ -618,6 +631,8 @@ class Game {
         this.eli.facing = 1;
         this.eli.state = 'walk';
         this.eli.isCarrying = false;
+        this.jukeboxDugUp = false;
+        this.jukeboxDroppedX = null;
 
         this.koru.x = 60;
         this.koru.facing = 1;
@@ -639,7 +654,7 @@ class Game {
                     }
                 }
             ], () => {
-                this.showPrompt('[WALK TO THE GOLDEN LIGHT AND PRESS E TO INSPECT]');
+                this.showPrompt('[WALK TO THE GOLDEN LIGHT AND PRESS ENTER TO EXAMINE]');
             });
         });
     }
@@ -751,7 +766,7 @@ class Game {
         this.jukeboxState.isPowered = true;
 
         this.setupJukeboxUI();
-        this.showPrompt('[ [ → / ← ] SWITCH RECORD  |  [ENTER] ZOOM INTO MEMORY BUBBLE ]');
+        this.showPrompt('[ [ < / > ] SWITCH RECORD  |  [ENTER] ZOOM INTO MEMORY BUBBLE ]');
 
         // Auto-select Forest record first
         this.selectJukeboxRecord('forest');
@@ -959,7 +974,7 @@ class Game {
                     }
                 }
             ], () => {
-                this.showPrompt('[A/D] or [←/→] WALK TOGETHER BY THE WATER  |  [ENTER] SIT ON PEBBLES  |  [R] REPLAY');
+                this.showPrompt('[A/D] or [ARROWS] WALK TOGETHER BY THE WATER  |  [ENTER] SIT ON PEBBLES  |  [R] REPLAY');
             });
         }, 2200);
     }
@@ -1705,7 +1720,8 @@ class Game {
     showNextDialogue() {
         if (this.dialogueQueue.length === 0) {
             this.currentDialogue = null;
-            this.ui.dialogueBox.style.display = 'none';
+            if (this.ui && this.ui.dialogueBox) this.ui.dialogueBox.style.display = 'none';
+            this.clearActionKeys();
             if (this.dialogueOnComplete) {
                 const cb = this.dialogueOnComplete;
                 this.dialogueOnComplete = null;
@@ -1827,8 +1843,15 @@ class Game {
 
     showPrompt(text) {
         if (this.ui && this.ui.screenPrompt) {
-            this.ui.screenPrompt.innerText = text;
-            this.ui.screenPrompt.textContent = text;
+            const formatted = text
+                .replace(/←\s*\/\s*→/g, 'ARROWS')
+                .replace(/→\s*\/\s*←/g, 'ARROWS')
+                .replace(/←/g, '<')
+                .replace(/→/g, '>')
+                .replace(/↑/g, '^')
+                .replace(/↓/g, 'v');
+            this.ui.screenPrompt.innerText = formatted;
+            this.ui.screenPrompt.textContent = formatted;
             this.ui.screenPrompt.style.display = 'block';
         }
     }
@@ -1925,9 +1948,9 @@ class Game {
         // Update interaction prompt based on position
         const distToJukebox = Math.abs(this.eli.x - 320);
         if (distToJukebox < 65) {
-            this.showPrompt('[ENTER] ZOOM INTO MEMORY  |  [ → / ← ] WALK');
+            this.showPrompt('[ENTER] ZOOM INTO MEMORY  |  [ < / > ] WALK');
         } else {
-            this.showPrompt('[ → / ← ] WALK IN HABITAT  |  [ENTER] ZOOM INTO MEMORY');
+            this.showPrompt('[ < / > ] WALK IN HABITAT  |  [ENTER] ZOOM INTO MEMORY');
         }
     }
 
@@ -1961,7 +1984,7 @@ class Game {
                     this.koru.state = 'idle';
                     this.showPrompt('[ENTER] STAND UP  |  [R] REPLAY THE JOURNEY');
                 } else {
-                    this.showPrompt('[A/D] or [←/→] WALK BY WATER  |  [ENTER] SIT ON PEBBLES');
+                    this.showPrompt('[A/D] or [ARROWS] WALK BY WATER  |  [ENTER] SIT ON PEBBLES');
                 }
             }
         }
@@ -2072,57 +2095,26 @@ class Game {
 
             // Case A: Carrying the jukebox
             if (this.eli.isCarrying) {
-                this.showPrompt('[ → ] CARRY JUKEBOX FORWARD (RIGHT) TO HABITAT | [ENTER] SET DOWN');
+                this.showPrompt('[ > / D ] CARRY JUKEBOX FORWARD TO HABITAT | [ENTER] ENTER HABITAT');
 
-                // Drop/set down with Enter or Q
-                if (this.keys['enter'] || this.keys['Enter'] || this.keys['q'] || this.keys['Q']) {
-                    this.keys['enter'] = false;
-                    this.keys['Enter'] = false;
-                    this.keys['q'] = false;
-                    this.keys['Q'] = false;
-                    this.eli.isCarrying = false;
-                    this.jukeboxDroppedX = this.eli.x + 18;
-                    this.sound.playRelayClickSfx();
-                    this.showPrompt('[ENTER] PICK UP JUKEBOX | [ → / ← ] WALK');
-                }
-
-                // Reached right edge to enter habitat
-                if (this.eli.x > this.width - 50) {
+                // Enter habitat with Enter or walking to right edge
+                const enterPressed = (this.keys['enter'] || this.keys['Enter']);
+                if (enterPressed || this.eli.x > this.width - 50) {
+                    this.clearActionKeys();
                     this.initScene('scene4');
                 }
             }
-            // Case B: Jukebox was set down on ground
-            else if (this.jukeboxDugUp) {
-                const targetX = this.jukeboxDroppedX || 410;
-                const dist = Math.abs(this.eli.x - targetX);
-                if (dist < 40) {
-                    this.showPrompt('[ENTER] PICK UP JUKEBOX');
-                    if (this.keys['e'] || this.keys['E'] || this.keys['Enter'] || this.keys['enter']) {
-                        this.keys['e'] = false;
-                        this.keys['E'] = false;
-                        this.keys['enter'] = false;
-                        this.keys['Enter'] = false;
-                        this.eli.isCarrying = true;
-                        this.sound.playRelayClickSfx();
-                    }
-                } else {
-                    this.showPrompt('[ → / ← ] WALK NEAR JUKEBOX TO PICK UP');
-                }
-            }
-            // Case C: Jukebox still buried at x = 422
+            // Case B: Jukebox still buried at x = 410
             else {
                 const distToJukebox = Math.abs(this.eli.x - 410);
                 if (distToJukebox < 40) {
-                    this.showPrompt('[ENTER] PICK UP JUKEBOX');
+                    this.showPrompt('[ENTER] EXAMINE JUKEBOX');
                     if (this.keys['e'] || this.keys['E'] || this.keys['Enter'] || this.keys['enter']) {
-                        this.keys['e'] = false;
-                        this.keys['E'] = false;
-                        this.keys['enter'] = false;
-                        this.keys['Enter'] = false;
+                        this.clearActionKeys();
                         this.inspectJukeboxScene3();
                     }
                 } else {
-                    this.showPrompt('[ → ] WALK FORWARD TOWARDS THE GOLDEN LIGHT');
+                    this.showPrompt('[ > / D ] WALK FORWARD TOWARDS THE GOLDEN LIGHT');
                 }
             }
         }
@@ -2149,7 +2141,8 @@ class Game {
                             { speaker: 'RYAN', text: 'I don\'t know how it crossed interstellar space, but we have to find out.' },
                             { speaker: 'ROCKY', text: 'Good! Let us take it back to habitat and clean it up!' }
                         ], () => {
-                            this.showPrompt('[ → ] CARRY JUKEBOX FORWARD (RIGHT) TO HABITAT | [ENTER] SET DOWN');
+                            this.clearActionKeys();
+                            this.showPrompt('[ > / D ] CARRY JUKEBOX FORWARD TO HABITAT | [ENTER] ENTER HABITAT');
                         });
                     }
                 },
@@ -2173,7 +2166,8 @@ class Game {
                                             { speaker: 'RYAN', text: 'We have to know what music it holds.' },
                                             { speaker: 'ROCKY', text: 'Amaze! I help carry! We learn together!' }
                                         ], () => {
-                                            this.showPrompt('[ → ] CARRY JUKEBOX FORWARD (RIGHT) TO HABITAT | [ENTER] SET DOWN');
+                                            this.clearActionKeys();
+                                            this.showPrompt('[ > / D ] CARRY JUKEBOX FORWARD TO HABITAT | [ENTER] ENTER HABITAT');
                                         });
                                     }
                                 }
@@ -2212,13 +2206,6 @@ class Game {
 
             case 'scene3':
                 r.drawRockyPathway(!this.jukeboxDugUp, this.cameraX);
-                if (this.jukeboxDugUp && !this.eli.isCarrying) {
-                    const dropX = this.jukeboxDroppedX || 410;
-                    r.drawJukebox(dropX, this.height * 0.74, {
-                        isPowered: false,
-                        isPlaying: false
-                    });
-                }
                 r.drawKoru(this.koru.x, this.koru.y, this.koru.state, this.koru.facing, isKoruSpeaking);
                 r.drawEli(this.eli.x, this.eli.y, this.eli.state, this.eli.facing, this.eli.isCarrying, isRyanSpeaking);
                 break;
