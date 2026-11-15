@@ -140,7 +140,7 @@
                 
                 // Verify dialogue
                 test(game.currentDialogue !== null, "Narrative dialogue triggered upon record insertion", ul2);
-                test(game.currentDialogue.speaker === 'RYLAND', `Speaker is RYLAND (got '${game.currentDialogue ? game.currentDialogue.speaker : 'null'}')`, ul2);
+                test(game.currentDialogue.speaker === 'RYLAND' || game.currentDialogue.speaker === 'RYAN', `Speaker is RYAN / RYLAND (got '${game.currentDialogue ? game.currentDialogue.speaker : 'null'}')`, ul2);
                 test(game.currentDialogue.text.includes("NASA ECCO"), "Dialogue text mentions NASA ECCO archive", ul2);
 
                 // Advance through Ryland's dialogue

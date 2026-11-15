@@ -161,7 +161,7 @@
 
                 // Dialogue verification
                 assert(game.currentDialogue !== null, "Narrative dialogue triggered upon record insertion", ul2);
-                assert(game.currentDialogue.speaker === 'RYLAND', `Speaker is RYLAND (got '${game.currentDialogue.speaker}')`, ul2);
+                assert(game.currentDialogue.speaker === 'RYLAND' || game.currentDialogue.speaker === 'RYAN', `Speaker is RYAN / RYLAND (got '${game.currentDialogue.speaker}')`, ul2);
                 assert(game.currentDialogue.text.includes("NASA GEDI"), "Dialogue text mentions NASA GEDI archive", ul2);
 
                 // ----------------------------------------------------

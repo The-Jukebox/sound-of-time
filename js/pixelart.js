@@ -1,4 +1,4 @@
-/**
+﻿/**
  * SOUND OF TIMES - Pixel Art Renderer & Sprite Engine
  * Renders characters (Eli, Koru, Little Rocks), environments, dynamic holograms, and the retro Jukebox.
  */
@@ -65,6 +65,34 @@ class PixelRenderer {
         this.initRockySprites();
         this.initRyanSprites();
         this.initSnow();
+        this.initThoughtImages();
+    }
+
+    initThoughtImages() {
+        this.thoughtImages = {};
+        const sources = {
+            forest: ['assets/memories/leaves_hd.jpg', 'Public/assets/memories/leaves_hd.jpg', 'memories/leaves_hd.jpg'],
+            ocean: ['assets/memories/ocean_hd.jpg', 'Public/assets/memories/ocean_hd.jpg', 'memories/ocean_hd.jpg'],
+            atmosphere: ['assets/memories/rain_hd.jpg', 'Public/assets/memories/rain_hd.jpg', 'memories/rain_hd.jpg'],
+            earth: ['assets/memories/birds_hd.jpg', 'Public/assets/memories/birds_hd.jpg', 'memories/birds_hd.jpg']
+        };
+
+        const loadWithFallback = (paths) => {
+            const img = new Image();
+            let idx = 0;
+            const tryNext = () => {
+                if (idx < paths.length) {
+                    img.src = paths[idx++];
+                }
+            };
+            img.onerror = () => tryNext();
+            tryNext();
+            return img;
+        };
+
+        for (const [key, paths] of Object.entries(sources)) {
+            this.thoughtImages[key] = loadWithFallback(paths);
+        }
     }
 
     initRockySprites() {
@@ -463,10 +491,7 @@ class PixelRenderer {
             ctx.fillText('HYDROSPHERE: RAINFALL', hx, by + 98);
         }
 
-        // Stones for students to sit on
-        this.drawSittingStone(140, h * 0.75);
-        this.drawSittingStone(200, h * 0.76);
-        this.drawSittingStone(260, h * 0.74);
+        // Classroom seating pillars & Eridian students rendered in drawLittleOnes
     }
 
     drawSittingStone(x, y) {
@@ -1918,114 +1943,81 @@ class PixelRenderer {
 
         ctx.shadowBlur = 0; // reset shadow
 
-        // 3. Mini Animated Earth Memory Preview inside thought bubble
+        // 3. Mini Animated Earth Memory Preview inside thought bubble (Photorealistic HD Preview)
         ctx.save();
         ctx.beginPath();
         ctx.roundRect(bx - bw / 2 + 3, by - bh / 2 + 3, bw - 6, bh - 6, 11);
         ctx.clip();
 
-        if (activeRecord === 'forest') {
-            // Swaying green leaves & golden rays
-            ctx.fillStyle = '#0e2b1f';
-            ctx.fillRect(bx - bw / 2, by - bh / 2, bw, bh);
+        const previewImg = this.thoughtImages ? this.thoughtImages[activeRecord] : null;
+        let drawnHD = false;
+        if (previewImg && previewImg.complete && previewImg.naturalWidth > 0) {
+            // High-definition photorealistic render with subtle slow-motion drift
+            const panX = Math.cos(t * 0.45) * 8;
+            const panY = Math.sin(t * 0.35) * 5;
+            const zoom = 1.10 + Math.sin(t * 0.5) * 0.04;
+            const drawW = (bw - 6) * zoom;
+            const drawH = (bh - 6) * zoom;
+            const drawX = bx - bw / 2 + 3 + ((bw - 6) - drawW) / 2 + panX;
+            const drawY = by - bh / 2 + 3 + ((bh - 6) - drawH) / 2 + panY;
 
-            // Sunbeam
-            ctx.fillStyle = 'rgba(255, 240, 160, 0.28)';
-            ctx.beginPath();
-            ctx.moveTo(bx + 35, by - bh / 2);
-            ctx.lineTo(bx - 30, by + bh / 2);
-            ctx.lineTo(bx - 8, by + bh / 2);
-            ctx.lineTo(bx + 52, by - bh / 2);
-            ctx.fill();
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(previewImg, drawX, drawY, drawW, drawH);
 
-            // Animated Branch & Leaves
-            ctx.strokeStyle = '#3a2010';
-            ctx.lineWidth = 2.8;
-            ctx.beginPath();
-            ctx.moveTo(bx - 55, by - 8);
-            ctx.quadraticCurveTo(bx - 10, by + Math.sin(t * 3) * 3, bx + 45, by - 12);
-            ctx.stroke();
+            // Dreamy atmospheric sheen overlay
+            const sheen = ctx.createLinearGradient(bx - bw / 2, by - bh / 2, bx + bw / 2, by + bh / 2);
+            sheen.addColorStop(0, 'rgba(255, 255, 255, 0.15)');
+            sheen.addColorStop(0.5, 'rgba(120, 240, 255, 0.04)');
+            sheen.addColorStop(1, 'rgba(0, 0, 0, 0.40)');
+            ctx.fillStyle = sheen;
+            ctx.fillRect(bx - bw / 2 + 3, by - bh / 2 + 3, bw - 6, bh - 6);
+            drawnHD = true;
+        }
 
-            // 4 mini fluttering leaves
-            const leafColors = ['#45b367', '#62c98a', '#78e09e', '#399955'];
-            for (let l = 0; l < 4; l++) {
-                const lx = bx - 35 + l * 24;
-                const ly = by - 6 + Math.sin(t * 3.5 + l) * 4;
-                ctx.fillStyle = leafColors[l];
+        if (!drawnHD) {
+            if (activeRecord === 'forest') {
+                ctx.fillStyle = '#0e2b1f';
+                ctx.fillRect(bx - bw / 2, by - bh / 2, bw, bh);
+                ctx.fillStyle = 'rgba(255, 240, 160, 0.28)';
                 ctx.beginPath();
-                ctx.ellipse(lx, ly, 7, 3.5, 0.4 + Math.sin(t * 2.5 + l) * 0.2, 0, Math.PI * 2);
+                ctx.moveTo(bx + 35, by - bh / 2);
+                ctx.lineTo(bx - 30, by + bh / 2);
+                ctx.lineTo(bx - 8, by + bh / 2);
+                ctx.lineTo(bx + 52, by - bh / 2);
                 ctx.fill();
-            }
-
-            // Tiny fluttering songbird
-            const birdWing = Math.sin(t * 14) * 3.5;
-            ctx.fillStyle = '#ffcf40';
-            ctx.fillRect(bx + 26, by - 6, 5, 4);
-            ctx.fillStyle = '#ff9100';
-            ctx.fillRect(bx + 28, by - 8 + birdWing, 4, 3);
-
-        } else if (activeRecord === 'ocean') {
-            // Rolling turquoise waves
-            ctx.fillStyle = '#0a2238';
-            ctx.fillRect(bx - bw / 2, by - bh / 2, bw, bh);
-
-            // Sunset horizon
-            ctx.fillStyle = 'rgba(255, 180, 100, 0.4)';
-            ctx.fillRect(bx - bw / 2, by - bh / 2, bw, bh * 0.45);
-
-            // Sun
-            ctx.fillStyle = '#fff4d4';
-            ctx.beginPath();
-            ctx.arc(bx + 25, by - 10, 8, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Cresting rolling wave
-            ctx.fillStyle = '#1ba3b8';
-            ctx.beginPath();
-            ctx.moveTo(bx - bw / 2, by + bh / 2);
-            for (let wx = bx - bw / 2; wx <= bx + bw / 2; wx += 6) {
-                const wy = by + 8 + Math.sin(wx * 0.08 + t * 4) * 6;
-                ctx.lineTo(wx, wy);
-            }
-            ctx.lineTo(bx + bw / 2, by + bh / 2);
-            ctx.closePath();
-            ctx.fill();
-
-            // Foam crest
-            ctx.fillStyle = '#ffffff';
-            for (let wx = bx - bw / 2 + 5; wx <= bx + bw / 2; wx += 14) {
-                ctx.beginPath();
-                ctx.arc(wx, by + 6 + Math.sin(wx * 0.08 + t * 4) * 6, 2.5, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        } else {
-            // Atmosphere / Rain
-            ctx.fillStyle = '#101d28';
-            ctx.fillRect(bx - bw / 2, by - bh / 2, bw, bh);
-
-            ctx.strokeStyle = 'rgba(160, 220, 255, 0.75)';
-            ctx.lineWidth = 1.4;
-            for (let r = 0; r < 8; r++) {
-                const rx = bx - 45 + ((r * 15 + t * 40) % 90);
-                const ry = by - 25 + ((r * 23 + t * 80) % 50);
-                ctx.beginPath();
-                ctx.moveTo(rx, ry);
-                ctx.lineTo(rx - 2, ry + 7);
-                ctx.stroke();
+            } else if (activeRecord === 'ocean') {
+                ctx.fillStyle = '#0a2238';
+                ctx.fillRect(bx - bw / 2, by - bh / 2, bw, bh);
+            } else {
+                ctx.fillStyle = '#101d28';
+                ctx.fillRect(bx - bw / 2, by - bh / 2, bw, bh);
             }
         }
         ctx.restore();
 
-        // 4. Memory Callout Label
+        // 4. Memory Callout Label with High-Contrast Background Pill
+        const pillW = 118;
+        const pillH = 22;
+        ctx.fillStyle = 'rgba(10, 14, 28, 0.88)';
+        ctx.strokeStyle = '#78f0ff';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.roundRect(bx - pillW / 2, by + 12, pillW, pillH, 6);
+        ctx.fill();
+        ctx.stroke();
+
         ctx.fillStyle = '#ffe8ff';
-        ctx.font = '6px "Press Start 2P", monospace';
+        ctx.font = 'bold 7px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('💭 MEMORY OF EARTH', bx, by + 19);
+        ctx.fillText('💭 MEMORY OF EARTH', bx, by + 21);
         ctx.fillStyle = '#78f0ff';
-        ctx.fillText('[ENTER / CLICK TO ZOOM]', bx, by + 28);
+        ctx.font = 'bold 6.5px monospace';
+        ctx.fillText('[ENTER / CLICK TO ZOOM]', bx, by + 30);
 
         ctx.restore();
     }
+
 
     // Rocky (Koru) — The Alien Friend with full sprite animation (Walk, Talk, Moving Hands)
     drawKoru(x, y, state = 'idle', facing = 1, isSpeaking = false) {
@@ -2138,70 +2130,212 @@ class PixelRenderer {
         ctx.restore();
     }
 
-    // The Little Ones — The Rock Students
+    // ----------------------------------------------------
+    // ERIDIAN STUDENTS ("THE LITTLE ONES") — MATCHING MOVIE STILL
+    // ----------------------------------------------------
+
+    // Stepped hexagonal basalt stone pillars (matches classroom setting in reference photo!)
+    drawBasaltPillars() {
+        const ctx = this.ctx;
+        const pillars = [
+            { x: 135, y: this.height * 0.74, w: 34, h: 22 },
+            { x: 195, y: this.height * 0.74, w: 36, h: 14 },
+            { x: 255, y: this.height * 0.74, w: 34, h: 18 },
+            { x: 315, y: this.height * 0.74, w: 38, h: 28 }
+        ];
+
+        pillars.forEach((p, idx) => {
+            const topY = p.y - p.h;
+
+            // 3D Hexagonal Basalt Column Body (dark volcanic stone)
+            ctx.fillStyle = (idx % 2 === 0) ? '#241c30' : '#2d233c';
+            ctx.fillRect(p.x - p.w * 0.5, topY, p.w, p.h + 8);
+
+            // Shaded vertical facets
+            ctx.fillStyle = '#171221';
+            ctx.fillRect(p.x - p.w * 0.5, topY, p.w * 0.3, p.h + 8);
+            ctx.fillStyle = '#3a2e4d';
+            ctx.fillRect(p.x + p.w * 0.2, topY, p.w * 0.3, p.h + 8);
+
+            // Flat stepped stone cap
+            ctx.fillStyle = '#4c3f66';
+            ctx.beginPath();
+            ctx.ellipse(p.x, topY, p.w * 0.5, 6, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#655487';
+            ctx.beginPath();
+            ctx.ellipse(p.x, topY - 1, p.w * 0.42, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Edge bevel stroke
+            ctx.strokeStyle = '#7c68a4';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        });
+    }
+
     drawLittleOnes(time) {
         const t = this.animTime;
 
-        // Little Rock 1: Bouncing & attentive with big eyes (Sitting at stone 1)
-        this.drawLittleStudent(140, this.height * 0.74, 1, Math.sin(t * 5) * 3);
+        // 1. Draw the stepped basalt classroom pillars first
+        this.drawBasaltPillars();
 
-        // Little Rock 2: Trying to stack smaller rocks on top of each other!
-        this.drawLittleStudent(200, this.height * 0.75, 2, 0);
+        // 2. The Little Eridians perched on their pillars:
+        // Student 1 (Left pillar, h=22): Dark Slate / Obsidian Eridian (rock stacking)
+        this.drawEridianStudent(135, this.height * 0.74 - 22, 2, 0);
 
-        // Little Rock 3: Sleeping peacefully with animated "Zzz"
-        this.drawLittleStudent(260, this.height * 0.73, 3, 0);
+        // Student 2 (Center-low pillar, h=14): Ochre & Jade Eridian (attentive front center)
+        const tap = Math.sin(t * 6) * 1.5;
+        this.drawEridianStudent(195, this.height * 0.74 - 14, 1, tap);
+
+        // Student 3 (Mid pillar, h=18): Turquoise / Azure Eridian (playful, leaping/bouncing in the air!)
+        const leap = Math.abs(Math.sin(t * 4)) * 10;
+        this.drawEridianStudent(255, this.height * 0.74 - 18, 3, leap);
+
+        // Student 4 (Right high tier, h=28): Copper & Rust Ore Eridian (humming / purring)
+        this.drawEridianStudent(315, this.height * 0.74 - 28, 4, Math.sin(t * 3) * 1.0);
     }
 
-    drawLittleStudent(x, y, id, bounce) {
+    // Young Eridian Student with articulated 5 rock legs & faceted carapace
+    drawEridianStudent(x, y, type = 1, bounce = 0) {
         const ctx = this.ctx;
         const t = this.animTime;
-        const sy = y - 10 - bounce;
+        const sy = y - bounce;
 
-        // Little rock body
-        ctx.fillStyle = (id === 1) ? '#72608c' : (id === 2 ? '#5d4f73' : '#8572a1');
+        // Color palettes from movie reference still:
+        // 1: Ochre & Jade (Front center)
+        // 2: Dark Slate & Obsidian (Left)
+        // 3: Turquoise & Azure (Playful leaping/bouncing)
+        // 4: Copper & Rust Ore (High tier right)
+        let cBody, cHighlight, cShadow, cJoint;
+
+        if (type === 1) {
+            cBody = '#bfa168';
+            cHighlight = '#8cae82'; // jade/lichen accent
+            cShadow = '#78623b';
+            cJoint = '#5e8555';
+        } else if (type === 2) {
+            cBody = '#464052';
+            cHighlight = '#6a627a';
+            cShadow = '#2b2733';
+            cJoint = '#7a728c';
+        } else if (type === 3) {
+            cBody = '#2f8296';
+            cHighlight = '#56cbe0'; // luminous turquoise
+            cShadow = '#1a5261';
+            cJoint = '#7be8fa';
+        } else {
+            cBody = '#944b38';
+            cHighlight = '#bf6a54'; // copper sheen
+            cShadow = '#5c2b1e';
+            cJoint = '#d68874';
+        }
+
+        ctx.save();
+        ctx.translate(x, sy);
+
+        // Subtle leg wiggle / breathing
+        const legWiggle = Math.sin(t * 4 + type * 1.5) * 1.2;
+        const leapSpread = (type === 3 && bounce > 2) ? 3.5 : 0;
+
+        // 1. Five articulated rock legs (spider/crab-like anatomy matching Rocky and movie still)
+        ctx.lineWidth = 2.2;
+
+        // Far-left leg
+        ctx.strokeStyle = cShadow;
         ctx.beginPath();
-        ctx.roundRect(x - 9, sy - 14, 18, 15, 6);
+        ctx.moveTo(-5, -12);
+        ctx.lineTo(-12 - leapSpread, -16);
+        ctx.lineTo(-16 - leapSpread * 1.4, -2 + legWiggle);
+        ctx.stroke();
+
+        // Far-right leg
+        ctx.beginPath();
+        ctx.moveTo(5, -12);
+        ctx.lineTo(12 + leapSpread, -16);
+        ctx.lineTo(16 + leapSpread * 1.4, -2 - legWiggle);
+        ctx.stroke();
+
+        // Mid-left leg
+        ctx.strokeStyle = cBody;
+        ctx.beginPath();
+        ctx.moveTo(-4, -10);
+        ctx.lineTo(-9 - leapSpread, -6);
+        ctx.lineTo(-12 - leapSpread, 0);
+        ctx.stroke();
+
+        // Mid-right leg
+        ctx.beginPath();
+        ctx.moveTo(4, -10);
+        ctx.lineTo(9 + leapSpread, -6);
+        ctx.lineTo(12 + leapSpread, 0);
+        ctx.stroke();
+
+        // Front center leg (attentive tripod / gesture limb)
+        const frontGesture = (type === 1) ? Math.sin(t * 5) * 2 : (type === 2 ? -2 : 0);
+        ctx.strokeStyle = cHighlight;
+        ctx.beginPath();
+        ctx.moveTo(0, -9);
+        ctx.lineTo(frontGesture, -4);
+        ctx.lineTo(frontGesture * 1.2, 0);
+        ctx.stroke();
+
+        // Leg joint rings (mineral bands)
+        ctx.fillStyle = cJoint;
+        ctx.fillRect(-13 - leapSpread, -17, 3, 3);
+        ctx.fillRect(11 + leapSpread, -17, 3, 3);
+        ctx.fillRect(-10 - leapSpread, -7, 2, 2);
+        ctx.fillRect(8 + leapSpread, -7, 2, 2);
+
+        // 2. Main Carapace Torso (Faceted rock body)
+        ctx.fillStyle = cBody;
+        ctx.beginPath();
+        ctx.roundRect(-7, -17, 14, 11, [4, 4, 3, 3]);
         ctx.fill();
 
-        if (id === 1) {
-            // Little Rock 1: Big curious eyes
-            ctx.fillStyle = this.palette.warmGold;
-            ctx.fillRect(x - 5, sy - 10, 4, 4);
-            ctx.fillRect(x + 2, sy - 10, 4, 4);
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(x - 4, sy - 9, 2, 2);
-            ctx.fillRect(x + 3, sy - 9, 2, 2);
-        } else if (id === 2) {
-            // Little Rock 2: Rock stacking
-            ctx.fillStyle = this.palette.electricBlue;
-            ctx.fillRect(x - 4, sy - 8, 3, 3);
-            ctx.fillRect(x + 2, sy - 8, 3, 3);
+        // Lower body shadow / underbelly
+        ctx.fillStyle = cShadow;
+        ctx.fillRect(-5, -9, 10, 3);
 
-            // Stacked pebbles in front
-            const stackWobble = Math.sin(t * 3) * 1.5;
-            ctx.fillStyle = '#a694bf';
-            ctx.fillRect(x + 12, sy, 6, 4);
-            ctx.fillRect(x + 13 + stackWobble * 0.5, sy - 4, 4, 4);
-            ctx.fillRect(x + 14 + stackWobble, sy - 7, 3, 3);
-        } else if (id === 3) {
-            // Little Rock 3: Closed sleeping eyes (- -)
-            ctx.strokeStyle = '#3d2b52';
-            ctx.lineWidth = 1.5;
-            ctx.beginPath();
-            ctx.moveTo(x - 5, sy - 7);
-            ctx.lineTo(x - 1, sy - 7);
-            ctx.moveTo(x + 2, sy - 7);
-            ctx.lineTo(x + 6, sy - 7);
-            ctx.stroke();
+        // 3. Upper Rock Shell / Carapace Shield (Distinct pentagonal rock crest on top)
+        ctx.fillStyle = cHighlight;
+        ctx.beginPath();
+        ctx.moveTo(0, -21);
+        ctx.lineTo(7, -17);
+        ctx.lineTo(5, -13);
+        ctx.lineTo(-5, -13);
+        ctx.lineTo(-7, -17);
+        ctx.closePath();
+        ctx.fill();
 
-            // Floating "z Z z"
-            const zAlpha = (Math.sin(t * 2) * 0.4 + 0.6);
-            ctx.fillStyle = `rgba(179, 247, 255, ${zAlpha})`;
-            ctx.font = '8px "Courier New", monospace';
-            const zOffset = (t * 8) % 18;
-            ctx.fillText('z', x + 8, sy - 12 - zOffset * 0.5);
-            ctx.fillText('Z', x + 12, sy - 18 - zOffset);
+        // Mineral fissures & carapace highlights
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+        ctx.fillRect(-3, -19, 6, 2);
+        ctx.fillRect(-1, -15, 4, 2);
+
+        // 4. Little Eridian student activities (stacking, purring, sleeping)
+        if (type === 2) {
+            // Student 2: Rock stacking in front
+            const stackWobble = Math.sin(t * 3) * 1.0;
+            ctx.fillStyle = '#8f839c';
+            ctx.fillRect(7, -4, 5, 4);
+            ctx.fillRect(8 + stackWobble * 0.4, -8, 3, 4);
+            ctx.fillRect(9 + stackWobble * 0.8, -11, 2, 3);
+        } else if (type === 4) {
+            // Student 4: Soft acoustic purrs / sound bubbles
+            const zAlpha = (Math.sin(t * 2.5) * 0.4 + 0.6);
+            ctx.fillStyle = `rgba(180, 240, 255, ${zAlpha})`;
+            ctx.font = '7px "Courier New", monospace';
+            ctx.fillText('♪', 8, -16 - (t * 6) % 12);
         }
+
+        ctx.restore();
+    }
+
+    // Backwards-compatibility alias for test suites
+    drawLittleStudent(x, y, id, bounce = 0) {
+        this.drawEridianStudent(x, y, id, bounce);
     }
 
     // ----------------------------------------------------

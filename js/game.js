@@ -1,4 +1,4 @@
-/**
+﻿/**
  * SOUND OF TIMES - Main Game Engine, Scene Management & Narrative State
  */
 
@@ -123,6 +123,54 @@ class Game {
                 return;
             }
 
+            // SCENE 5 JUKEBOX, HABITAT & MEMORY CONTROLS (Strictly Arrow Keys & Enter)
+            if (this.currentScene === 'scene5') {
+                if (e.key === 'Enter') {
+                    if (window.memoryCinema && window.memoryCinema.isOpen) {
+                        window.memoryCinema.close();
+                    } else if (this.jukeboxState.activeRecord) {
+                        this.dismissDialogue();
+                        this.openMemoryVision();
+                    }
+                    e.preventDefault();
+                    return;
+                } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                    this.cycleRecord(1);
+                    e.preventDefault();
+                    return;
+                } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                    this.cycleRecord(-1);
+                    e.preventDefault();
+                    return;
+                } else if (e.code === 'Space') {
+                    this.toggleJukeboxPlayPause();
+                    e.preventDefault();
+                    return;
+                } else if (e.key === 's' || e.key === 'S') {
+                    this.stopJukebox();
+                    e.preventDefault();
+                    return;
+                } else if (e.key === 'r' || e.key === 'R') {
+                    this.replayJukebox();
+                    e.preventDefault();
+                    return;
+                } else if (e.key === 'e' || e.key === 'E') {
+                    this.ejectJukebox();
+                    e.preventDefault();
+                    return;
+                } else if (e.key === '1') {
+                    this.selectJukeboxRecord('forest');
+                } else if (e.key === '2') {
+                    this.selectJukeboxRecord('ocean');
+                } else if (e.key === '3') {
+                    this.selectJukeboxRecord('atmosphere');
+                } else if (e.key === '4') {
+                    if (this.jukeboxState.unlockedRecords.earth) {
+                        this.selectJukeboxRecord('earth');
+                    }
+                }
+            }
+
             // Dialogue continue / Choice select
             if (e.key === 'e' || e.key === 'E' || e.key === 'Enter' || e.code === 'Space') {
                 if (this.currentDialogue) {
@@ -148,69 +196,24 @@ class Game {
             }
 
             // Power button toggle shortcut
-            if (this.currentScene === 'scene5' || this.currentScene === 'scene4') {
+            if (this.currentScene === 'scene4') {
                 if (e.key === 'p' || e.key === 'P') {
                     this.toggleJukeboxPower();
                     e.preventDefault();
                 }
             }
-
-            // Jukebox & Habitat Shortcuts (When in scene 5)
-            if (this.currentScene === 'scene5') {
-                if (e.key === 'Enter') {
-                    if (window.memoryCinema && window.memoryCinema.isOpen) {
-                        window.memoryCinema.close();
-                    } else {
-                        this.openMemoryVision();
-                    }
-                    e.preventDefault();
-                    return;
-                } else if (e.code === 'Space') {
-                    this.toggleJukeboxPlayPause();
-                    e.preventDefault();
-                } else if (e.key === 's' || e.key === 'S') {
-                    this.stopJukebox();
-                    e.preventDefault();
-                } else if (e.key === 'r' || e.key === 'R') {
-                    this.replayJukebox();
-                    e.preventDefault();
-                } else if (e.key === 'e' || e.key === 'E') {
-                    this.ejectJukebox();
-                    e.preventDefault();
-                } else if (e.key === '1') {
-                    this.selectJukeboxRecord('forest');
-                } else if (e.key === '2') {
-                    this.selectJukeboxRecord('ocean');
-                } else if (e.key === '3') {
-                    this.selectJukeboxRecord('atmosphere');
-                } else if (e.key === '4') {
-                    if (this.jukeboxState.unlockedRecords.earth) {
-                        this.selectJukeboxRecord('earth');
-                    }
-                } else if (e.key === 'b' || e.key === 'B') {
-                    if (window.forestSonification && window.forestSonification.soundscape) {
-                        const res = window.forestSonification.soundscape.callBird('random');
-                        if (res) {
-                            this.showPrompt(`[ 🐦 BIRD CALLED: ${res.species.toUpperCase()} SINGING IN CANOPY ]`);
-                        }
-                    }
-                }
-            }
         });
+
 
         window.addEventListener('keyup', (e) => {
             this.keys[e.key.toLowerCase()] = false;
             this.keys[e.code] = false;
         });
 
-        // Click on canvas to resume sound, advance dialogue, or click thought bubble
+        // Click on canvas to resume sound, zoom into memory bubble, or advance dialogue
         this.canvas.addEventListener('click', (e) => {
             this.sound.resume();
-            if (this.currentDialogue) {
-                this.advanceDialogue();
-                return;
-            }
-            if (this.currentScene === 'scene5') {
+            if (this.currentScene === 'scene5' && this.jukeboxState.activeRecord) {
                 const rect = this.canvas.getBoundingClientRect();
                 const scaleX = this.canvas.width / rect.width;
                 const scaleY = this.canvas.height / rect.height;
@@ -218,9 +221,15 @@ class Game {
                 const clickY = (e.clientY - rect.top) * scaleY;
                 const bx = this.eli.x + 35;
                 const by = this.eli.y - 105;
-                if (Math.abs(clickX - bx) < 75 && Math.abs(clickY - by) < 55) {
+                if (Math.abs(clickX - bx) < 85 && Math.abs(clickY - by) < 65) {
+                    this.dismissDialogue();
                     this.openMemoryVision();
+                    return;
                 }
+            }
+            if (this.currentDialogue) {
+                this.advanceDialogue();
+                return;
             }
         });
 
@@ -555,7 +564,7 @@ class Game {
         this.ui.nasaHud.style.display = 'block';
 
         this.setupJukeboxUI();
-        this.showPrompt('[CLICK JUKEBOX CONTROLS OR USE KEYS: SPACE=PLAY/PAUSE | S=STOP | R=REPLAY | E=EJECT | 1-4=RECORDS]');
+        this.showPrompt('[ [ → / ← ] SWITCH RECORD  |  [ENTER] ZOOM INTO MEMORY BUBBLE ]');
 
         // Auto-select Forest record first
         this.selectJukeboxRecord('forest');
@@ -1288,6 +1297,15 @@ class Game {
 
         if (this.currentDialogue.onShow) {
             this.currentDialogue.onShow();
+        }
+    }
+
+    dismissDialogue() {
+        this.currentDialogue = null;
+        this.dialogueQueue = [];
+        this.isTyping = false;
+        if (this.ui && this.ui.dialogueBox) {
+            this.ui.dialogueBox.style.display = 'none';
         }
     }
 

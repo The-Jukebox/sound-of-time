@@ -71,11 +71,11 @@
 
             // Full HD Photographic Images
             this.hdImages = {
-                leaves: this.loadHDImage('assets/memories/leaves_hd.jpg'),
-                ocean: this.loadHDImage('assets/memories/ocean_hd.jpg'),
-                birds: this.loadHDImage('assets/memories/birds_hd.jpg'),
-                stream: this.loadHDImage('assets/memories/stream_hd.jpg'),
-                rain: this.loadHDImage('assets/memories/rain_hd.jpg')
+                leaves: this.loadHDImage('leaves_hd.jpg'),
+                ocean: this.loadHDImage('ocean_hd.jpg'),
+                birds: this.loadHDImage('birds_hd.jpg'),
+                stream: this.loadHDImage('stream_hd.jpg'),
+                rain: this.loadHDImage('rain_hd.jpg')
             };
 
             // Slow-motion particle systems
@@ -84,9 +84,22 @@
             this.initParticles();
         }
 
-        loadHDImage(src) {
+        loadHDImage(filename) {
             const img = new Image();
-            img.src = src;
+            const candidates = [
+                'assets/memories/' + filename,
+                'Public/assets/memories/' + filename,
+                'memories/' + filename,
+                './assets/memories/' + filename
+            ];
+            let idx = 0;
+            const tryNext = () => {
+                if (idx < candidates.length) {
+                    img.src = candidates[idx++];
+                }
+            };
+            img.onerror = () => tryNext();
+            tryNext();
             return img;
         }
 
@@ -186,8 +199,10 @@
         resizeCanvas() {
             if (!this.canvas) return;
             const dpr = Math.min(window.devicePixelRatio || 1, 2);
-            const w = this.canvas.parentElement ? this.canvas.parentElement.clientWidth : window.innerWidth;
-            const h = this.canvas.parentElement ? this.canvas.parentElement.clientHeight : window.innerHeight;
+            let w = this.canvas.parentElement ? this.canvas.parentElement.clientWidth : window.innerWidth;
+            let h = this.canvas.parentElement ? this.canvas.parentElement.clientHeight : window.innerHeight;
+            if (!w || w === 0) w = Math.floor(window.innerWidth * 0.94);
+            if (!h || h === 0) h = Math.floor(window.innerHeight * 0.82);
 
             this.canvas.width = Math.floor(w * dpr);
             this.canvas.height = Math.floor(h * dpr);
