@@ -103,7 +103,8 @@ class SoundEngine {
                 this.ctx.resume().catch(() => {});
             }
 
-            if (this.currentSceneAmbience && this.ambientNodes.length === 0 && !this.isPlaying) {
+            const isJukeboxActive = typeof window !== 'undefined' && window.game && (window.game.currentScene === 'scene5' || (window.game.jukeboxState && (window.game.jukeboxState.isPlaying || window.game.jukeboxState.activeRecord)));
+            if (this.currentSceneAmbience && this.ambientNodes.length === 0 && !this.isPlaying && !isJukeboxActive) {
                 this.startSceneAmbience(this.currentSceneAmbience);
             }
         } catch (e) {
@@ -118,7 +119,8 @@ class SoundEngine {
         if (this.ctx && this.ctx.state === 'suspended') {
             this.ctx.resume().catch(() => {});
         }
-        if (this.isInitialized && this.currentSceneAmbience && this.ambientNodes.length === 0 && !this.isPlaying) {
+        const isJukeboxActive = typeof window !== 'undefined' && window.game && (window.game.currentScene === 'scene5' || (window.game.jukeboxState && (window.game.jukeboxState.isPlaying || window.game.jukeboxState.activeRecord)));
+        if (this.isInitialized && this.currentSceneAmbience && this.ambientNodes.length === 0 && !this.isPlaying && !isJukeboxActive) {
             this.startSceneAmbience(this.currentSceneAmbience);
         }
     }
@@ -292,6 +294,12 @@ class SoundEngine {
     // ----------------------------------------------------
 
     startSceneAmbience(sceneName) {
+        const isJukeboxActive = typeof window !== 'undefined' && window.game && (window.game.currentScene === 'scene5' || (window.game.jukeboxState && (window.game.jukeboxState.isPlaying || window.game.jukeboxState.activeRecord)));
+        if (!sceneName || sceneName === 'none' || isJukeboxActive) {
+            this.stopSceneAmbience();
+            this.currentSceneAmbience = null;
+            return;
+        }
         this.currentSceneAmbience = sceneName;
         this.stopSceneAmbience();
         if (!this.isInitialized) return;
@@ -329,6 +337,7 @@ class SoundEngine {
     }
 
     stopSceneAmbience() {
+        this.currentSceneAmbience = null;
         this.ambientNodes.forEach(node => {
             try {
                 if (node.stop) node.stop();
@@ -525,6 +534,8 @@ class SoundEngine {
     // Procedural Piano Synthesizer for "Sound of Times" quiet theme
     startPianoTheme() {
         if (this.pianoTimer) return;
+        const isJukeboxActive = typeof window !== 'undefined' && window.game && (window.game.currentScene === 'scene5' || (window.game.jukeboxState && (window.game.jukeboxState.isPlaying || window.game.jukeboxState.activeRecord)));
+        if (isJukeboxActive) return;
 
         // Warm, nostalgic chord progression in C#m / E major:
         // [C#m9 - Aadd9 - E - Bsus4]
@@ -541,10 +552,18 @@ class SoundEngine {
 
         let chordIndex = 0;
         const playChord = () => {
+            if (!this.pianoTimer) return;
+            const isPlayingJukebox = typeof window !== 'undefined' && window.game && (window.game.currentScene === 'scene5' || (window.game.jukeboxState && (window.game.jukeboxState.isPlaying || window.game.jukeboxState.activeRecord)));
+            if (isPlayingJukebox) {
+                this.stopSceneAmbience();
+                return;
+            }
             const chord = chords[chordIndex];
             chord.forEach((freq, idx) => {
                 setTimeout(() => {
-                    this.playPianoNote(freq, 3.5, 0.075);
+                    if (this.pianoTimer) {
+                        this.playPianoNote(freq, 3.5, 0.075);
+                    }
                 }, idx * 140); // Arpeggiated gentle roll
             });
             chordIndex = (chordIndex + 1) % chords.length;
@@ -555,7 +574,9 @@ class SoundEngine {
     }
 
     playPianoNote(freq, decay = 3.0, velocity = 0.1) {
-        if (!this.isInitialized) return;
+        if (!this.isInitialized || !this.pianoTimer) return;
+        const isJukeboxActive = typeof window !== 'undefined' && window.game && (window.game.currentScene === 'scene5' || (window.game.jukeboxState && (window.game.jukeboxState.isPlaying || window.game.jukeboxState.activeRecord)));
+        if (isJukeboxActive) return;
         const t = this.ctx.currentTime;
 
         // Rich multi-harmonic piano model: fundamental + 2nd + 3rd harmonic
@@ -1216,4 +1237,8 @@ class SoundEngine {
 }
 
 // Global singleton instance
+window.SoundEngine = SoundEngine;
 window.soundEngine = new SoundEngine();
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { SoundEngine };
+}

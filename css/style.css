@@ -1161,14 +1161,17 @@ body {
 
 :fullscreen body,
 body.is-fullscreen {
-    padding: 0;
+    padding: 12px 0;
     margin: 0;
     min-height: 100vh;
-    height: 100vh;
+    height: auto;
     width: 100vw;
-    overflow: hidden;
-    justify-content: center;
-    background: #000;
+    overflow-x: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #0b0618;
 }
 
 :fullscreen .game-header,
@@ -1180,26 +1183,25 @@ body.is-fullscreen .eic-navigation-dock {
 
 :fullscreen .game-container,
 body.is-fullscreen .game-container {
-    width: 100vw;
-    height: 100vh;
-    max-width: 100vw;
-    max-height: 100vh;
-    justify-content: center;
+    width: min(96vw, 1300px);
+    max-width: 96vw;
+    height: auto;
+    min-height: auto;
+    justify-content: flex-start;
     align-items: center;
-    padding: 0;
-    margin: 0;
+    padding: 0 0 50px 0;
+    margin: 0 auto;
 }
 
 :fullscreen .game-viewport,
 body.is-fullscreen .game-viewport {
-    width: min(100vw, calc(100vh * 16 / 9));
-    height: min(100vh, calc(100vw * 9 / 16));
-    max-width: none;
-    max-height: none;
+    width: min(96vw, calc((72vh) * 16 / 9), 1180px);
+    height: auto;
+    max-width: 100%;
     aspect-ratio: 16 / 9;
-    border: none;
-    border-radius: 0;
-    box-shadow: 0 0 50px rgba(0, 0, 0, 0.95);
+    border: 2px solid #3d2366;
+    border-radius: 8px;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.9);
 }
 
 :fullscreen #gameCanvas,

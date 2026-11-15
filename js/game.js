@@ -111,7 +111,8 @@ class Game {
         const btnJumpJukebox = document.getElementById('btnJumpJukebox');
         if (btnJumpJukebox) {
             btnJumpJukebox.onclick = () => {
-                this.enterFullscreen();
+                this.sound.stopSceneAmbience();
+                this.sound.currentSceneAmbience = null;
                 this.sound.init();
                 this.sound.resume();
                 if (typeof Tone !== 'undefined' && Tone.start) {
@@ -127,7 +128,6 @@ class Game {
         const btnStoryMode = document.getElementById('btnStoryMode');
         if (btnStoryMode) {
             btnStoryMode.onclick = () => {
-                this.enterFullscreen();
                 this.sound.init();
                 this.sound.resume();
                 if (typeof Tone !== 'undefined' && Tone.start) {
@@ -166,7 +166,6 @@ class Game {
 
         const grantAudio = (enableSound) => {
             if (this.hasAudioPermission) return;
-            this.enterFullscreen();
             this.hasAudioPermission = true;
             this.isAudioMuted = !enableSound;
 
@@ -392,9 +391,8 @@ class Game {
             this.keys[e.code] = false;
         });
 
-        // Click on canvas to resume sound, enter fullscreen by default, zoom into memory bubble, or advance dialogue
+        // Click on canvas to resume sound, zoom into memory bubble, or advance dialogue
         this.canvas.addEventListener('click', (e) => {
-            this.enterFullscreen();
             if (!this.isAudioMuted) {
                 this.sound.resume();
             }
@@ -801,6 +799,7 @@ class Game {
     // SCENE 5 — THE SOUND COLLECTION
     initScene5() {
         this.sound.stopSceneAmbience();
+        this.sound.currentSceneAmbience = null;
         this.ui.jukeboxPanel.style.display = 'flex';
         this.ui.nasaHud.style.display = 'block';
 
@@ -1040,7 +1039,6 @@ class Game {
         const recordBtns = document.querySelectorAll('.record-btn');
         recordBtns.forEach(btn => {
             btn.onclick = () => {
-                this.enterFullscreen();
                 this.sound.resume();
                 if (typeof Tone !== 'undefined' && Tone.context && Tone.context.state !== 'running') {
                     Tone.start();
@@ -1060,7 +1058,6 @@ class Game {
         const btnPlay = document.getElementById('btnPlay');
         if (btnPlay) {
             btnPlay.onclick = () => {
-                this.enterFullscreen();
                 this.sound.resume();
                 if (typeof Tone !== 'undefined' && Tone.context && Tone.context.state !== 'running') {
                     Tone.start();
@@ -1429,6 +1426,8 @@ class Game {
     }
 
     selectJukeboxRecord(recordKey) {
+        this.sound.stopSceneAmbience();
+        this.sound.currentSceneAmbience = null;
         this.jukeboxState.activeRecord = recordKey;
         this.sound.playRecordCarouselSfx();
 
@@ -1473,6 +1472,8 @@ class Game {
 
     playJukebox() {
         if (!this.jukeboxState.activeRecord) return;
+        this.sound.stopSceneAmbience();
+        this.sound.currentSceneAmbience = null;
         this.jukeboxState.isPlaying = true;
         this.jukeboxState.isPaused = false;
         this.sound.stopSceneAmbience();
