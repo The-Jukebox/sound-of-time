@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NASA EIC — AI Computer Vision Sonifier</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #090514;
+            color: #e2e8f0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .standalone-wrapper {
+            width: 100%;
+            max-width: 1160px;
+            padding: 24px;
+            box-sizing: border-box;
+        }
+        .standalone-nav {
+            margin-bottom: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .back-link {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            color: #47d8f2;
+            text-decoration: none;
+            padding: 8px 14px;
+            background: #180f33;
+            border: 1px solid #47d8f2;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .back-link:hover {
+            background: #47d8f2;
+            color: #090514;
+            box-shadow: 0 0 14px rgba(71,216,242,0.6);
+        }
+    </style>
+</head>
+<body>
+    <div class="standalone-wrapper">
+        <div class="standalone-nav">
+            <a href="index.html" class="back-link">◀ RETURN TO SOUND OF TIMES GAME</a>
+            <span style="font-family: 'Press Start 2P', monospace; font-size: 10px; color: #ffd15c;">NASA EIC STANDALONE STUDIO</span>
+        </div>
+
+        <!-- Standalone AI Scanner Container -->
+        <div class="ai-scanner-container" style="max-height: none; box-shadow: 0 0 60px rgba(71, 216, 242, 0.4);">
+            <!-- Header -->
+            <div class="ai-scanner-header">
+                <div class="ai-header-left">
+                    <span class="ai-emblem">🛰️</span>
+                    <div class="ai-title-group">
+                        <h2>NASA EIC — AI COMPUTER VISION SONIFIER</h2>
+                        <p>Translating Sight into Sound: Satellite Image Pixel Scanning & Real-Time Audio Synthesis</p>
+                    </div>
+                </div>
+                <div class="ai-header-badges">
+                    <div class="ai-badge">
+                        <span class="ai-badge-dot"></span>
+                        LIVE CV MODEL: ACTIVE
+                    </div>
+                </div>
+            </div>
+
+            <!-- Body Grid -->
+            <div class="ai-scanner-body">
+                <!-- Left Viewport -->
+                <div class="ai-viewport-card">
+                    <div class="ai-canvas-wrapper">
+                        <canvas id="aiScanCanvas" width="600" height="370"></canvas>
+                        <div class="ai-scanline-fx"></div>
+                    </div>
+
+                    <!-- Preset Selector -->
+                    <div class="ai-preset-toolbar">
+                        <button class="ai-preset-btn active" data-preset="nightlights">
+                            <span>🌃</span> SVS 5313: Night Lights
+                        </button>
+                        <button class="ai-preset-btn" data-preset="ocean">
+                            <span>🌊</span> SVS 3912: Ocean Gyres
+                        </button>
+                        <button class="ai-preset-btn" data-preset="aerosols">
+                            <span>💨</span> SVS 5669: GEOS Aerosols
+                        </button>
+                        <button class="ai-preset-btn" data-preset="lightning">
+                            <span>⚡</span> SVS 5011: ISS Lightning
+                        </button>
+                    </div>
+
+                    <!-- Custom Upload Row -->
+                    <div class="ai-upload-row">
+                        <span class="ai-upload-label">📁 Drag & Drop or upload any NASA satellite visual:</span>
+                        <input type="file" id="aiImageUpload" accept="image/*" style="display: none;">
+                        <button class="ai-upload-btn" onclick="document.getElementById('aiImageUpload').click()">
+                            UPLOAD IMAGE
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Dashboard -->
+                <div class="ai-dashboard-card">
+                    <!-- Metadata Info -->
+                    <div class="ai-meta-box">
+                        <div class="ai-meta-title" id="aiScanTitle">NASA SVS 5313 — Global Change in Night Lights</div>
+                        <div class="ai-meta-mission" id="aiScanMission">NASA Earth Information Center / Suomi NPP VIIRS Day-Night Band</div>
+                        <p class="ai-meta-desc" id="aiScanDesc">
+                            Tracks human civilization & urban density. Deep contrast between unlit terrain and brilliant metropolitan hubs creates striking melodic leaps.
+                        </p>
+                    </div>
+
+                    <!-- Telemetry Readouts -->
+                    <div class="ai-telemetry-grid">
+                        <div class="ai-telemetry-cell">
+                            <div class="ai-telem-label">Scanhead X</div>
+                            <div class="ai-telem-val" id="aiMetricPos">0% [X: 0px]</div>
+                        </div>
+                        <div class="ai-telemetry-cell">
+                            <div class="ai-telem-label">Musical Note / Pitch</div>
+                            <div class="ai-telem-val" id="aiMetricNote" style="color: #ffd15c;">C4 (262 Hz)</div>
+                        </div>
+                        <div class="ai-telemetry-cell">
+                            <div class="ai-telem-label">Luminosity</div>
+                            <div class="ai-telem-val" id="aiMetricLum">0%</div>
+                            <div class="ai-meter-bar">
+                                <div class="ai-meter-fill" id="aiBarLum"></div>
+                            </div>
+                        </div>
+                        <div class="ai-telemetry-cell">
+                            <div class="ai-telem-label">Edge Complexity</div>
+                            <div class="ai-telem-val" id="aiMetricEdge">0.0</div>
+                            <div class="ai-meter-bar">
+                                <div class="ai-meter-fill gold" id="aiBarEdge"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Oscilloscope -->
+                    <div class="ai-osc-card">
+                        <span class="ai-osc-label">LIVE CV WAVEFORM</span>
+                        <canvas id="aiOscilloscope" width="180" height="48"></canvas>
+                    </div>
+
+                    <!-- Interactive Controls -->
+                    <div class="ai-controls-card">
+                        <button class="ai-btn-scan-play" id="btnAiScanPlay">⏸ PAUSE SCAN</button>
+
+                        <div class="ai-control-row">
+                            <span class="ai-ctrl-label">Musical Scale:</span>
+                            <select id="aiScaleSelect" class="ai-ctrl-select">
+                                <option value="lydian">Earth Lydian (Bright & Acoustic)</option>
+                                <option value="dorian">Ocean Dorian (Deep & Fluid)</option>
+                                <option value="major">Solar Major (Warm & Resonant)</option>
+                                <option value="pentatonic" selected>Night Pentatonic (Contemplative)</option>
+                            </select>
+                        </div>
+
+                        <div class="ai-control-row">
+                            <span class="ai-ctrl-label">Scan Speed: <span id="aiScanSpeedVal" style="color: #47d8f2;">1.6x</span></span>
+                            <input type="range" id="aiScanSpeed" class="ai-slider" min="0.5" max="4.0" step="0.1" value="1.6">
+                        </div>
+
+                        <div class="ai-control-row">
+                            <span class="ai-ctrl-label">Audio Volume: <span id="aiVolLabel" style="color: #47d8f2;">65%</span></span>
+                            <input type="range" id="aiVolSlider" class="ai-slider" min="0.0" max="1.0" step="0.05" value="0.65">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/ai-vision-scanner.js"></script>
+    <script>
+        // Auto-initialize scanner in standalone mode on first click
+        window.addEventListener('click', () => {
+            if (!window.aiVisionScanner.isOpen) {
+                window.aiVisionScanner.open();
+            }
+        }, { once: true });
+        window.addEventListener('load', () => {
+            window.aiVisionScanner.initAudio();
+            window.aiVisionScanner.resizeCanvas();
+            window.aiVisionScanner.loadPreset('nightlights');
+            window.aiVisionScanner.startScan();
+        });
+    </script>
+</body>
+</html>
