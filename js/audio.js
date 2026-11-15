@@ -310,10 +310,11 @@ class SoundEngine {
             this.ambientNodes.push(wind);
             this.startCrystalChimes();
         } else if (sceneName === 'home_interior') {
-            // Warm cozy room tone + artificial beach water waves in background
-            const roomTone = this.createWindGenerator(0.05, 200);
-            const gentleBeach = this.createGentleWaves(0.08);
-            this.ambientNodes.push(roomTone, gentleBeach);
+            // Warm cozy room tone + soft habitat hum + nostalgic piano theme
+            const roomTone = this.createWindGenerator(0.04, 180);
+            const habitatHum = this.createSpaceshipHum(0.03);
+            this.ambientNodes.push(roomTone, habitatHum);
+            this.startPianoTheme();
         } else if (sceneName === 'spaceship_flight') {
             // Thrusters and cosmic velocity
             const thrusters = this.createSpaceshipLaunch(0.3);
