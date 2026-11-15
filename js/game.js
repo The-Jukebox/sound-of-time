@@ -360,7 +360,7 @@ class Game {
                 { speaker: 'ROCKY', text: 'Question: Why is human five minutes always longer than Eridian five minutes? Human math is broken!' },
                 { speaker: 'RYAN', text: '(laughs) That\'s teacher time, Rocky. Come on, let\'s go teach them some science.' }
             ], () => {
-                this.showPrompt('[ → ] (FRONT ARROW) WALK FORWARD TO THE CLASSROOM');
+                this.showPrompt('[A/D] or [←/→] WALK TOWARDS THE CLASSROOM');
             });
         }, 1800);
     }
@@ -462,7 +462,7 @@ class Game {
                     }
                 }
             ], () => {
-                this.showPrompt('[ → ] WALK TO THE GOLDEN LIGHT AND PRESS [ENTER] TO PICK UP');
+                this.showPrompt('[WALK TO THE GOLDEN LIGHT AND PRESS E TO INSPECT]');
             });
         });
     }
@@ -555,7 +555,7 @@ class Game {
         this.ui.nasaHud.style.display = 'block';
 
         this.setupJukeboxUI();
-        this.showPrompt('[ → / ← ] WALK IN HABITAT  |  [ENTER] ZOOM INTO MEMORY VISION');
+        this.showPrompt('[CLICK JUKEBOX CONTROLS OR USE KEYS: SPACE=PLAY/PAUSE | S=STOP | R=REPLAY | E=EJECT | 1-4=RECORDS]');
 
         // Auto-select Forest record first
         this.selectJukeboxRecord('forest');
